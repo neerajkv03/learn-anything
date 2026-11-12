@@ -1,6 +1,6 @@
-# Python (uv) Learning Path (vPython 3.15.2 + uv 0.13.7)
+# Python (uv) + FastAPI & SQLite Learning Path (vPython 3.15.2 + uv 0.13.7 + FastAPI 0.162.5 + Pydantic 2.14.3 + Uvicorn 0.54.0 + SQLModel 0.0.49 + HTTPX 0.28.1 + SQLite 3.54.1 + pydantic-settings 2.16.2 + pwdlib 0.3.1 + PyJWT 2.15.1)
 
-Version checked: Python 3.15.2 + uv 0.13.7 on 2026-11-11 via https://www.python.org/downloads/ and https://github.com/astral-sh/uv/releases
+Version checked: Python 3.15.2 + uv 0.13.7 on 2026-11-11 via https://www.python.org/downloads/ and https://github.com/astral-sh/uv/releases; FastAPI 0.162.5, Pydantic 2.14.3, Uvicorn 0.54.0, SQLModel 0.0.49, HTTPX 0.28.1 on 2026-11-12 via https://pypi.org/project/<name>/; SQLite 3.54.1 on 2026-11-12 via https://www.sqlite.org/changes.html; pydantic-settings 2.16.2, pwdlib 0.3.1, PyJWT 2.15.1 on 2026-11-12 via https://pypi.org/project/<name>/
 Approved: list ✓ | plans ✓
 App: done | App verified: done
 
@@ -30,3 +30,14 @@ App: done | App verified: done
 | 22 | Concurrency & asyncio | 22-concurrency-asyncio | Concurrency vs parallelism; Threads with concurrent.futures; Processes for CPU-bound work; async and await; asyncio.gather and TaskGroup | done | done | done |
 | 23 | Scripts & Packaging | 23-scripts-packaging | Single-file scripts with inline metadata (PEP 723); Entry points ([project.scripts]); Building with uv build; Installing CLI tools with uv tool; Publishing with uv publish | done | done | done |
 | 24 | Production Workflow | 24-production-workflow | Reproducible installs (uv sync --locked / --frozen); uv in CI; uv in Docker; Environment variables and configuration; Workspaces for multi-package repos | done | done | done |
+| 25 | SQLite with sqlite3 | 25-sqlite-sqlite3 | What a database and SQL are; Connecting and creating tables; Inserting and querying rows; Parameterized queries and SQL injection; Transactions (commit / rollback); Row factories and closing connections | done | done | done |
+| 26 | HTTP & Web API Basics | 26-http-api-basics | Clients, servers, requests and responses; HTTP methods; Status codes; URLs, paths and query strings; JSON bodies and headers; REST resource design | done | done | done |
+| 27 | Pydantic Models | 27-pydantic-models | BaseModel and typed fields; Validation and ValidationError; Field constraints with Field(); Nested models; Serializing with model_dump / model_dump_json | done | done | done |
+| 28 | FastAPI First App | 28-fastapi-first-app | Adding fastapi[standard] with uv add; Path operations (@app.get); Running with fastapi dev and fastapi run; Interactive docs (/docs); Path parameters; Query parameters | done | done | done |
+| 29 | Request Bodies & Responses | 29-fastapi-requests-responses | Request bodies with Pydantic models; response_model and return types; Status codes; HTTPException; Validation errors (422); Annotated with Query / Path validation | done | done | done |
+| 30 | Dependency Injection | 30-fastapi-dependencies | What Depends does; Dependencies with yield; Sub-dependencies; Router- and app-level dependencies | done | done | done |
+| 31 | Databases with SQLModel | 31-fastapi-sqlmodel | SQLModel table models; Engine and SQLite URL; Session dependency with yield; Create and read endpoints; Update and delete endpoints; Separate Create / Public / Update models | done | done | done |
+| 32 | Structuring FastAPI Apps | 32-fastapi-structure | APIRouter and multi-file layout; Lifespan events (startup / shutdown); Configuration from environment variables; CORS middleware; Background tasks | done | done | done |
+| 33 | Authentication Basics | 33-fastapi-auth | Authentication vs authorization; OAuth2PasswordBearer and the Authorization header; Password hashing (pwdlib); JWT access tokens (PyJWT); Current-user dependency | done | done | done |
+| 34 | Testing FastAPI Apps | 34-fastapi-testing | TestClient basics; Testing status codes and JSON; Overriding dependencies; In-memory SQLite test database; Fixtures for client and session | done | done | done |
+| 35 | Async & Deployment | 35-fastapi-async-deploy | async def vs def endpoints; fastapi run and workers; Docker image with uv; SQLite in production (WAL, single writer, backups); Health-check endpoint | done | done | done |
