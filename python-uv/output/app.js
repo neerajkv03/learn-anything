@@ -1,5 +1,5 @@
 (() => {
-  const KEY = "learn:python-uv";
+  const KEY = "learn:" + (window.SLUG || "course");
   const NS = "http://www.w3.org/2000/svg";
   const $ = (s) => document.querySelector(s);
   const root = document.documentElement;
@@ -9,6 +9,7 @@
   const crumb = $("#crumb");
   const LANG = window.LANG || "";
   const MAN = window.MANIFEST || [];
+  $(".logo__mark").textContent = (LANG.trim()[0] || "L").toUpperCase();
 
   // ---- state (all storage access in try/catch)
   let S = { done: [], last: "", scroll: {} };

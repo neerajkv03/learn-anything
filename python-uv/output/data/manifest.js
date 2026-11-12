@@ -1,2 +1,3 @@
 window.LANG = "Python (uv)";
+window.SLUG = "python-uv";
 window.MANIFEST = ["01-setup-with-uv","02-variables-types","03-operators-expressions","04-strings","05-control-flow","06-loops","07-collections","08-comprehensions-unpacking","09-functions","10-type-hints","11-error-handling","12-modules-imports","13-uv-projects","14-files-paths-data","15-classes-objects","16-dataclasses-enums","17-iterators-generators","18-decorators-context-managers","19-stdlib-essentials","20-testing-pytest","21-code-quality","22-concurrency-asyncio","23-scripts-packaging","24-production-workflow"];
