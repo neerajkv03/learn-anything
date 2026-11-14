@@ -168,6 +168,9 @@ Prerequisites: <slugs or "none">
 
 **`_taught.md`**: one line per topic listing the terms, constructs and error names that topic **introduces**, e.g. `04-strings: str, indexing [i], slicing, f-strings, len(), .upper()/.split(), TypeError (glossed)`. Authors and reviewers use it to tell what is "already taught". Plan each topic to gloss anything it uses before the topic that teaches it.
 
+- A plan that needs a library or server not version-checked in Session A (e.g. a DB driver + database): verify it (Phase 1 step 0, one Haiku agent, in the background while writing other plans), append to VERSION, `Version checked:` and `_version-notes.md` before Gate 2. The same agent can confirm recent-release features the plans rely on.
+- Write plan files with the Write tool (several per message), not long bash heredocs (Git Bash failed to parse one).
+
 Update the `Plan` column → `done` after each file.
 
 **STOP (Gate 2).** Show a summary of all plans (topic, sub-topics, learning goals) and wait. Never start content generation without explicit approval. On approval, tell the user to `/clear` and re-invoke.
@@ -321,3 +324,5 @@ The orchestrator may edit this file, `.claude/agents/learn-*.md` and `tools/*` w
 - 2026-11-14 — (user request) VERSION = newest LTS (latest stable only when the project has no LTS). Phase 1 step 0 writes `plans/_version-notes.md` from the official release notes; planner, authors and accuracy reviewers read it. Extend: drift check (pin or upgrade) + `check-topic.mjs --set-version`; whole-course check flags mixed versions. New `refresh <SLUG>` mode (accuracy-only re-verify). Resume is always `@LEARN.md <SLUG>`.
 - 2026-11-14 — (user request) Optional grilling skill: opt-in by `grill` in the invocation or `/grill-me` at Gate 1; result in `plans/_brief.md`. `programming_language/` removed (empty placeholder; Phase 0 tree is the reference). `.claude/settings.json`: allow rules for the two `node tools/...` commands.
 - 2026-11-14 — (user request) Project `.claude/settings.json` also disables the claude.ai-synced plugins (`figma`, `codesign`, `design`, `design-skills`, `cowork-plugin-management`, `ux-agent-skills` as `<name>@synced`); CLAUDE.md limits skill use to `.claude/skills/` + caveman + ponytail.
+- 2026-11-15 — Phase 2 (golang run): libraries/servers first needed by a plan are version-checked before Gate 2 in every run, not only Extend (pgx, PostgreSQL); plans written with Write, not bash heredocs.
+- 2026-11-15 — `tools/check-topic.mjs --links` (golang run): pkg.go.dev returned 429 for 58 links, reported as dead. Now fetches each page once (`#anchor` stripped), retries 429 with backoff, and a persisting 429 is a `WARN`, not a dead link.

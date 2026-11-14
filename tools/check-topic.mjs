@@ -92,12 +92,17 @@ for (const id of targets) {
 if (links) {
   const urls = new Map();
   for (const id of targets) for (const s of topics[id]?.subtopics || []) for (const x of s.sources || [])
-    if (/^https:\/\//.test(x.url || "")) (urls.get(x.url) || urls.set(x.url, []).get(x.url)).push(`${id}.js ${s.id}`);
+    if (/^https:\/\//.test(x.url || "")) { const p = x.url.split("#")[0]; (urls.get(p) || urls.set(p, []).get(p)).push(`${id}.js ${s.id}`); } // fetch each page once; #anchors not checked
   const list = [...urls.keys()];
   const probe = async (u) => {
     try {
-      const r = await fetch(u, { redirect: "follow", signal: AbortSignal.timeout(10000), headers: { "user-agent": "Mozilla/5.0 (link check)" } });
-      if (r.status >= 400) urls.get(u).forEach((w) => bad(w, `dead link ${r.status} ${u}`));
+      for (let n = 0; ; n++) {
+        const r = await fetch(u, { redirect: "follow", signal: AbortSignal.timeout(10000), headers: { "user-agent": "Mozilla/5.0 (link check)" } });
+        if (r.status === 429 && n < 3) { await new Promise((ok) => setTimeout(ok, 5000 * (n + 1))); continue; }
+        if (r.status === 429) console.log(`WARN rate-limited (429), not checked: ${u}`); // rate limit != dead link
+        else if (r.status >= 400) urls.get(u).forEach((w) => bad(w, `dead link ${r.status} ${u}`));
+        break;
+      }
     } catch (e) { urls.get(u).forEach((w) => bad(w, `dead link (${e.name}) ${u}`)); }
   };
   for (let i = 0; i < list.length; i += 4) await Promise.all(list.slice(i, i + 4).map(probe));
