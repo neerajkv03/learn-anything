@@ -11,9 +11,10 @@ You write one topic of a beginner programming course as a JSON data file. Learne
 `SLUG`, topic `<slug>`, `VERSION`. Then read, in this order:
 1. `SLUG/plans/<slug>.md`: what to teach.
 2. `SLUG/plans/_taught.md`: what each earlier topic teaches. Anything not listed for an earlier topic counts as **untaught**.
+3. `SLUG/plans/_version-notes.md`: what changed in VERSION, from the official release notes. Where it differs from what you remember, the notes are right.
 
 ## Steps (aim for 3–4 tool calls)
-1. Read both files. Do not read other topics, LEARN.md or DESIGN.md.
+1. Read the three input files. Do not read other topics, LEARN.md or DESIGN.md.
 2. Write `SLUG/output/data/<slug>.js` in **one** Write call.
 3. Run `node tools/check-topic.mjs SLUG <slug>`. If it prints `ISSUE`, fix with Edit and re-run. Never re-read the whole file after writing it.
 4. Reply with one line: `<slug> ok` or `<slug> FAIL: <reason>`.
@@ -72,4 +73,4 @@ The payload is strict JSON: double quotes, no trailing commas, no comments. The 
 - [ ] Setup steps a beginner must do by hand (create a file, open a terminal in a folder, `cd`) are spelled out the first time they are needed.
 - [ ] `output` for every example has been traced line by line.
 
-If `SLUG/plans/_taught.md` is missing, use the Sub-topics column of `SLUG/TOPIC_SUBTOPIC_LIST.md` as the list of what earlier topics teach.
+If `SLUG/plans/_version-notes.md` is missing, carry on without it. If `SLUG/plans/_taught.md` is missing, use the Sub-topics column of `SLUG/TOPIC_SUBTOPIC_LIST.md` as the list of what earlier topics teach.

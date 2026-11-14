@@ -1,15 +1,20 @@
 // Scripted checks for course data (LEARN.md Phase 3 self-check + Phase 5 step 1).
-// Usage: node tools/check-topic.mjs <SLUG> [topic-slug ...] [--links]
+// Usage: node tools/check-topic.mjs <SLUG> [topic-slug ...] [--links] [--set-version "<VERSION>"]
 //   no topic slugs = check every file in <SLUG>/output/data; --links = also fetch every source URL.
+//   --set-version = first rewrite the top-level "version" of the target topics (extend / refresh), then check.
 // Prints one line per issue, "ok <file>" per clean file. Exit 1 if any issue.
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const args = process.argv.slice(2);
 const links = args.includes("--links");
+const sv = args.indexOf("--set-version");
+const setVersion = sv < 0 ? null : args.splice(sv, 2)[1];
+if (sv >= 0 && !setVersion) { console.error("--set-version needs a value"); process.exit(1); }
 const [slug, ...only] = args.filter((a) => a !== "--links");
-if (!slug) { console.error("usage: node tools/check-topic.mjs <SLUG> [topic-slug ...] [--links]"); process.exit(1); }
-const repo = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..");
+if (!slug) { console.error("usage: node tools/check-topic.mjs <SLUG> [topic-slug ...] [--links] [--set-version \"<VERSION>\"]"); process.exit(1); }
+const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dir = path.join(repo, slug, "output", "data");
 const issues = [];
 const bad = (f, msg) => issues.push(`${f}: ${msg}`);
@@ -32,12 +37,20 @@ for (const f of fs.readdirSync(dir).filter((f) => f.endsWith(".js") && f !== "ma
   const i = s.indexOf("window.TOPICS.push(");
   if (!s.startsWith(PRE) || i < 0) { bad(f, `must start with "${PRE}" then "window.TOPICS.push("`); continue; }
   if (!/\}\s*\);$/.test(s)) { bad(f, 'must end with "});"'); continue; }
-  try { topics[f.slice(0, -3)] = JSON.parse(s.slice(i + 19, s.lastIndexOf(")"))); } catch (e) { bad(f, "payload not strict JSON: " + e.message); }
+  const id = f.slice(0, -3);
+  try { topics[id] = JSON.parse(s.slice(i + 19, s.lastIndexOf(")"))); } catch (e) { bad(f, "payload not strict JSON: " + e.message); continue; }
+  if (setVersion && topics[id].version !== setVersion && (!only.length || only.includes(id))) {
+    topics[id].version = setVersion;
+    fs.writeFileSync(path.join(dir, f), `${PRE}\nwindow.TOPICS.push(${JSON.stringify(topics[id], null, 2)});\n`);
+  }
 }
 const targets = only.length ? only : [...new Set([...manifest, ...Object.keys(topics)])];
 
 const str = (v) => typeof v === "string" && v.trim() !== "";
 const need = (f, o, keys, where) => keys.forEach((k) => { if (!str(o?.[k])) bad(f, `${where}.${k} missing/empty`); });
+// whole-course runs only: every topic must state the same VERSION (extend / refresh drift)
+const versions = [...new Set(Object.values(topics).map((t) => t.version))];
+if (!only.length && versions.length > 1) bad("manifest.js", `topics state ${versions.length} different versions (${versions.join(" | ")}); run --set-version "<VERSION>"`);
 const orders = {};
 Object.entries(topics).forEach(([id, t]) => (orders[t.order] ??= []).push(id));
 

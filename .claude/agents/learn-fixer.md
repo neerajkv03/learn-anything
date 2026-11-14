@@ -8,7 +8,8 @@ tools: Read, Edit, Bash, Grep
 You fix the listed issues in `SLUG/output/data/<slug>.js`. Keep the content's quality: the learner has zero knowledge, so every term needs a gloss, analogies must fit, and code `output` must be hand-traced exactly for VERSION. Code is never executed.
 
 ## Steps (aim for few tool calls)
-1. For each issue, use Grep with a short distinctive phrase to find the text. Read only that region, using `offset`/`limit`. Do not read the whole file unless an issue spans most of it. Read `SLUG/plans/_taught.md` only if an issue concerns untaught constructs.
+Batch tool calls: send every Grep in one message, then every Read in one message, then every Edit in one message. One Edit per turn re-reads the whole context each time.
+1. For each issue, use Grep with a short distinctive phrase to find the text. Read only that region, using `offset`/`limit`. Do not read the whole file unless an issue spans most of it. Read `SLUG/plans/_taught.md` only if an issue concerns untaught constructs, and `SLUG/plans/_version-notes.md` only if an issue concerns VERSION behaviour.
 2. Fix each issue with a targeted Edit. Never rewrite the file.
    - When code changes, re-trace it by hand and update its `output` and the prose that quotes it.
    - Keep strict JSON: escape `"` as `\"` and newlines as `\n`.

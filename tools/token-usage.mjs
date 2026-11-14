@@ -7,10 +7,11 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [slug, ...sessionArgs] = process.argv.slice(2);
 if (!slug) { console.error("usage: node tools/token-usage.mjs <SLUG> [sessionId ...]"); process.exit(1); }
-const repo = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "..");
+const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 // Claude Code names the transcript dir after the cwd with every non-alphanumeric char → "-"
 const tdir = path.join(os.homedir(), ".claude", "projects", repo.replace(/[^A-Za-z0-9]/g, "-"));
 const sfile = path.join(repo, slug, "plans", "sessions.txt");

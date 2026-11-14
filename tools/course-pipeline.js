@@ -1,7 +1,7 @@
 export const meta = {
   name: 'learn-course-pipeline',
   description: 'LEARN.md Phases 3+5: write each topic, review accuracy + clarity, fix, re-verify (max 2 rounds)',
-  whenToUse: 'LEARN.md Phase 3-5 after Gate 2. args: {slug, version, topics: [topic slugs to verify], author?: [subset to write first; default = topics]}',
+  whenToUse: 'LEARN.md Phase 3-5 after Gate 2. args: {slug, version, topics: [topic slugs to verify], author?: [subset to write first; default = topics], reviewers?: [accuracy | clarity] (default = both)}',
   phases: [
     { title: 'Author', detail: 'learn-author (sonnet), one per topic' },
     { title: 'Review', detail: 'learn-accuracy (sonnet, ≤3 topics) + learn-clarity (haiku, ≤6 topics)' },
@@ -49,20 +49,27 @@ const REVIEWERS = [
 ]
 const review = async (group, prior) => {
   const issues = Object.fromEntries(group.map((t) => [t, []]))
-  const jobs = []
-  for (const R of REVIEWERS) {
+  const jobs = [], meta = []
+  for (const R of REVIEWERS.filter((R) => !args.reviewers || args.reviewers.includes(R.name))) {
     const mine = (t) => (prior?.[t] || []).filter((x) => R.own.includes(x.slice(0, 3)))
     const todo = prior ? group.filter((t) => mine(t).length) : group
     for (const g of chunk(todo, R.size)) {
       const ctx = prior ? `\nRe-verify mode. Prior issues:\n${g.map((t) => `${t}:\n- ${mine(t).map((x) => x.slice(5)).join('\n- ')}`).join('\n')}` : ''
       const phase = prior ? 'Phase 5 re-verify' : `Phase 5 ${R.name}`
-      jobs.push(() => run(R.type, R.model, phase, `${R.name} ${range(g)}`, `Topics: ${g.join(', ')}${ctx}`, REVIEW).then((r) => ({ R, g, r })))
+      jobs.push(() => run(R.type, R.model, phase, `${R.name} ${range(g)}`, `Topics: ${g.join(', ')}${ctx}`, REVIEW))
+      meta.push({ R, g })
     }
   }
-  for (const { R, g, r } of (await parallel(jobs)).filter(Boolean)) {
-    if (!r) { g.forEach((t) => issues[t].push(`${R.tag}: ${R.name} review agent failed; re-run review`)); continue }
-    for (const x of r.topics || []) if (issues[x.slug] && !x.pass) issues[x.slug].push(...(x.issues.length ? x.issues : ['marked fail without detail']).map((i) => `${R.tag}: ${i}`))
-  }
+  // Fail closed: a topic passes only if its reviewer returned its exact slug with pass=true.
+  const out = await parallel(jobs)
+  meta.forEach(({ R, g }, i) => {
+    const got = Object.fromEntries((out[i]?.topics || []).map((x) => [x.slug, x]))
+    for (const t of g) {
+      const x = got[t]
+      if (!x) issues[t].push(`${R.tag}: no ${R.name} verdict returned for this topic; re-run review`)
+      else if (!x.pass) issues[t].push(...(x.issues?.length ? x.issues : ['marked fail without detail']).map((i) => `${R.tag}: ${i}`))
+    }
+  })
   return issues
 }
 
@@ -71,9 +78,10 @@ await pipeline(
   chunk(topics, 6),
   // Phase 3: write (topics already written are skipped). Author runs check-topic.mjs itself.
   async (group) => {
-    const out = await parallel(group.filter((t) => author.has(t)).map((t) => () => run('learn-author', 'sonnet', 'Phase 3 content', t, `Topic=${t}`, AUTHOR).then((r) => [t, r])))
+    const todo = group.filter((t) => author.has(t))
+    const out = await parallel(todo.map((t) => () => run('learn-author', 'sonnet', 'Phase 3 content', t, `Topic=${t}`, AUTHOR)))
     const pre = {}
-    for (const [t, r] of out.filter(Boolean)) if (!r || !r.ok) pre[t] = [`CHK: node tools/check-topic.mjs ${slug} ${t} fails: ${r ? r.note || 'see output' : 'author agent failed; file may be missing'}`]
+    for (const [t, r] of todo.map((t, i) => [t, out[i]])) if (!r || !r.ok) pre[t] = [`CHK: node tools/check-topic.mjs ${slug} ${t} fails: ${r ? r.note || 'see output' : 'author agent failed; file may be missing'}`]
     return pre
   },
   // Phase 5: review, then up to 2 fix → re-verify rounds per failing topic.
