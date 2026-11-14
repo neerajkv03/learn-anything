@@ -12,7 +12,7 @@ window.TOPICS.push({
   {
    "id": "single-file-scripts-pep-723",
    "title": "Single-file scripts with inline metadata (PEP 723)",
-   "explanation": "A script is a single Python file you run directly. Normally, if your script needs an outside library (a package someone else wrote, such as rich), you must create a project or a virtual environment (an isolated folder of installed packages) first. PEP 723 (a PEP is an official Python proposal document) removes that step: the script describes its own needs in a special comment block at the top.\n\nThe block starts with the line `# /// script` and ends with a line containing only `# ///`. Between them you write TOML (a simple key = value settings format) such as `requires-python = \">=3.15\"` and `dependencies = [\"rich\"]`. Python itself ignores it because it is just comments; tools like uv read it.\n\nWith `uv run report.py`, uv reads the block, builds a temporary environment holding exactly those packages, and runs the script. `uv init --script report.py` creates a starter file, and `uv add --script report.py rich` edits the block for you. On macOS and Linux you can add the shebang line `#!/usr/bin/env -S uv run --script` as the first line (a shebang tells the operating system which program should run the file) and make the file executable (allowed to run directly like a command), so you can run it as `./report.py`.",
+   "explanation": "A script is a single Python file you run directly. Normally, if your script needs an outside library (a package someone else wrote, such as rich), you must create a project or a virtual environment (an isolated folder of installed packages) first. PEP 723 (a PEP is an official Python proposal document) removes that step: the script describes its own needs in a special comment block at the top.\n\nThe block starts with the line `# /// script` and ends with a line containing only `# ///`. Between them you write TOML (a simple key = value settings format) such as `requires-python = \">=3.15\"` and `dependencies = [\"rich\"]`. Python itself ignores it because it is just comments; tools like uv read it.\n\nWith `uv run report.py`, uv reads the block, builds a temporary environment holding exactly those packages, and runs the script. `uv init --script report.py` creates a starter file, and `uv add --script report.py rich` edits the block for you.\n\nOptionally (macOS and Linux only; on Windows skip this part), add the shebang line `#!/usr/bin/env -S uv run --script` as the first line (a shebang tells the operating system which program should run the file). Then run `chmod +x report.py` once to make it executable (a Unix command that marks a file as runnable), so you can run it as `./report.py`.",
    "analogy": "A recipe card with its shopping list stapled to the top: anyone can cook it without asking what to buy.",
    "code": [
     {
@@ -101,10 +101,10 @@ window.TOPICS.push({
      "explanation": "Bump the version, build, then list the results. The output shown is for the final ls; uv itself prints extra progress lines, and exact text varies by uv version and OS."
     }
    ],
-   "productionNote": "Internal packages are usually built in CI (a server that runs automatically on each change) and uploaded to a private index. Add `dist/` to .gitignore.",
+   "productionNote": "Internal packages are usually built in CI (a server that runs automatically on each change) and uploaded to a private index. Add `dist/` to .gitignore (a file that lists what git, the version-history tool, should not save).",
    "commonMistakes": [
     "Forgetting to bump the version: the upload is rejected because that version already exists.",
-    "Committing the `dist/` folder to git; build output should be regenerated, not stored."
+    "Committing the `dist/` folder to git (saving it in version history); build output should be regenerated, not stored."
    ],
    "sources": [
     {
@@ -150,7 +150,7 @@ window.TOPICS.push({
   {
    "id": "publishing-with-uv-publish",
    "title": "Publishing with uv publish",
-   "explanation": "`uv publish` uploads the files in `dist/` to a package index. PyPI is the public index everyone installs from; TestPyPI is a separate practice copy. Always rehearse on TestPyPI first: configure it in `pyproject.toml` as an index (a server that stores and serves packages) with a `publish-url`, then run `uv publish --index testpypi`.\n\nYou must prove who you are. The best way is Trusted Publishing: you tell PyPI that a specific CI workflow in your repository may publish, and it issues short-lived credentials automatically, so there is no long-lived secret to leak. Otherwise use an API token (a password-like key) limited to your project, passed through the `UV_PUBLISH_TOKEN` environment variable (a named setting your terminal passes to programs).\n\nNever commit tokens to git or type them where they land in shell history. Published versions are permanent: you cannot overwrite or re-upload the same version, so check the build, test on TestPyPI, then release.",
+   "explanation": "`uv publish` uploads the files in `dist/` to a package index. PyPI is the public index everyone installs from; TestPyPI is a separate practice copy. Always rehearse on TestPyPI first: configure it in `pyproject.toml` as an index (a server that stores and serves packages) with a `publish-url`, then run `uv publish --index testpypi`.\n\nYou must prove who you are. The best way is Trusted Publishing: you tell PyPI that a specific CI workflow in your repository may publish, and it issues short-lived credentials (temporary login details) automatically, so there is no long-lived secret to leak. Otherwise use an API token (a password-like key) limited to your project, passed through the `UV_PUBLISH_TOKEN` environment variable (a named setting your terminal passes to programs).\n\nNever commit tokens to git or type them where they land in shell history. Published versions are permanent: you cannot overwrite or re-upload the same version, so check the build, test on TestPyPI, then release.",
    "analogy": "Sending a book to the national library: once catalogued under an edition number, that edition is permanent.",
    "code": [
     {
@@ -172,7 +172,7 @@ window.TOPICS.push({
    "commonMistakes": [
     "Packing secrets or large unneeded files (.env files, data dumps) into the package.",
     "Re-uploading the same version: it is rejected, so bump the version instead.",
-    "Leaving tokens in shell history or committing them to git."
+    "Leaving tokens in shell history (the saved list of commands your terminal remembers) or committing them to git."
    ],
    "sources": [
     {
@@ -190,21 +190,21 @@ window.TOPICS.push({
   {
    "question": "Where does a PEP 723 script declare its dependencies?",
    "options": [
-    "In a requirements.txt next to the script",
+    "In a separate requirements.txt file placed next to the script",
+    "In the file name of the script, such as report-rich.py",
     "In a # /// script comment block at the top of the file",
-    "In the file name of the script",
-    "In a separate uv.lock file only"
+    "In a separate uv.lock file created by uv and nothing else"
    ],
-   "answerIndex": 1,
+   "answerIndex": 2,
    "explanation": "PEP 723 puts TOML metadata in a comment block starting with # /// script and ending with # ///, which uv run reads."
   },
   {
    "question": "What does mycli = \"mycli:main\" in [project.scripts] do?",
    "options": [
-    "Creates a terminal command mycli that calls main() in the mycli package",
-    "Renames the package to main",
-    "Runs main() every time Python starts",
-    "Publishes the package as mycli"
+    "Creates a terminal command mycli that calls main()",
+    "Renames the package to main and removes the name mycli",
+    "Runs main() automatically every time Python starts on any computer",
+    "Publishes the package to PyPI under the name mycli"
    ],
    "answerIndex": 0,
    "explanation": "An entry point maps a command name to module:function, so typing mycli calls main() from the mycli package."
@@ -213,7 +213,7 @@ window.TOPICS.push({
    "question": "What two files does uv build produce?",
    "options": [
     "A .exe and a .dll",
-    "A requirements.txt and a lock file",
+    "A requirements.txt file and a uv.lock file, both for installers",
     "A .zip and a .tar",
     "A wheel (.whl) and a source distribution (.tar.gz)"
    ],
@@ -223,13 +223,35 @@ window.TOPICS.push({
   {
    "question": "Why test on TestPyPI first?",
    "options": [
-    "It is faster than PyPI",
-    "Published versions on PyPI cannot be overwritten, so mistakes are permanent",
-    "It removes the need to bump the version",
-    "It is required to create a token"
+    "It is faster than PyPI because it has fewer users",
+    "PyPI versions cannot be overwritten, so mistakes are permanent",
+    "It removes the need to bump the version number later",
+    "It is required before you can create an API token"
    ],
    "answerIndex": 1,
    "explanation": "A version published to PyPI is permanent, so TestPyPI lets you rehearse the release without risking a bad permanent upload."
+  },
+  {
+   "question": "What does `uv tool install mycli` do?",
+   "options": [
+    "Installs the mycli command so you can run it from any folder",
+    "Adds mycli to the current project's dependency list and lock file",
+    "Runs mycli once and then removes it",
+    "Publishes mycli to PyPI"
+   ],
+   "answerIndex": 0,
+   "explanation": "uv tool install puts the tool in its own isolated environment and adds its command to your PATH. It does not touch your project's dependencies."
+  },
+  {
+   "question": "Why is Trusted Publishing safer than a long-lived PyPI token?",
+   "options": [
+    "It skips the build step and uploads the source directly",
+    "It makes the package private so that only the account owner can install it",
+    "It publishes without any account",
+    "It uses short-lived credentials, so there is no stored secret to leak"
+   ],
+   "answerIndex": 3,
+   "explanation": "PyPI issues temporary credentials to your approved CI workflow, so no permanent secret exists that could be stolen or committed by mistake."
   }
  ]
 });

@@ -30,7 +30,7 @@ window.TOPICS.push({
       ],
       "productionNote": "Every new service or tool starts from uv init, giving the whole team a standard layout they recognise at a glance.",
       "commonMistakes": [
-        "Running uv init in a subfolder of an existing project, which creates a nested project (a workspace member); run it in a new, empty folder.",
+        "Running uv init in a subfolder of an existing project, which creates a nested project (creating a second project inside an existing one); run it in a new, empty folder.",
         "Deleting .python-version or pyproject.toml because they look like clutter; uv needs both."
       ],
       "sources": [
@@ -65,7 +65,7 @@ window.TOPICS.push({
     {
       "id": "uv-add-remove",
       "title": "uv add and uv remove",
-      "explanation": "A package (also called a dependency) is code someone else wrote and published, usually to PyPI, the Python Package Index. `uv add httpx` adds the HTTP client library httpx to your project in one step: it edits `dependencies` in `pyproject.toml`, updates `uv.lock`, and installs the package into `.venv`.\n\nYou can limit versions with a constraint, for example `uv add \"httpx>=0.27\"` (quotes stop the shell treating `>` as a redirect). A constraint is any such version limit. When you give none, uv writes a lower bound (the oldest version allowed: `>=0.28.1` means 0.28.1 or newer) based on the version it picked, so the entry looks like `httpx>=0.28.1`; the exact number varies with time.\n\n`uv remove httpx` undoes all of that. `uv tree` prints the dependency tree: your packages and the packages they themselves need.",
+      "explanation": "A package (also called a dependency) is code someone else wrote and published, usually to PyPI, the Python Package Index. `uv add httpx` adds httpx, a library that sends web requests (HTTP is the set of rules browsers and servers use to talk), to your project in one step: it edits `dependencies` in `pyproject.toml`, updates `uv.lock`, and installs the package into `.venv`.\n\nYou can limit versions with a constraint, for example `uv add \"httpx>=0.27\"` (quotes stop your terminal, called the shell, treating `>` as a redirect, which means sending output into a file). A constraint is any such version limit. When you give none, uv writes a lower bound (the oldest version allowed: `>=0.28.1` means 0.28.1 or newer) based on the version it picked, so the entry looks like `httpx>=0.28.1`; the exact number varies with time.\n\n`uv remove httpx` undoes all of that. `uv tree` prints the dependency tree: your packages and the packages they themselves need.",
       "analogy": "Adding a supplier to the shop's contract list: the order form, the warehouse shelf and the paperwork all update together.",
       "code": [
         {
@@ -104,7 +104,7 @@ window.TOPICS.push({
           "filename": "terminal",
           "source": "git clone https://example.com/team/hello-app.git\ncd hello-app\nuv sync\nuv run main.py",
           "output": "",
-          "explanation": "The URL is a placeholder for your own repository. uv sync builds .venv from uv.lock; the output (a list of installed packages) varies, and main.py then prints whatever your script prints."
+          "explanation": "git clone downloads a full copy of a repository (a project folder stored with git, the version-history tool) from the given address into a new folder. The URL is a placeholder for your own repository. uv sync builds .venv from uv.lock; the output (a list of installed packages) varies, and main.py then prints whatever your script prints."
         },
         {
           "language": "bash",
@@ -114,9 +114,9 @@ window.TOPICS.push({
           "explanation": "Upgrades only httpx in uv.lock. uv prints which versions changed; that text varies. Run uv sync or uv run afterwards to apply it to .venv."
         }
       ],
-      "productionNote": "The lock file gives reproducible builds: laptops, CI and servers all install identical versions of every package.",
+      "productionNote": "The lock file gives reproducible builds: laptops, teammates and servers all install identical versions of every package.",
       "commonMistakes": [
-        "Not committing uv.lock, so each machine may resolve different versions.",
+        "Not committing uv.lock, so each machine may install different versions.",
         "Editing uv.lock by hand; it is generated and will be overwritten.",
         "Upgrading every package at once without testing; upgrade deliberately, one package at a time."
       ],
@@ -153,7 +153,7 @@ window.TOPICS.push({
           "explanation": "Installs only runtime dependencies, as you would in a production build. Output varies."
         }
       ],
-      "productionNote": "Production images install only runtime dependencies, which keeps them smaller and reduces the attack surface.",
+      "productionNote": "Production images install only runtime dependencies, which keeps them smaller and leaves fewer packages that could contain security holes.",
       "commonMistakes": [
         "Putting pytest in runtime dependencies, so it ships to production for no reason.",
         "Forgetting --no-dev in production builds, which installs all the development tools."
@@ -166,7 +166,7 @@ window.TOPICS.push({
     {
       "id": "pinning-python",
       "title": "Pinning Python with .python-version",
-      "explanation": "To pin means to fix a choice so it does not change unexpectedly. `uv python pin 3.15` writes `3.15` into a file called `.python-version`, and uv then uses that Python version for the project, downloading it if needed.\n\nThe pin is related to `requires-python` in `pyproject.toml`, but they differ: `requires-python` states which versions your project supports, while `.python-version` says which one you actually use day to day. They should agree, so a pin of 3.15 fits `requires-python = \">=3.15\"`.\n\nPrefer pinning only the minor version (3.15) rather than a full patch version like 3.15.2; that way you automatically receive bug-fix releases.",
+      "explanation": "To pin means to fix a choice so it does not change unexpectedly. `uv python pin 3.15` writes `3.15` into a file called `.python-version`, and uv then uses that Python version for the project, downloading it if needed.\n\nIn 3.15.2, 3.15 is the minor version and the final 2 is the patch number, which is a bug-fix release.\n\nThe pin is related to `requires-python` in `pyproject.toml`, but they differ: `requires-python` states which versions your project supports, while `.python-version` says which one you actually use day to day. They should agree, so a pin of 3.15 fits `requires-python = \">=3.15\"`.\n\nPrefer pinning only the minor version (3.15) rather than a full patch version like 3.15.2; that way you automatically receive bug-fix releases.",
       "analogy": "A sign on the workshop door: all work here uses tool model 3.15.",
       "code": [
         {
@@ -174,17 +174,17 @@ window.TOPICS.push({
           "filename": "terminal",
           "source": "uv python pin 3.15\nuv run python --version",
           "output": "Python 3.15.2",
-          "explanation": "The pin command writes .python-version. The second command prints the Python used by the project; the patch number (here 2) depends on what is installed on your machine."
+          "explanation": "The pin command writes .python-version and prints a short confirmation line (not shown; its wording varies by uv version). The second command prints the Python used by the project; the patch number (here 2) depends on what is installed on your machine."
         },
         {
           "language": "python",
           "filename": "check_version.py",
           "source": "import sys\n\nprint(sys.version_info[:2] >= (3, 15))",
           "output": "True",
-          "explanation": "sys.version_info holds the running Python's version numbers; [:2] keeps (major, minor), and tuples compare element by element. Run with uv run check_version.py inside the pinned project."
+          "explanation": "Create a file named check_version.py in the project folder (next to pyproject.toml), paste in this code and save it. sys.version_info holds the running Python's version numbers; [:2] keeps (major, minor), and tuples compare element by element. Run with uv run check_version.py inside the pinned project."
         }
       ],
-      "productionNote": "The team, CI and the Docker image all use the same Python minor version, which removes 'works on my machine' surprises.",
+      "productionNote": "The whole team and every automated build use the same Python minor version, which removes 'works on my machine' surprises.",
       "commonMistakes": [
         "Letting the pin and requires-python disagree, for example pinning 3.14 while requires-python says >=3.15.",
         "Pinning a full patch version unnecessarily, which blocks automatic bug-fix updates."
@@ -196,36 +196,14 @@ window.TOPICS.push({
     }
   ],
   "quiz": [
-    {
-      "question": "Which file records the exact versions of all packages, including dependencies of dependencies?",
-      "options": ["pyproject.toml", "uv.lock", ".python-version", "README.md"],
-      "answerIndex": 1,
-      "explanation": "uv.lock is generated by uv and stores exact versions and hashes of every package. pyproject.toml only states what you asked for."
-    },
-    {
-      "question": "What does uv sync do?",
-      "options": ["Uploads your project to PyPI", "Upgrades every package to the newest version", "Makes .venv match uv.lock exactly", "Deletes uv.lock and creates a new one"],
-      "answerIndex": 2,
-      "explanation": "uv sync installs missing packages and removes extra ones so the environment matches the lock file. It does not upgrade anything by itself."
-    },
-    {
-      "question": "Where does `uv add --dev pytest` put pytest?",
-      "options": ["In the dev group under [dependency-groups]", "In the runtime dependencies list", "In .python-version", "Only in .gitignore"],
-      "answerIndex": 0,
-      "explanation": "The --dev flag adds the package to the dev dependency group, so it is installed for development but skipped by uv sync --no-dev."
-    },
-    {
-      "question": "Should .venv/ be committed to git?",
-      "options": ["Yes, so teammates get packages instantly", "Yes, but only on the main branch", "Only if the project has no dependencies", "No, it is machine-specific and can be rebuilt from uv.lock"],
-      "answerIndex": 3,
-      "explanation": "The virtual environment is generated and tied to one machine. Commit pyproject.toml and uv.lock instead, and let uv sync rebuild .venv."
-    },
-    {
-      "question": "Which command creates a new uv project?",
-      "options": ["uv new-project", "uv init hello-app", "uv sync hello-app", "uv python pin hello-app"],
-      "answerIndex": 1,
-      "explanation": "uv init creates the project folder with pyproject.toml, .python-version, README.md, main.py and .gitignore."
-    }
+    {"question": "Which file records the exact versions of all packages, including dependencies of dependencies?", "options": ["uv.lock", "pyproject.toml", ".python-version", "README.md"], "answerIndex": 0, "explanation": "uv.lock is generated by uv and stores exact versions and hashes of every package. pyproject.toml only states what you asked for."},
+    {"question": "What does uv sync do?", "options": ["Uploads your project to PyPI", "Upgrades every package to the newest version", "Makes .venv match uv.lock exactly", "Deletes uv.lock and creates a new one"], "answerIndex": 2, "explanation": "uv sync installs missing packages and removes extra ones so the environment matches the lock file. It does not upgrade anything by itself."},
+    {"question": "Where does `uv add --dev pytest` put pytest?", "options": ["In the runtime dependencies list of pyproject.toml", "In the .python-version file", "Only in the .gitignore file", "In the dev group under [dependency-groups]"], "answerIndex": 3, "explanation": "The --dev flag adds the package to the dev dependency group, so it is installed for development but skipped by uv sync --no-dev."},
+    {"question": "Should .venv/ be committed to git?", "options": ["Yes, so teammates get every package instantly without installing", "No, it is machine-specific and can be rebuilt from uv.lock", "Yes, but only if it is listed in .gitignore", "Only if the project has no dependencies at all, such as a tiny script"], "answerIndex": 1, "explanation": "The virtual environment is generated and tied to one machine. Commit pyproject.toml and uv.lock instead, and let uv sync rebuild .venv."},
+    {"question": "Which command creates a new uv project?", "options": ["uv new-project", "uv sync hello-app", "uv python pin hello-app", "uv init hello-app"], "answerIndex": 3, "explanation": "uv init creates the project folder with pyproject.toml, .python-version, README.md, main.py and .gitignore."},
+    {"question": "Which file holds the project name, Python requirement and dependency list?", "options": ["pyproject.toml", "uv.lock (the lock file)", ".venv (the virtual environment folder)", ".gitignore (the list of files git skips)"], "answerIndex": 0, "explanation": "pyproject.toml is the project's settings file, with the name, requires-python and dependencies. uv.lock only records exact versions."},
+    {"question": "Which file does `uv python pin 3.15` write?", "options": ["pyproject.toml (the settings file)", ".python-version", "uv.lock (the lock file)", "README.md (the description)"], "answerIndex": 1, "explanation": "The pin command writes the chosen version into .python-version, which uv reads to pick the project's Python."},
+    {"question": "What does `uv remove httpx` do?", "options": ["Deletes httpx from every project on your computer", "Only edits the README.md file and nothing else", "Removes httpx from pyproject.toml, uv.lock and .venv", "Upgrades httpx to the newest version available"], "answerIndex": 2, "explanation": "uv remove undoes uv add: it drops the entry from pyproject.toml, updates uv.lock and uninstalls the package from .venv."}
   ]
 }
 );

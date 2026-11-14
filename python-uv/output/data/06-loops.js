@@ -13,7 +13,7 @@ window.TOPICS.push({
       "id": "for-loops-and-range",
       "title": "for loops and range",
       "explanation": "A `for` loop repeats an indented block of code once for each item in a collection. One pass through the block is called an iteration. In `for ch in \"abc\":`, the variable `ch` takes the value \"a\" on the first iteration, \"b\" on the second, and \"c\" on the third. A string is a collection of characters, so you can loop over it directly.\n\nWhen you just need to repeat something a number of times, or count through numbers, use `range()`. `range(stop)` counts from 0 up to, but not including, `stop`. `range(start, stop, step)` lets you choose where to begin and how big each jump is. So `range(1, 10, 3)` gives 1, 4, 7. The next value would be 10, which is not less than the stop of 10, so it is excluded.\n\nThe stop value is always excluded. That is why `range(5)` gives 0, 1, 2, 3, 4 (five numbers, but no 5). This feels odd at first, but it means `range(n)` always produces exactly `n` values.\n\nDo not add or remove items from a list while you loop over it. The loop keeps its own position, so changing the list underneath it causes skipped items and confusing bugs. Loop over a copy, or build a new list instead.",
-      "analogy": "A teacher calling each name on the attendance register, one by one. The register is the collection, each name called is one iteration, and the teacher stops when the list ends.",
+      "analogy": "A teacher calling each name on the attendance register, one by one. The register is the collection, each name called is one iteration, and the teacher stops when the list ends. With `range`, the teacher just counts seats: `range(5)` gives seats 0 to 4, one per iteration.",
       "code": [
         {
           "language": "python",
@@ -68,7 +68,7 @@ window.TOPICS.push({
     {
       "id": "break-and-continue",
       "title": "break and continue",
-      "explanation": "Sometimes you want to change a loop's normal flow. `break` ends the loop immediately, and the program continues after the loop. `continue` skips the rest of the current iteration and jumps straight to the next one.\n\nIn the example below, even numbers are skipped with `continue`, so the `print` never runs for them. Once `n` is greater than 6, `break` stops the whole loop. That is why 7, 8, and 9 are never reached.\n\nIf loops are nested (one loop inside another), `break` and `continue` affect only the innermost loop they sit in. The outer loop keeps going.\n\nUse these tools sparingly. One or two clear `break` or `continue` lines are fine, but a loop full of them is hard to read.",
+      "explanation": "Sometimes you want to change a loop's normal flow. `break` ends the loop immediately, and the program continues after the loop. `continue` skips the rest of the current iteration and jumps straight to the next one.\n\nIn the example below, even numbers are skipped with `continue`, so the `print` never runs for them. Once `n` is greater than 6, `break` stops the whole loop. That is why 7 is not printed, and 8 and 9 are never reached.\n\nIf loops are nested (one loop inside another), `break` and `continue` affect only the innermost loop they sit in. The outer loop keeps going.\n\nUse these tools sparingly. One or two clear `break` or `continue` lines are fine, but a loop full of them is hard to read.",
       "analogy": "Searching drawers for your keys. `break` is stopping the search the moment you find them. `continue` is skipping a drawer that is locked and moving on to the next one.",
       "code": [
         {
@@ -98,7 +98,7 @@ window.TOPICS.push({
     {
       "id": "enumerate-and-zip",
       "title": "enumerate and zip",
-      "explanation": "Often you need both the position and the value of each item. `enumerate(items)` hands you pairs of (number, item). By default it counts from 0; `start=1` makes it count from 1, which is friendlier for humans. In `for i, name in enumerate(names, start=1):`, the `i, name` part is tuple unpacking. A tuple is a fixed group of values in parentheses, like (1, 'a'), and unpacking means giving each value its own name, so each pair is split into two variables in one step.\n\nWhen you have two related sequences, such as names and scores, `zip(a, b)` walks them side by side and gives you pairs: the first of each, then the second of each, and so on. It stops when the shortest sequence runs out, so extra items in the longer one are silently ignored.\n\nThat silent dropping can hide bugs. If the two sequences should always be the same length, write `zip(a, b, strict=True)`. Then Python raises a `ValueError` when the lengths differ, instead of quietly losing data.\n\nTo see the pairs, wrap zip in `list(...)`, which turns them into a list you can print.\n\nBoth tools replace the older style `for i in range(len(items)):` with `items[i]`, which is longer and easier to get wrong.",
+      "explanation": "Often you need both the position and the value of each item. `enumerate(items)` hands you pairs of (number, item). By default it counts from 0; `start=1` makes it count from 1, which is friendlier for humans.\n\nIn `for i, name in enumerate(names, start=1):`, the `i, name` part is tuple unpacking. A tuple is a fixed group of values in parentheses, like (1, 'a'), and unpacking means giving each value its own name, so each pair is split into two variables in one step.\n\nWhen you have two related sequences, such as names and scores, `zip(a, b)` walks them side by side and gives you pairs: the first of each, then the second of each, and so on. It stops when the shortest sequence runs out, so extra items in the longer one are silently ignored.\n\nThat silent dropping can hide bugs. If the two sequences should always be the same length, write `zip(a, b, strict=True)`. Then Python raises a `ValueError` when the lengths differ, instead of quietly losing data.\n\nTo see the pairs, wrap zip in `list(...)`, which turns them into a list you can print.\n\nBoth tools replace the older style `for i in range(len(items)):` with `items[i]`, which is longer and easier to get wrong.",
       "analogy": "`enumerate` is handing out numbered race bibs to runners as they line up. `zip` is pairing left and right shoes from two piles, one from each pile at a time.",
       "code": [
         {
@@ -142,9 +142,9 @@ window.TOPICS.push({
       "question": "What does `continue` do inside a loop?",
       "options": [
         "Skips the rest of the current iteration and moves to the next one",
-        "Ends the loop completely",
-        "Restarts the loop from the very first item",
-        "Does nothing; it is just a placeholder"
+        "Ends the loop completely and moves on to the code after it",
+        "Restarts the loop from the very first item all over again",
+        "Does nothing at all; it is just a placeholder for empty code"
       ],
       "answerIndex": 0,
       "explanation": "`continue` jumps to the next iteration. Ending the loop is the job of `break`."
@@ -152,12 +152,12 @@ window.TOPICS.push({
     {
       "question": "What happens if a `while` loop's condition never becomes False?",
       "options": [
-        "Python stops it automatically after 1000 iterations",
-        "It runs once and then ends",
-        "Python raises a SyntaxError",
-        "It runs forever (an infinite loop) until you stop it, for example with Ctrl+C"
+        "It runs forever (an infinite loop) until you stop it, for example with Ctrl+C",
+        "Python stops it automatically after about 1000 iterations to be safe",
+        "It runs exactly once and then the loop ends by itself",
+        "Python refuses to start the program and raises a SyntaxError"
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "explanation": "Python does not limit loop iterations. A condition that never turns false makes an infinite loop that you must interrupt."
     },
     {
@@ -165,11 +165,33 @@ window.TOPICS.push({
       "options": [
         "[(1, 'a'), (2, 'b'), (3, None)]",
         "[(1, 'a'), (2, 'b')]",
-        "A ValueError is raised",
+        "A TypeError is raised",
         "[(1, 'a'), (2, 'b'), (3, 'b')]"
       ],
       "answerIndex": 1,
       "explanation": "zip stops at the shortest input. \"ab\" has 2 characters, so only 2 pairs are produced. An error would only be raised with strict=True."
+    },
+    {
+      "question": "What does `list(enumerate([\"a\", \"b\"]))` return?",
+      "options": [
+        "[(1, 'a'), (2, 'b')]",
+        "['a', 'b']",
+        "[('a', 0), ('b', 1)]",
+        "[(0, 'a'), (1, 'b')]"
+      ],
+      "answerIndex": 3,
+      "explanation": "enumerate counts from 0 by default and gives (number, item) pairs."
+    },
+    {
+      "question": "Which statement ends a loop immediately?",
+      "options": [
+        "continue",
+        "stop",
+        "exit",
+        "break"
+      ],
+      "answerIndex": 3,
+      "explanation": "break ends the loop; continue only skips to the next iteration."
     }
   ]
 });

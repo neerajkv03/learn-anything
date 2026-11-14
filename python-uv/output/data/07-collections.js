@@ -44,7 +44,7 @@ window.TOPICS.push({
           "explanation": "x, y = point unpacks the two items into x and y. point[0] reads the first item, and len(rgb) counts three colour values. Because of the trailing comma, single is a tuple, and type(single).__name__ gives its type's name as text: type() gives a value's kind, and .__name__ gives that kind's name as text."
         }
       ],
-      "productionNote": "Functions often return several values as a tuple, and the caller unpacks them. Because tuples cannot change, a tuple of several parts (like (\"user\", 42)) can be used as a dictionary key, which a list cannot.",
+      "productionNote": "Functions often return several values as a tuple, and the caller unpacks them. Because tuples cannot change, a tuple of several parts (like (\"user\", 42)) can be used as a dictionary key (dictionaries are covered in the next section), which a list cannot.",
       "commonMistakes": [
         "Writing (5) and expecting a tuple. It is just the int 5. Write (5,) with the comma.",
         "Trying to change an item with point[0] = 1. This raises a TypeError because tuples are immutable. Build a new tuple instead."
@@ -56,7 +56,7 @@ window.TOPICS.push({
     {
       "id": "dictionaries",
       "title": "Dictionaries",
-      "explanation": "A dictionary (dict) stores key-value pairs inside curly braces: {\"name\": \"Ada\"}. You look up a value by its key instead of by a position number. Keys must be unique and immutable, so strings, numbers, and tuples work, but lists do not. Dictionaries remember the order in which you added keys.\n\nuser[\"name\"] reads a value, but raises a KeyError (Python's error for a missing key) if the key does not exist. user.get(\"phone\", \"n/a\") is the safe version: it returns the default you give (or None if you give none) when the key is missing. You add or update an entry by assignment: user[\"email\"] = \"...\" or user[\"age\"] += 1. Use del user[\"email\"] to remove one.\n\nThe operator in checks keys, not values. The methods .keys(), .values(), and .items() give you the keys, the values, or the (key, value) pairs. Looping with for key, value in user.items() is the usual way to walk through every entry.",
+      "explanation": "A dictionary (dict) stores key-value pairs inside curly braces: {\"name\": \"Ada\"}. You look up a value by its key instead of by a position number. Keys must be unique and unchangeable all the way through, so strings, numbers, and tuples of those work, but lists (and tuples that contain a list) do not. Dictionaries remember the order in which you added keys.\n\nuser[\"name\"] reads a value, but raises a KeyError (Python's error for a missing key) if the key does not exist. user.get(\"phone\", \"n/a\") is the safe version: it returns the default you give (or None if you give none) when the key is missing. You add or update an entry by assignment: user[\"email\"] = \"...\" or user[\"age\"] += 1. Use del user[\"email\"] to remove one.\n\nThe operator in checks keys, not values. The methods .keys(), .values(), and .items() give you the keys, the values, or the (key, value) pairs. Looping with for key, value in user.items() is the usual way to walk through every entry.",
       "analogy": "A phone book: you look up a name (the key) to find a number (the value). You never search by flipping to page 47.",
       "code": [
         {
@@ -156,6 +156,18 @@ window.TOPICS.push({
       "options": ["[1, 3]", "[3, 1]", "None", "An error"],
       "answerIndex": 2,
       "explanation": "sort() sorts the list in place and returns None, so print shows None. Use sorted(nums) if you want a new sorted list back."
+    },
+    {
+      "question": "Which line creates a tuple holding one item?",
+      "options": ["(5,)", "(5)", "[5]", "set(5)"],
+      "answerIndex": 0,
+      "explanation": "The trailing comma is what makes a tuple. (5) is just the number 5 in parentheses."
+    },
+    {
+      "question": "Which collection answers 'is this value present?' fastest when it holds a million items?",
+      "options": ["list", "tuple", "a list of pairs", "set"],
+      "answerIndex": 3,
+      "explanation": "Set (and dict) membership checks are near-instant, while a list checks item by item."
     }
   ]
 }

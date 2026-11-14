@@ -10,7 +10,7 @@ window.TOPICS.push({
     {
       "id": "adding-fastapi-standard",
       "title": "Adding fastapi[standard] with uv add",
-      "explanation": "FastAPI is a Python web framework for building web APIs (programs that other programs talk to over HTTP, as you saw in the HTTP basics topic). You describe each endpoint (one URL your API answers) as a normal function with type hints, and FastAPI uses Pydantic (from the previous topic) to check and convert the data that arrives.\n\nA framework alone cannot receive network traffic, so you also need a server: a program that listens on a network port (a numbered entry point on your computer that network requests arrive at) and passes each HTTP request to your code. FastAPI works with Uvicorn, an ASGI server. ASGI is the standard interface that lets asynchronous Python web apps talk to servers. You do not need to know its details now; just know that Uvicorn is the part that accepts connections.\n\nYou install everything at once with the extra called `standard`. An extra is a named group of optional add-ons that a package offers; you ask for it with square brackets after the package name. `fastapi[standard]` installs FastAPI plus the `fastapi` command-line tool, Uvicorn, HTTPX (an HTTP client library that the testing topic will use) and a few other helpers.\n\nOpen a terminal, move to the folder where you keep projects, and run the commands below. `uv init shop-api` creates a new project folder (see the uv projects topic), `cd shop-api` moves into it, and `uv add` installs the package and records it in `pyproject.toml` and `uv.lock`. Put quotes around `\"fastapi[standard]\"`: some shells, such as zsh, treat square brackets as a filename pattern and would fail.",
+      "explanation": "FastAPI is a Python web framework for building web APIs (programs that other programs talk to over HTTP, as you saw in the HTTP basics topic). You describe each endpoint (one URL your API answers) as a normal function with type hints, and FastAPI uses Pydantic (from the previous topic) to check and convert the data that arrives.\n\nA framework alone cannot receive network traffic, so you also need a server: a program that listens on a network port (a numbered entry point on your computer that network requests arrive at) and passes each HTTP request to your code. FastAPI works with Uvicorn, an ASGI server. ASGI is the standard interface that lets Python web apps that handle work asynchronously (able to serve many requests at once without waiting on each one) talk to servers. You do not need to know its details now; just know that Uvicorn is the part that accepts connections.\n\nYou install everything at once with the extra called `standard`. An extra is a named group of optional add-ons that a package offers; you ask for it with square brackets after the package name. `fastapi[standard]` installs FastAPI plus the `fastapi` command-line tool, Uvicorn, HTTPX (an HTTP client library that the testing topic will use) and a few other helpers.\n\nOpen a terminal, move to the folder where you keep projects, and run the commands below. `uv init shop-api` creates a new project folder (see the uv projects topic), `cd shop-api` moves into it, and `uv add` installs the package and records it in `pyproject.toml` and `uv.lock`. Put quotes around `\"fastapi[standard]\"`: some shells (the programs that read your terminal commands), such as zsh on macOS, treat square brackets as a filename pattern and would fail.",
       "analogy": "Think of a restaurant. FastAPI is the recipe book and the kitchen rules: it says what each dish (endpoint) is and how orders are checked. Uvicorn is the front door and the waiters: it lets customers (requests) in and carries the finished dishes (responses) back out. You need both to run a restaurant.",
       "code": [
         {
@@ -49,7 +49,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/\")\ndef read_root() -> dict[str, str]:\n    return {\"message\": \"Hello World\"}",
-          "output": "GET /         -> 200  {\"message\":\"Hello World\"}\nGET /missing  -> 404  {\"detail\":\"Not Found\"}",
+          "output": "GET /          ->  200  {\"message\":\"Hello World\"}\nGET /missing   ->  404  {\"detail\":\"Not Found\"}",
           "explanation": "FastAPI() creates the app. The decorator registers read_root for GET requests to /. The returned dict becomes JSON. The output lines are what the browser or /docs shows for each request (status code, then body), not text printed by Python. /missing has no path operation, so FastAPI answers 404 itself."
         }
       ],
@@ -96,21 +96,21 @@ window.TOPICS.push({
     {
       "id": "interactive-docs",
       "title": "Interactive docs (/docs)",
-      "explanation": "FastAPI builds a description of your API automatically from your code. This description follows a standard called OpenAPI: a machine-readable (JSON) document that lists every path, its parameters and its responses. You can see it at `/openapi.json`. A schema is just such a structured description of data or an API.\n\nFrom that schema FastAPI serves two web pages. `/docs` is Swagger UI, a page where you can click an endpoint, press \"Try it out\", fill in values and press \"Execute\" to send a real request and see the status code and response. `/redoc` is a read-only reference page for the same API.\n\nYou control the header of the docs with `FastAPI(title=..., version=...)`. The first line of a function's docstring (the text in triple quotes right under `def`, from the functions topic) shows up as the endpoint's description. Because the docs come from the code, they are always up to date.\n\nStart the app with `uv run fastapi dev main.py` and open `http://127.0.0.1:8000/docs`. Using `/docs`, you can test every endpoint in this topic without writing any client code.",
+      "explanation": "FastAPI builds a description of your API automatically from your code. This description follows a standard called OpenAPI: a machine-readable (JSON) document that lists every path, its parameters and its responses. You can see it at `/openapi.json`. A schema is just such a structured description of data or an API.\n\nFrom that schema FastAPI serves two web pages. `/docs` is Swagger UI, a page where you can click an endpoint, press \"Try it out\", fill in values and press \"Execute\" to send a real request and see the status code and response. `/redoc` is a read-only reference page for the same API.\n\nYou control the header of the docs with `FastAPI(title=..., version=...)`. A function's docstring (the text in triple quotes right under `def`, from the functions topic) shows up as the endpoint's description. Because the docs come from the code, they are always up to date.\n\nStart the app with `uv run fastapi dev main.py` and open `http://127.0.0.1:8000/docs`. Using `/docs`, you can test every endpoint in this topic without writing any client code.",
       "analogy": "The docs page is an automatic menu that is always up to date, with a \"taste sample\" button next to every dish. When the kitchen adds a dish, the menu changes by itself and nobody has to reprint it.",
       "code": [
         {
           "language": "python",
           "filename": "main.py",
           "source": "from fastapi import FastAPI\n\napp = FastAPI(title=\"Shop API\", version=\"1.0.0\")\n\n\n@app.get(\"/ping\")\ndef ping() -> dict[str, bool]:\n    \"\"\"Check the API is alive.\"\"\"\n    return {\"ok\": True}",
-          "output": "GET /ping          -> 200  {\"ok\":true}\nGET /openapi.json  -> 200  JSON whose \"info\" part is {\"title\":\"Shop API\",\"version\":\"1.0.0\"}",
+          "output": "GET /ping           ->  200  {\"ok\":true}\nGET /openapi.json   ->  200  JSON whose \"info\" part is {\"title\":\"Shop API\",\"version\":\"1.0.0\"}",
           "explanation": "title and version appear at the top of /docs. The docstring becomes the description of GET /ping. Python's True becomes JSON's true. The /openapi.json response is long, so only its \"info\" part is shown."
         }
       ],
-      "productionNote": "The generated docs are how frontend and mobile teams learn your API contract, and tools can generate client code from /openapi.json. If an API is private, you can turn the pages off with FastAPI(docs_url=None).",
+      "productionNote": "The generated docs are how frontend and mobile teams learn your API contract, and tools can generate client code from /openapi.json. If an API is private, you can turn all three off with FastAPI(docs_url=None, redoc_url=None, openapi_url=None). Passing only docs_url=None removes the Swagger page but leaves /redoc and /openapi.json public.",
       "commonMistakes": [
         "Thinking the documentation must be written by hand. FastAPI generates it from your type hints and function signatures.",
-        "Leaving the docs public on an API that should stay private. Pass docs_url=None to FastAPI() to disable the Swagger page."
+        "Leaving the docs public on an API that should stay private. Pass docs_url=None to FastAPI() to disable the Swagger page, and also redoc_url=None and openapi_url=None, otherwise /redoc and /openapi.json still show the whole API."
       ],
       "sources": [
         { "title": "FastAPI tutorial: Interactive API docs", "url": "https://fastapi.tiangolo.com/tutorial/first-steps/#interactive-api-docs" },
@@ -127,14 +127,14 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/items/{item_id}\")\ndef read_item(item_id: int) -> dict[str, int]:\n    return {\"item_id\": item_id}",
-          "output": "GET /items/42   -> 200  {\"item_id\":42}\nGET /items/foo  -> 422  body contains \"type\":\"int_parsing\" and \"loc\":[\"path\",\"item_id\"]",
+          "output": "GET /items/42    ->  200  {\"item_id\":42}\nGET /items/foo   ->  422  body contains \"type\":\"int_parsing\" and \"loc\":[\"path\",\"item_id\"]",
           "explanation": "The 42 in the URL is converted to an int before read_item runs. The text foo cannot become an int, so FastAPI rejects the request itself. For the 422 only the key fields are shown; the full message text can vary between versions."
         },
         {
           "language": "python",
           "filename": "main.py",
           "source": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/users/me\")\ndef read_current_user() -> dict[str, str]:\n    return {\"user\": \"current\"}\n\n\n@app.get(\"/users/{user_id}\")\ndef read_user(user_id: int) -> dict[str, int]:\n    return {\"user_id\": user_id}",
-          "output": "GET /users/me  -> 200  {\"user\":\"current\"}\nGET /users/7   -> 200  {\"user_id\":7}",
+          "output": "GET /users/me   ->  200  {\"user\":\"current\"}\nGET /users/7    ->  200  {\"user_id\":7}",
           "explanation": "The fixed path /users/me is declared first, so it wins for that exact URL. All other /users/<number> URLs fall through to the parameter path. If you swapped the two functions, /users/me would return 422."
         }
       ],
@@ -158,7 +158,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/items/\")\ndef list_items(\n    skip: int = 0, limit: int = 10, q: str | None = None\n) -> dict[str, int | str | None]:\n    return {\"skip\": skip, \"limit\": limit, \"q\": q}",
-          "output": "GET /items/?skip=5&q=pen  -> 200  {\"skip\":5,\"limit\":10,\"q\":\"pen\"}\nGET /items/               -> 200  {\"skip\":0,\"limit\":10,\"q\":null}",
+          "output": "GET /items/?skip=5&q=pen   ->  200  {\"skip\":5,\"limit\":10,\"q\":\"pen\"}\nGET /items/                ->  200  {\"skip\":0,\"limit\":10,\"q\":null}",
           "explanation": "None of the three parameters appear in the path, so all are query parameters, and all have defaults, so all are optional. In the first request skip is converted from \"5\" to 5, limit keeps its default and q is the text pen. In the second request every default is used, and None becomes JSON null."
         }
       ],
@@ -176,31 +176,31 @@ window.TOPICS.push({
     {
       "question": "Which command reloads automatically when you save a file, and which one is meant for production?",
       "options": [
-        "uv run fastapi dev main.py reloads; uv run fastapi run main.py is for production",
         "uv run fastapi run main.py reloads; uv run fastapi dev main.py is for production",
-        "uv add fastapi reloads; uv sync is for production",
-        "Both reload; the difference is only the port number"
+        "Both reload; the difference is only the port number",
+        "uv run fastapi dev main.py reloads; uv run fastapi run main.py is for production",
+        "uv add fastapi reloads; uv sync is for production"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "explanation": "fastapi dev watches files, reloads on save and listens on localhost only. fastapi run does not reload and listens on all interfaces, which suits deployment."
     },
     {
       "question": "A route is declared as /items/{item_id} with item_id: int. What does FastAPI answer for GET /items/abc?",
       "options": [
-        "200 with {\"item_id\":\"abc\"}",
-        "404 with {\"detail\":\"Not Found\"}",
         "422 with a detail list describing the invalid path value",
-        "Your function runs and raises a crash with a 500 error"
+        "200 with {\"item_id\":\"abc\"} because the text is passed along",
+        "404 with {\"detail\":\"Not Found\"} because the route is missing",
+        "Your function runs, hits a conversion crash and answers with a 500 error"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "explanation": "The text abc cannot be converted to int, so FastAPI rejects the request with 422 before your function is called. The route does exist, so it is not a 404."
     },
     {
       "question": "In def list_items(skip: int = 0, limit: int = 10), the path is /items/. What kind of parameter is limit?",
       "options": [
-        "A required path parameter",
-        "A required query parameter",
-        "An optional path parameter",
+        "A required path parameter that must appear in the URL",
+        "A required query parameter that the caller must always send",
+        "An optional path parameter that can be left out of the URL",
         "An optional query parameter that defaults to 10"
       ],
       "answerIndex": 3,
@@ -220,13 +220,35 @@ window.TOPICS.push({
     {
       "question": "Why must /users/me be declared before /users/{user_id}?",
       "options": [
-        "Because alphabetical order is required for paths",
-        "Because FastAPI only allows one path operation per file",
-        "Because functions without parameters must always come first",
+        "Because FastAPI requires every path to be declared in alphabetical order",
+        "Because FastAPI only allows one path operation per file, so order is fixed",
+        "Because functions without parameters must always come before all others",
         "Because the first matching path wins, so otherwise me would match {user_id} and fail int conversion with a 422"
       ],
       "answerIndex": 3,
       "explanation": "FastAPI tries path operations in declaration order. The parameter path would swallow the text me, so the fixed path has to come first."
+    },
+    {
+      "question": "Why put quotes around the package name in `uv add \"fastapi[standard]\"`?",
+      "options": [
+        "So the shell does not treat the square brackets as a file pattern",
+        "So the install runs faster than it would without any quotes",
+        "So uv picks a newer Python version for the whole project",
+        "So uv skips writing pyproject.toml when it adds the package"
+      ],
+      "answerIndex": 0,
+      "explanation": "Some shells, such as zsh, read square brackets as a filename pattern and fail. Quotes pass the text to uv unchanged."
+    },
+    {
+      "question": "A client requests a URL that no path operation handles. What does FastAPI return?",
+      "options": [
+        "200 with an empty body",
+        "500 with a traceback",
+        "404 with {\"detail\":\"Not Found\"}",
+        "422 with a detail list"
+      ],
+      "answerIndex": 2,
+      "explanation": "With no matching path operation, FastAPI answers 404 with {\"detail\":\"Not Found\"}. A 422 is for a matching route whose input is invalid."
     }
   ]
 });

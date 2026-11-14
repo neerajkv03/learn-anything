@@ -1,7 +1,7 @@
-# Python (uv) + FastAPI & SQLite Learning Path (vPython 3.15.2 + uv 0.13.7 + FastAPI 0.162.5 + Pydantic 2.14.3 + Uvicorn 0.54.0 + SQLModel 0.0.49 + HTTPX 0.28.1 + SQLite 3.54.1 + pydantic-settings 2.16.2 + pwdlib 0.3.1 + PyJWT 2.15.1)
+# Python (uv) + FastAPI & SQLite Learning Path (vPython 3.15.2 + uv 0.13.7 + FastAPI 0.162.5 + Pydantic 2.14.3 + Uvicorn 0.54.0 + SQLModel 0.0.49 + HTTPX 0.28.1 + SQLite 3.54.1 + pydantic-settings 2.16.2 + pwdlib 0.3.1 + PyJWT 2.15.1 + Alembic 1.20.1 + pytest-cov 7.1.0)
 
-Version checked: Python 3.15.2 + uv 0.13.7 on 2026-11-11 via https://www.python.org/downloads/ and https://github.com/astral-sh/uv/releases; FastAPI 0.162.5, Pydantic 2.14.3, Uvicorn 0.54.0, SQLModel 0.0.49, HTTPX 0.28.1 on 2026-11-12 via https://pypi.org/project/<name>/; SQLite 3.54.1 on 2026-11-12 via https://www.sqlite.org/changes.html; pydantic-settings 2.16.2, pwdlib 0.3.1, PyJWT 2.15.1 on 2026-11-12 via https://pypi.org/project/<name>/
-Approved: list ✓ | plans ✓
+Version checked: Python 3.15.2 + uv 0.13.7 on 2026-11-11 via https://www.python.org/downloads/ and https://github.com/astral-sh/uv/releases; FastAPI 0.162.5, Pydantic 2.14.3, Uvicorn 0.54.0, SQLModel 0.0.49, HTTPX 0.28.1 on 2026-11-12 via https://pypi.org/project/<name>/; SQLite 3.54.1 on 2026-11-12 via https://www.sqlite.org/changes.html; pydantic-settings 2.16.2, pwdlib 0.3.1, PyJWT 2.15.1 on 2026-11-12 via https://pypi.org/project/<name>/; Alembic 1.20.1, pytest-cov 7.1.0 on 2026-11-14 via https://pypi.org/pypi/<name>/json
+Approved: list ✓ | plans ✗
 App: done | App verified: done
 
 | # | Topic | Slug | Sub-topics | Plan | Content | Verified |
@@ -41,3 +41,12 @@ App: done | App verified: done
 | 33 | Authentication Basics | 33-fastapi-auth | Authentication vs authorization; OAuth2PasswordBearer and the Authorization header; Password hashing (pwdlib); JWT access tokens (PyJWT); Current-user dependency | done | done | done |
 | 34 | Testing FastAPI Apps | 34-fastapi-testing | TestClient basics; Testing status codes and JSON; Overriding dependencies; In-memory SQLite test database; Fixtures for client and session | done | done | done |
 | 35 | Async & Deployment | 35-fastapi-async-deploy | async def vs def endpoints; fastapi run and workers; Docker image with uv; SQLite in production (WAL, single writer, backups); Health-check endpoint | done | done | done |
+| 36 | Interactive Input & Debugging | 36-input-debugging | Reading input with input(); Validating typed input in a loop; Reading a traceback step by step; breakpoint() and the pdb debugger; Debugging with logging instead of print | todo | todo | todo |
+| 37 | Relational Data in SQLite | 37-sqlite-relations | DELETE and safe WHERE clauses; One-to-many table design; Foreign keys and PRAGMA foreign_keys; JOIN queries; ON DELETE CASCADE; Indexes | todo | todo | todo |
+| 38 | SQLModel Relationships | 38-sqlmodel-relationships | Foreign key fields; Relationship() and back_populates; Creating linked rows; Reading related data in endpoints; Nested response models; 201 Created for create endpoints | todo | todo | todo |
+| 39 | Calling APIs with HTTPX | 39-httpx-client | Adding httpx and a first GET; Query params, headers and JSON bodies; Status checks with raise_for_status; Timeouts and error handling; Reusing a Client; AsyncClient with asyncio.gather | todo | todo | todo |
+| 40 | Errors & Logging in FastAPI | 40-fastapi-errors-logging | Custom exception classes for an API; Exception handlers (@app.exception_handler); Customising the 422 validation response; Logging inside a FastAPI app; Request-logging middleware | todo | todo | todo |
+| 41 | Database Migrations with Alembic | 41-alembic-migrations | Why create_all is not enough; alembic init and configuration; Autogenerating a migration; upgrade and downgrade; Migrations in the deploy workflow | todo | todo | todo |
+| 42 | Users in the Database & Roles | 42-fastapi-users-roles | User table model; Registration endpoint with password hashing; Login against the database; Role-based authorization dependency; Owner-only access to resources | todo | todo | todo |
+| 43 | Advanced Testing | 43-testing-advanced | monkeypatch for environment variables and attributes; Mocking with unittest.mock; Faking HTTP calls with httpx.MockTransport; Coverage with pytest-cov; Testing protected endpoints end to end | todo | todo | todo |
+| 44 | Capstone: Task Tracker API | 44-capstone-tasks-api | Project setup and layout; Models, database and migrations; CRUD routers; Auth and ownership; Tests and coverage; Docker image and deploy checklist | todo | todo | todo |

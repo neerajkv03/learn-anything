@@ -4,7 +4,7 @@ window.TOPICS.push({
   "order": 21,
   "title": "Code Quality Tooling",
   "version": "Python 3.15.2 + uv 0.13.7",
-  "summary": "Learn to keep a project clean with automatic tools: Ruff to lint and format, and mypy to check types. You will also learn where each tool should be installed with uv and how to configure everything in one pyproject.toml file.",
+  "summary": "Learn to keep a project clean with automatic tools: Ruff to lint (check for likely mistakes) and format (fix the layout), and mypy to check types. You will also learn where each tool should be installed with uv and how to configure everything in one pyproject.toml file.",
   "prerequisites": [
     "20-testing-pytest"
   ],
@@ -12,7 +12,7 @@ window.TOPICS.push({
     {
       "id": "linting-with-ruff",
       "title": "Linting with Ruff",
-      "explanation": "A linter is a program that reads your code without running it and points out likely bugs and style problems, such as an import you never use or a name that does not exist. Because it never runs the code, it is quick and safe to use on any file.\n\nRuff is a linter made by Astral, the same team that makes uv, and it is very fast. In a uv project you run it with `uv run ruff check .` (the dot means \"this folder and everything inside it\"). Each finding shows the file, line, column, a rule code like F401, and a message.\n\nSome problems are safe for Ruff to repair itself. A finding marked `[*]` is fixable, and `uv run ruff check --fix .` applies those fixes for you. Review the changes afterwards, as you would any edit.\n\nIn a team, linting runs in CI (an automated server that checks every change) and often in pre-commit (a hook that runs before each commit). A pull request (a request to merge your changes into the shared code) must pass it before it can be merged.",
+      "explanation": "A linter is a program that reads your code without running it and points out likely bugs and style problems, such as an import you never use or a name that does not exist. Because it never runs the code, it is quick and safe to use on any file.\n\nRuff is a linter made by Astral, the same team that makes uv, and it is very fast. First add it to your project as a development tool with `uv add --dev ruff`. Then you run it with `uv run ruff check .` (the dot means \"this folder and everything inside it\"). Each finding shows the file, line, column, a rule code like F401, and a message.\n\nSome problems are safe for Ruff to repair itself. A finding marked `[*]` is fixable, and `uv run ruff check --fix .` applies those fixes for you. Review the changes afterwards, as you would any edit.\n\nIn a team, linting runs in CI (an automated server that checks every change) and often in pre-commit (an automatic check that runs before each commit, where a commit is one saved snapshot of your changes in git, the version-history tool). A pull request (a request to merge your changes into the shared code) must pass it before it can be merged.",
       "analogy": "A proof-reader marking errors in red before the book goes to print.",
       "code": [
         {
@@ -25,9 +25,9 @@ window.TOPICS.push({
         {
           "language": "bash",
           "filename": "terminal",
-          "source": "uv run ruff check messy.py",
-          "output": "messy.py:1:8: F401 [*] `os` imported but unused\nFound 1 error.\n[*] 1 fixable with the `--fix` option.",
-          "explanation": "Ruff reports rule F401 at line 1, column 8, and says it can fix it. The exact layout of this output varies between Ruff versions. Add `--fix` to remove the unused import automatically."
+          "source": "uv run ruff check --output-format concise messy.py",
+          "output": "messy.py:1:8: F401 [*] `os` imported but unused\nFound 1 error.\n[*] 1 fixable with `--fix`.",
+          "explanation": "Ruff reports rule F401 at line 1, column 8, and says it can fix it. `--output-format concise` prints one line per finding; without it, Ruff prints a longer view that shows the source line with the problem underlined. The exact wording varies between Ruff versions. Add `--fix` to remove the unused import automatically."
         }
       ],
       "productionNote": "Run `ruff check` in CI and in pre-commit so every pull request must pass. Start with a small set of rules and grow it over time.",
@@ -76,7 +76,7 @@ window.TOPICS.push({
       ],
       "productionNote": "Formatting is automatic and non-negotiable on most teams: run it before committing and check it in CI.",
       "commonMistakes": [
-        "Using two formatters (for example Black and Ruff) with different settings, so they keep undoing each other.",
+        "Using two formatters (for example Black, another code formatter, and Ruff) with different settings, so they keep undoing each other.",
         "Arguing about style by hand in reviews instead of letting the formatter decide."
       ],
       "sources": [
@@ -119,7 +119,7 @@ window.TOPICS.push({
     {
       "id": "uvx-vs-uv-tool-install",
       "title": "uvx vs uv tool install",
-      "explanation": "uv gives you three ways to get a command-line tool such as Ruff. `uvx ruff check` (short for `uv tool run`) runs the tool in a temporary, cached environment. Nothing stays installed on your PATH, so it is ideal for a one-off try.\n\n`uv tool install ruff` installs the tool permanently so you can type `ruff` anywhere. It lives in its own isolated environment, separate from your projects. Use `uv tool list` to see installed tools and `uv tool upgrade ruff` to update one.\n\nThe third way is a project dev dependency, which pins the version in `uv.lock` for the whole team. The rule of thumb: project checks use a dev dependency, personal utilities use `uv tool install`, and try-once use `uvx`.\n\nNote that tools run by `uvx` or installed with `uv tool install` do not see your project's installed packages. Tools that need them, like mypy and pytest, should run with `uv run`.",
+      "explanation": "uv gives you three ways to get a command-line tool such as Ruff. `uvx ruff check` (short for `uv tool run`) runs the tool in a temporary, cached environment. Nothing stays installed on your PATH (the list of folders your terminal searches for commands), so it is ideal for a one-off try.\n\n`uv tool install ruff` installs the tool permanently so you can type `ruff` anywhere. It lives in its own isolated environment, separate from your projects. Use `uv tool list` to see installed tools and `uv tool upgrade ruff` to update one.\n\nThe third way is a project dev dependency, which pins (locks to one exact version) the version in `uv.lock` for the whole team. The rule of thumb: project checks use a dev dependency, personal utilities use `uv tool install`, and try-once use `uvx`.\n\nNote that tools run by `uvx` or installed with `uv tool install` do not see your project's installed packages. Tools that need them, like mypy and pytest, should run with `uv run`.",
       "analogy": "Renting a tool for a day (uvx), buying one for your own garage (tool install), or the company-issued kit everyone shares (dev dependency).",
       "code": [
         {
@@ -192,12 +192,12 @@ window.TOPICS.push({
     {
       "question": "What does `ruff format --check` do in CI?",
       "options": [
-        "Rewrites every file in place",
-        "Fails if any file would be changed by formatting, without changing files",
+        "Rewrites every file in place so the layout matches the configured style rules",
         "Runs the type checker",
-        "Fixes lint errors automatically"
+        "Fixes lint errors automatically",
+        "Fails if any file would be changed by formatting, without changing files"
       ],
-      "answerIndex": 1,
+      "answerIndex": 3,
       "explanation": "`--check` only reports whether files need formatting and exits with an error if they do, so CI blocks unformatted code."
     },
     {
@@ -221,6 +221,28 @@ window.TOPICS.push({
       ],
       "answerIndex": 2,
       "explanation": "`pyproject.toml` is the single source of truth for tool settings, with one `[tool.<name>]` section per tool."
+    },
+    {
+      "question": "What does `uv run mypy .` check?",
+      "options": [
+        "That the code is formatted neatly",
+        "That all of the tests in the project run and pass when you run them",
+        "That every import is installed",
+        "That values match the type hints, without running the code"
+      ],
+      "answerIndex": 3,
+      "explanation": "mypy reads your code and compares values against the type hints, without running the program. Formatting, tests and installs are checked by other tools."
+    },
+    {
+      "question": "What does `uv run ruff check --fix .` do?",
+      "options": [
+        "Repairs the problems Ruff marks as safely fixable",
+        "Only lists problems",
+        "Reformats the layout of every file to match one consistent style",
+        "Deletes files with errors"
+      ],
+      "answerIndex": 0,
+      "explanation": "`--fix` applies the automatic repairs for findings marked fixable and still reports the rest. Layout rewriting is the job of `ruff format`."
     }
   ]
 });

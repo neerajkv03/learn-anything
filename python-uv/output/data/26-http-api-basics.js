@@ -10,7 +10,7 @@ window.TOPICS.push({
     {
       "id": "clients-servers-requests-responses",
       "title": "Clients, servers, requests and responses",
-      "explanation": "An API (Application Programming Interface) is a way for one program to ask another program to do something. A web API is an API that other programs reach over a network, such as the internet. For example, a weather app on your phone asks a weather service for today's forecast.\n\nThe program that asks is the client. A client can be a browser, a phone app, or a Python script. The program that answers is the server. It waits for messages, runs some code, and sends a reply.\n\nHTTP (HyperText Transfer Protocol) is the set of rules both sides follow for this conversation. A protocol is just an agreed format for messages, like agreeing that letters have an address at the top.\n\nThe client sends a request. A request has a method (what to do, covered in the next sub-topic), a URL (where to do it), headers (labelled extra information), and an optional body (the data being sent).\n\nThe server sends back a response. A response has a status code (a number saying how it went), headers, and an optional body.\n\nThe example below fakes a server with a plain function, so no network is needed. It takes a method and a path, and returns a status code plus a dictionary. Real servers do the same job, just with real network messages. Note that FastAPI, the framework used later in this course, answers an unknown path with exactly `{\"detail\": \"Not Found\"}`, which is the same reply this fake server gives.",
+      "explanation": "An API (Application Programming Interface) is a way for one program to ask another program to do something. A web API is an API that other programs reach over a network, such as the internet. For example, a weather app on your phone asks a weather service for today's forecast.\n\nThe program that asks is the client. A client can be a browser, a phone app, or a Python script. The program that answers is the server. It waits for messages, runs some code, and sends a reply.\n\nHTTP (HyperText Transfer Protocol) is the set of rules both sides follow for this conversation. A protocol is just an agreed format for messages, like agreeing that letters have an address at the top.\n\nThe client sends a request. A request has a method (what to do, covered in the next sub-topic), a URL (where to do it), headers (labelled extra information), and an optional body (the data being sent).\n\nThe server sends back a response. A response has a status code (a number saying how it went), headers, and an optional body.\n\nThe example below fakes a server with a plain function, so no network is needed. It takes a method and a path, and returns a status code plus a dictionary. Real servers do the same job, just with real network messages. Note that FastAPI, the framework used later in this course, answers an unknown path with `{\"detail\":\"Not Found\"}`, the same message this fake server gives (FastAPI just leaves out the space).",
       "analogy": "A restaurant. The customer (client) gives an order to the waiter (the request). The kitchen (server) prepares it, and the waiter brings back either the dish or \"sorry, that is not on the menu\" (the response). The customer never enters the kitchen; they only use the agreed way of ordering.",
       "code": [
         {
@@ -106,7 +106,7 @@ window.TOPICS.push({
     {
       "id": "json-bodies-headers",
       "title": "JSON bodies and headers",
-      "explanation": "The body is the data payload of a request or response. Most web APIs use JSON for it, the text format you met in topic 14 with `json.dumps` and `json.loads`.\n\nHeaders are labelled pieces of metadata (information about the message) sent alongside the body. Three are worth knowing now. `Content-Type: application/json` says what kind of data the body holds. `Accept` says what kind of data the client wants back. `Authorization` carries credentials; topic 33 covers it. Header names are case-insensitive, so `content-type` and `Content-Type` mean the same thing.\n\nOn the network, a body travels as bytes (raw numbers that stand for characters). A string is converted with `.encode(\"utf-8\")`, and the byte count is what a `Content-Length` header would report.\n\nThe example builds a body and checks it. The number 31 is the length in bytes. Since this text is plain English characters, each takes one byte.",
+      "explanation": "The body is the data payload of a request or response. Most web APIs use JSON for it, the text format you met in topic 14 with `json.dumps` and `json.loads`.\n\nHeaders are labelled pieces of metadata (information about the message) sent alongside the body. Three are worth knowing now. `Content-Type: application/json` says what kind of data the body holds. `Accept` says what kind of data the client wants back. `Authorization` carries credentials (login details such as a token); topic 33 covers it. Header names are case-insensitive, so `content-type` and `Content-Type` mean the same thing.\n\nOn the network, a body travels as bytes (raw numbers that stand for characters). A string is converted with `.encode(\"utf-8\")`, and the byte count is what a `Content-Length` header would report.\n\nThe example builds a body and checks it. The number 31 is the length in bytes. Since this text is plain English characters, each takes one byte.",
       "analogy": "A parcel. The box contents are the body. The shipping label (sender, \"fragile\", \"contents: books\") is the headers. The courier reads the label to know how to handle the box without opening it.",
       "code": [
         {
@@ -155,8 +155,8 @@ window.TOPICS.push({
   "quiz": [
     {
       "question": "You want to change only the year of an existing book and leave its other fields alone. Which method fits best?",
-      "options": ["GET", "PATCH", "POST", "DELETE"],
-      "answerIndex": 1,
+      "options": ["GET", "POST", "DELETE", "PATCH"],
+      "answerIndex": 3,
       "explanation": "PATCH changes some fields of an existing thing. PUT would replace the whole book. GET only reads, POST creates a new item, and DELETE removes it."
     },
     {
@@ -197,6 +197,35 @@ window.TOPICS.push({
       ],
       "answerIndex": 2,
       "explanation": "GET is meant to be safe (no data changes), and crawlers or prefetching may call it automatically. The REST way is `DELETE /books/3`: a noun in the path and the action in the method."
+    },
+    {
+      "question": "In a request/response exchange, which side sends the status code?",
+      "options": ["The server, in its response", "The client, in its request headers", "The HTTP method", "The URL"],
+      "answerIndex": 0,
+      "explanation": "The status code is the number in the response that tells the client how the request went. The client sends the method and URL; the server answers with the status."
+    },
+    {
+      "question": "Which of these methods is NOT idempotent (repeating it can change the result again)?",
+      "options": ["GET", "PUT", "POST", "DELETE"],
+      "answerIndex": 2,
+      "explanation": "Sending the same POST twice usually creates two new items. GET, PUT and DELETE leave the server in the same state however many times you repeat them."
+    },
+    {
+      "question": "What does the status code 201 signal?",
+      "options": [
+        "The request succeeded but there is no content to send back",
+        "The item was not found on the server",
+        "The server crashed while handling it",
+        "The request succeeded and a new item was created"
+      ],
+      "answerIndex": 3,
+      "explanation": "201 Created means the request worked and a new item now exists. A success with no content is 204, not found is 404, and a crash is a 5xx code."
+    },
+    {
+      "question": "Which path is the item URL for book 7 in a REST design?",
+      "options": ["/book/7", "/books/7", "/getBook/7", "/books?id=7"],
+      "answerIndex": 1,
+      "explanation": "REST uses a plural noun for the collection and the id to pick one item: `/books/7`. The action comes from the method, so there is no verb like `getBook` in the path."
     }
   ]
 });

@@ -43,7 +43,7 @@ window.TOPICS.push({
    "id": "closures",
    "title": "Closures",
    "explanation": "A closure is an inner function (a function defined inside another function) that remembers variables from the outer function, even after the outer function has finished. In `make_multiplier`, the inner `multiply` keeps using `factor` long after `make_multiplier` returned.\n\nEach call to the outer function creates a fresh set of remembered variables, so `double` and `triple` do not interfere with each other.\n\nBy default the inner function can read outer variables but not reassign them. Assigning to a name inside a function normally creates a new local variable. The `nonlocal` keyword tells Python that the name belongs to the enclosing function, so `count += 1` updates the remembered value.",
-   "analogy": "A backpack packed at home: the hiker carries those supplies wherever they go, even far from the house.",
+   "analogy": "A backpack packed at home: the hiker carries those supplies wherever they go, even far from the house. nonlocal is like being allowed to rewrite a note kept in the backpack, not just read it.",
    "code": [
     {
      "language": "python",
@@ -55,8 +55,8 @@ window.TOPICS.push({
    ],
    "productionNote": "Closures create configured callbacks and are the mechanism behind every decorator in the next sub-topic.",
    "commonMistakes": [
-    "Forgetting `nonlocal` when reassigning an outer variable, which raises `UnboundLocalError`.",
-    "Creating closures in a loop and expecting each to capture a different loop value; they all see the variable's final value unless you bind it (for example with a default argument)."
+    "Forgetting `nonlocal` when reassigning an outer variable, which raises `UnboundLocalError` (Python's error for using a variable before it has a value).",
+    "Creating closures in a loop and expecting each to capture a different loop value; they all see the variable's final value unless you capture the current value (for example by passing it as a default argument)."
    ],
    "sources": [
     {
@@ -72,8 +72,8 @@ window.TOPICS.push({
   {
    "id": "writing-decorators",
    "title": "Writing decorators",
-   "explanation": "A decorator is a function that takes a function and returns a new function that adds behaviour around the original. Writing `@log_calls` on the line above `def add` is shorthand for `add = log_calls(add)` after the definition.\n\nInside, the decorator defines a `wrapper` function (a closure over `func`). Use `*args, **kwargs` so the wrapper accepts any arguments and forwards them to the original. Then return the result, and return `wrapper` itself from the decorator.\n\nTo give a decorator its own settings, such as `@repeat(2)`, add one more outer layer: `repeat(2)` returns the real decorator, which is then applied to the function. So you have three levels: factory, decorator, wrapper.",
-   "analogy": "Gift wrapping: the gift inside is unchanged, but the wrapping adds something around it.",
+   "explanation": "A decorator is a function that takes a function and returns a new function that adds behaviour around the original. Writing `@log_calls` on the line above `def add` is shorthand for `add = log_calls(add)` after the definition.\n\nInside, the decorator defines a `wrapper` function (a closure over `func`). Use `*args, **kwargs` so the wrapper accepts any arguments and forwards them to the original. Then return the result, and return `wrapper` itself from the decorator.\n\nTo give a decorator its own settings, such as `@repeat(2)`, add one more outer layer: `repeat(2)` returns the real decorator, which is then applied to the function. So you have three levels: a factory (a function that builds and returns the real decorator), the decorator, and the wrapper.",
+   "analogy": "Gift wrapping: the gift inside is unchanged, but the wrapping adds something around it. Choosing a ribbon before wrapping, like @repeat(2), is the factory step: you pick the settings first, then wrap.",
    "code": [
     {
      "language": "python",
@@ -83,7 +83,7 @@ window.TOPICS.push({
      "explanation": "`log_calls` prints before and after the real call. `args` is a tuple, so `add(2, 3)` appears in the message. `repeat(2)` is called first and returns `decorator`, which then wraps `hello` so it runs twice."
     }
    ],
-   "productionNote": "Decorators are used for logging, retries, caching, authentication checks, and web framework routes such as `@app.get(\"/\")`.",
+   "productionNote": "Decorators are used for logging, retries, caching, authentication checks, and web framework routes such as `@app.get(\"/\")` (you will meet these properly in topic 28).",
    "commonMistakes": [
     "Forgetting `return wrapper`, which turns the decorated name into `None`, or forgetting to return the original result inside the wrapper.",
     "Writing `@log_calls()` for a decorator that takes no arguments; that calls it with nothing and fails."
@@ -139,7 +139,7 @@ window.TOPICS.push({
      "explanation": "`section` prints an opening tag, yields to the body, and always prints the closing tag. The `KeyError` from `{}[\"missing\"]` is swallowed by `suppress`, so the final print still runs."
     }
    ],
-   "productionNote": "Used for database transactions, temporary settings, timing blocks, and acquiring locks.",
+   "productionNote": "Used for temporary settings, timing blocks, and opening and closing temporary resources.",
    "commonMistakes": [
     "Leaving out `try/finally`, so cleanup is skipped when the body raises an error.",
     "Yielding more than once in a `@contextmanager` generator, which raises an error."
@@ -157,45 +157,89 @@ window.TOPICS.push({
    "question": "`@log_calls` placed above `def f` is shorthand for what?",
    "options": [
     "f = log_calls",
-    "f = log_calls(f)",
     "log_calls = f(log_calls)",
-    "f = log_calls()(f)"
+    "f = log_calls(f)",
+    "f = f(log_calls)"
    ],
-   "answerIndex": 1,
+   "answerIndex": 2,
    "explanation": "The decorator is called with the function and its return value replaces the name: f = log_calls(f)."
   },
   {
    "question": "What problem does functools.wraps solve?",
    "options": [
-    "It makes the wrapper run faster",
-    "It lets decorators take arguments",
-    "It copies the original function's name and docstring onto the wrapper",
-    "It prevents the wrapped function from raising errors"
+    "It makes the wrapper run noticeably faster than before",
+    "It lets decorators accept their own extra arguments",
+    "It stops the wrapped function from ever raising errors",
+    "It copies the original function's name and docstring onto the wrapper"
    ],
-   "answerIndex": 2,
+   "answerIndex": 3,
    "explanation": "Without wraps, the decorated function reports the wrapper's name and loses its docstring."
   },
   {
    "question": "Which keyword lets an inner function reassign a variable of its enclosing function?",
    "options": [
+    "nonlocal",
     "global",
     "static",
-    "outer",
-    "nonlocal"
+    "outer"
    ],
-   "answerIndex": 3,
+   "answerIndex": 0,
    "explanation": "nonlocal marks the name as belonging to the enclosing function so assignment updates it instead of creating a local."
   },
   {
    "question": "In a @contextmanager generator, where should cleanup code go?",
    "options": [
+    "Before the yield, at the very top of the function",
     "After the yield, inside a finally block",
-    "Before the yield",
-    "In a separate cleanup() method",
-    "Inside the with statement body"
+    "In a separate cleanup() method on the generator",
+    "Inside the body of the with statement itself"
+   ],
+   "answerIndex": 1,
+   "explanation": "Code after yield runs on exit; putting it in finally makes it run even if the body raises an error."
+  },
+  {
+   "question": "What does `apply(shout, \"hi\")` pass to apply?",
+   "options": [
+    "The result of shout()",
+    "The function shout itself",
+    "The text \"shout\"",
+    "A decorator"
+   ],
+   "answerIndex": 1,
+   "explanation": "With no parentheses, `shout` is the function object, so apply receives the function and can call it later."
+  },
+  {
+   "question": "What does a closure remember?",
+   "options": [
+    "Only the name of the function",
+    "All global variables and nothing else",
+    "Variables from the enclosing function",
+    "Nothing once the outer function returns"
+   ],
+   "answerIndex": 2,
+   "explanation": "A closure keeps the enclosing function's variables alive, such as `factor` in `make_multiplier`, even after the outer function has returned."
+  },
+  {
+   "question": "What does `with suppress(KeyError):` do?",
+   "options": [
+    "Quietly ignores KeyError inside the block",
+    "Stops the whole program when a KeyError happens",
+    "Turns the KeyError into a warning in a list",
+    "Deletes the dictionary used inside the block"
    ],
    "answerIndex": 0,
-   "explanation": "Code after yield runs on exit; putting it in finally makes it run even if the body raises an error."
+   "explanation": "`suppress` swallows the named error type raised in its block, and the program carries on after the block."
+  },
+  {
+   "question": "What is `repeat(2)` in `@repeat(2)`?",
+   "options": [
+    "The decorator itself, applied directly to the function",
+    "The wrapper that runs the function twice in a row",
+    "A syntax error, because decorators cannot take arguments",
+    "A factory call that returns the decorator"
+   ],
+   "answerIndex": 3,
+   "explanation": "`repeat(2)` runs first and returns the real decorator, which is then applied to the function below it."
   }
  ]
 });

@@ -38,20 +38,20 @@ window.TOPICS.push({
   {
    "id": "datetime-zoneinfo",
    "title": "datetime and zoneinfo",
-   "explanation": "`datetime` represents a date plus a time of day, and `timedelta` represents a duration such as 7 days. A datetime is \"naive\" if it has no timezone and \"aware\" if it carries one. Naive values are ambiguous, so production code should use aware ones.\n\n`zoneinfo.ZoneInfo(\"Asia/Kolkata\")` gives you a named timezone from the IANA timezone database (the shared list of the world's time rules). Use `datetime.UTC` for UTC. The standard rule: store and compare times in UTC, and convert to a local zone only when showing them to a person with `astimezone`.\n\nUse `isoformat()` to turn a datetime into a text like `2026-11-11T09:30:00+00:00`, `fromisoformat()` to read it back, and `strftime` with codes like `%Y-%m-%d %H:%M` for custom display. Subtracting two datetimes gives a timedelta. The examples use fixed dates, never the current time, so the output is predictable.",
-   "analogy": "A meeting time is useless without the city: \"3 pm\" in Mumbai is not \"3 pm\" in London. UTC is like agreeing to schedule everything on one shared world clock.",
+   "explanation": "`datetime` represents a date plus a time of day, and `timedelta` represents a duration such as 7 days. A datetime is \"naive\" if it has no timezone and \"aware\" if it carries one. Naive values are ambiguous, so production code should use aware ones.\n\n`zoneinfo.ZoneInfo(\"Asia/Kolkata\")` gives you a named timezone from the IANA timezone database (the shared list of the world's time rules).\n\nUse `datetime.UTC` for UTC. The standard rule: store and compare times in UTC, and convert to a local zone only when showing them to a person with `astimezone`.\n\nUse `isoformat()` to turn a datetime into a text like `2026-11-11T09:30:00+00:00`, `fromisoformat()` to read it back, and `strftime` with codes like `%Y-%m-%d %H:%M` for custom display. Subtracting two datetimes gives a timedelta. The examples use fixed dates, never the current time, so the output is predictable.",
+   "analogy": "A meeting time is useless without the city: \"3 pm\" in Mumbai is not \"3 pm\" in London. UTC is like agreeing to schedule everything on one shared world clock. Working out the gap between two appointments is subtracting one date from another, and the result is a duration.",
    "code": [
     {
      "language": "python",
      "filename": "dates.py",
      "source": "from datetime import UTC, datetime, timedelta\nfrom zoneinfo import ZoneInfo\n\nmeeting = datetime(2026, 11, 11, 9, 30, tzinfo=UTC)\nprint(meeting.isoformat())\nprint(meeting.astimezone(ZoneInfo(\"Asia/Kolkata\")).strftime(\"%Y-%m-%d %H:%M\"))\nprint((meeting + timedelta(days=7)).date())\n\nparsed = datetime.fromisoformat(\"2026-12-25T10:00:00+00:00\")\nprint((parsed - meeting).days)",
      "output": "2026-11-11T09:30:00+00:00\n2026-11-11 15:00\n2026-11-18\n44",
-     "explanation": "India is 5 hours 30 minutes ahead of UTC, so 09:30 UTC displays as 15:00. Adding 7 days gives November 18. From Nov 11 09:30 to Dec 25 10:00 is 44 days and 30 minutes, and `.days` keeps only the whole days. On Windows, ZoneInfo may need the tzdata package (`uv add tzdata`)."
+     "explanation": "On Windows, run this with `uv run --with tzdata dates.py` (`--with` adds a package for this one run; inside a project use `uv add tzdata` instead). Windows has no built-in time zone data, and without the tzdata package ZoneInfo fails with ZoneInfoNotFoundError. India is 5 hours 30 minutes ahead of UTC, so 09:30 UTC displays as 15:00. Adding 7 days gives November 18. From Nov 11 09:30 to Dec 25 10:00 is 44 days and 30 minutes, and `.days` keeps only the whole days."
     }
    ],
-   "productionNote": "Store timestamps in databases as UTC, compare and schedule in UTC, and convert to the user's zone only at the display edge. Expiry times for tokens and sessions should also be aware UTC datetimes.",
+   "productionNote": "Store timestamps in databases (saved tables of data, covered in topic 25) as UTC, compare and schedule in UTC, and convert to the user's zone only at the display edge. Expiry times for login tokens (temporary keys that prove who a user is) and sessions (the server's record of a logged-in user) should also be aware UTC datetimes.",
    "commonMistakes": [
-    "Mixing naive and aware datetimes in arithmetic or comparison; Python raises a TypeError.",
+    "Mixing naive and aware datetimes: subtracting them or comparing them with < or > raises a TypeError, and == quietly gives False.",
     "On Windows, forgetting that zoneinfo may have no timezone data; install it with `uv add tzdata`.",
     "Storing local times in a database, which breaks when daylight saving changes or users travel."
    ],
@@ -77,10 +77,10 @@ window.TOPICS.push({
      "filename": "log_demo.py",
      "source": "import logging\nimport sys\n\nlogging.basicConfig(\n    level=logging.INFO,\n    format=\"%(levelname)s %(name)s: %(message)s\",\n    stream=sys.stdout,\n)\nlogger = logging.getLogger(\"orders\")\n\nlogger.debug(\"hidden\")\nlogger.info(\"order %s created\", 42)\nlogger.warning(\"stock low: %d left\", 3)",
      "output": "INFO orders: order 42 created\nWARNING orders: stock low: 3 left",
-     "explanation": "The level is INFO, so the debug message is dropped. `stream=sys.stdout` is used here only so the output shows below; by default logging writes to stderr. The format has no timestamp so the output stays stable; real services usually add `%(asctime)s`."
+     "explanation": "The level is INFO, so the debug message is dropped. `stream=sys.stdout` (stdout is the normal output channel, the one `print` uses) is used here only so the output shows below; by default logging writes to stderr (the separate error channel). The format has no timestamp so the output stays stable; real services usually add `%(asctime)s`."
     }
    ],
-   "productionNote": "Services log to stdout or files, which monitoring tools collect and search. Levels filter noise: INFO in production, DEBUG while investigating. Only the application's entry point calls basicConfig.",
+   "productionNote": "Services log to stdout (the normal output channel) or files, which monitoring tools collect and search. Levels filter noise: INFO in production, DEBUG while investigating. Only the application's entry point calls basicConfig.",
    "commonMistakes": [
     "Using `print` in services; it has no levels, names, or easy routing.",
     "Using f-strings in log calls, which format the text even when the message is filtered out. Use `%s` placeholders.",
@@ -108,13 +108,13 @@ window.TOPICS.push({
      "filename": "greet.py",
      "source": "import argparse\n\n\ndef main(argv: list[str] | None = None) -> None:\n    parser = argparse.ArgumentParser(description=\"Greet someone.\")\n    parser.add_argument(\"name\", help=\"who to greet\")\n    parser.add_argument(\"--times\", type=int, default=1, help=\"repeat count\")\n    parser.add_argument(\"--shout\", action=\"store_true\", help=\"use capitals\")\n    args = parser.parse_args(argv)\n\n    message = f\"Hello, {args.name}!\"\n    if args.shout:\n        message = message.upper()\n    for _ in range(args.times):\n        print(message)\n\n\nif __name__ == \"__main__\":\n    main([\"Ada\", \"--times\", \"2\", \"--shout\"])",
      "output": "HELLO, ADA!\nHELLO, ADA!",
-     "explanation": "We pass a fixed list so the example is repeatable. Real code calls `main()` with no list so argparse reads what you typed in the terminal. `type=int` converts \"2\" into the number 2 so `range` works."
+     "explanation": "We pass a fixed list so the example is repeatable, which means that as written the file ignores what you type in the terminal. Real code calls `main()` with no list so argparse reads what you typed: change the last line to `main()` and run `uv run greet.py Ada --times 2 --shout` to get the same two lines. `type=int` converts \"2\" into the number 2 so `range` works."
     }
    ],
    "productionNote": "argparse powers admin scripts, data migration tools, and internal utilities. Because it is in the standard library, such scripts need no dependencies and work with `uv run`.",
    "commonMistakes": [
     "Forgetting `type=int`; the value stays a string and `range(args.times)` fails.",
-    "Parsing `sys.argv` by hand, which loses validation, help text, and clear error messages."
+    "Parsing `sys.argv` (the list of words typed after the program name) by hand, which loses validation, help text, and clear error messages."
    ],
    "sources": [
     {
@@ -160,60 +160,82 @@ window.TOPICS.push({
   }
  ],
  "quiz": [
-  {
-   "question": "Which tool counts how many times each item appears in a list?",
-   "options": [
-    "deque",
-    "Counter",
-    "defaultdict",
-    "ZoneInfo"
-   ],
-   "answerIndex": 1,
-   "explanation": "collections.Counter tallies occurrences and offers most_common(n)."
-  },
-  {
-   "question": "Why should timestamps be stored in UTC?",
-   "options": [
-    "UTC datetimes use less disk space",
-    "Python cannot store other timezones",
-    "It gives one unambiguous reference you convert to local time only for display",
-    "Python converts naive datetimes to UTC automatically"
-   ],
-   "answerIndex": 2,
-   "explanation": "A single shared reference avoids ambiguity and daylight-saving bugs; convert with astimezone when showing times to people."
-  },
-  {
-   "question": "With the logging level set to INFO, which message is hidden?",
-   "options": [
-    "WARNING",
-    "ERROR",
-    "INFO",
-    "DEBUG"
-   ],
-   "answerIndex": 3,
-   "explanation": "DEBUG is below INFO, so it is filtered out; INFO and everything above are shown."
-  },
-  {
-   "question": "In argparse, how do you make an option be read as an integer?",
-   "options": [
-    "Pass type=int to add_argument",
-    "Name the option with an int_ prefix",
-    "Use action=\"store_true\"",
-    "Convert sys.argv by hand"
-   ],
-   "answerIndex": 0,
-   "explanation": "type=int tells argparse to convert the text to an int; otherwise the value stays a string."
-  },
-  {
-   "question": "What does @cache do when a function is called again with the same argument?",
-   "options": [
-    "Recomputes and compares the results",
-    "Raises an error",
-    "Deletes the old result",
-    "Returns the remembered result without running the function body"
-   ],
-   "answerIndex": 3,
-   "explanation": "@cache memoises: results are stored per argument set and reused on repeat calls."
-  }
- ]
+    {
+      "question": "Which tool counts how many times each item appears in a list?",
+      "options": [
+        "deque",
+        "defaultdict",
+        "ZoneInfo",
+        "Counter"
+      ],
+      "answerIndex": 3,
+      "explanation": "collections.Counter tallies occurrences and offers most_common(n)."
+    },
+    {
+      "question": "Why should timestamps be stored in UTC?",
+      "options": [
+        "UTC datetimes use much less disk space than other timezones",
+        "Python cannot store datetimes in any other timezone",
+        "It gives one unambiguous reference you convert to local time only for display",
+        "Python converts naive datetimes to UTC automatically when saving"
+      ],
+      "answerIndex": 2,
+      "explanation": "A single shared reference avoids ambiguity and daylight-saving bugs; convert with astimezone when showing times to people."
+    },
+    {
+      "question": "With the logging level set to INFO, which message is hidden?",
+      "options": [
+        "DEBUG",
+        "WARNING",
+        "ERROR",
+        "INFO"
+      ],
+      "answerIndex": 0,
+      "explanation": "DEBUG is below INFO, so it is filtered out; INFO and everything above are shown."
+    },
+    {
+      "question": "In argparse, how do you make an option be read as an integer?",
+      "options": [
+        "Name the option with an int_ prefix",
+        "Pass type=int to add_argument",
+        "Use action=\"store_true\"",
+        "Set default=\"int\" on add_argument"
+      ],
+      "answerIndex": 1,
+      "explanation": "type=int tells argparse to convert the text to an int; otherwise the value stays a string."
+    },
+    {
+      "question": "What does @cache do when a function is called again with the same argument?",
+      "options": [
+        "Recomputes the function and compares the two results",
+        "Raises an error because the call is a repeat",
+        "Deletes the old result and starts over",
+        "Returns the remembered result without running the function body"
+      ],
+      "answerIndex": 3,
+      "explanation": "@cache memoises: results are stored per argument set and reused on repeat calls."
+    },
+    {
+      "question": "What does `datetime(2026, 12, 25) - datetime(2026, 12, 20)` give?",
+      "options": [
+        "A timedelta of 5 days",
+        "The plain number 5, with no unit attached",
+        "A new datetime in December 2026",
+        "A TypeError because dates cannot be subtracted"
+      ],
+      "answerIndex": 0,
+      "explanation": "Subtracting two datetimes gives a timedelta, a duration; here 5 days."
+    },
+    {
+      "question": "What does `@lru_cache(maxsize=2)` do when a third different argument is used?",
+      "options": [
+        "Raises an error once the cache is full",
+        "Stops caching entirely after two results",
+        "Drops the least recently used result to make room",
+        "Doubles the cache size to hold the new result"
+      ],
+      "answerIndex": 2,
+      "explanation": "lru means least recently used; the oldest unused entry is discarded."
+    }
+  ]
 });

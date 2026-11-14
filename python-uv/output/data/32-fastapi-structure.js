@@ -10,7 +10,7 @@ window.TOPICS.push({
     {
       "id": "apirouter-multi-file-layout",
       "title": "APIRouter and multi-file layout",
-      "explanation": "So far every route lived in one file. That works for five endpoints (an endpoint is one URL plus one HTTP method that your API answers). With fifty it becomes unreadable. FastAPI solves this with an APIRouter: a small \"mini-app\" that holds a group of related routes. You write the routes on the router in their own file, and then plug the router into the main app.\n\nA router takes two useful options. prefix is text put in front of every route path in that router, so prefix=\"/items\" and a route path of \"/\" together answer at /items/. tags is a list of labels; the interactive docs page at /docs groups endpoints under their tag name, so all item routes appear in one \"items\" section.\n\nThe plug-in step is app.include_router(router), called on the main FastAPI() object. Routes from the router then behave exactly as if you had written them on the app.\n\nTo split code over files you use a package, which is a folder containing a file named __init__.py (it can be empty), as taught in the modules topic. Create this layout inside your project folder (the one with pyproject.toml, where fastapi[standard] is already installed from the first FastAPI topic; if not, run uv add \"fastapi[standard]\" there). Make the folders app and app/routers, and put an empty __init__.py in each. You can do that in your editor, or in Git Bash (see topic 31) with: mkdir -p app/routers, then touch app/__init__.py app/routers/__init__.py.\n\nThen create app/routers/items.py and app/main.py with the contents shown below. Start the server from the project folder (not from inside app) with uv run fastapi dev app/main.py. The command finds the app object in that file, and the import from app.routers works because you started it from the project root.",
+      "explanation": "So far every route lived in one file. That works for five endpoints (an endpoint is one URL plus one HTTP method that your API answers). With fifty it becomes unreadable. FastAPI solves this with an APIRouter: a small \"mini-app\" that holds a group of related routes. You write the routes on the router in their own file, and then plug the router into the main app.\n\nA router takes two useful options. prefix is text put in front of every route path in that router, so prefix=\"/items\" and a route path of \"/\" together answer at /items/. tags is a list of labels; the interactive docs page at /docs groups endpoints under their tag name, so all item routes appear in one \"items\" section.\n\nThe plug-in step is app.include_router(router), called on the main FastAPI() object. Routes from the router then behave exactly as if you had written them on the app.\n\nTo split code over files you use a package, which is a folder containing a file named __init__.py (it can be empty), as taught in the modules topic. Create this layout inside your project folder (the one with pyproject.toml, where fastapi[standard] is already installed from the first FastAPI topic; if not, run uv add \"fastapi[standard]\" there). Make the folders app and app/routers, and put an empty __init__.py in each. You can do that in your editor, or in Git Bash (see topic 31) with: mkdir -p app/routers, then touch app/__init__.py app/routers/__init__.py (mkdir creates folders, touch creates empty files).\n\nThen create app/routers/items.py and app/main.py with the contents shown below. Start the server from the project folder (not from inside app) with uv run fastapi dev app/main.py. The command finds the app object in that file, and the import from app.routers works because you started it from the project root.",
       "analogy": "Think of a department store. Each department (a router) runs its own counters: clothing sells clothes, kitchenware sells pans. The store directory at the entrance (main.py) just lists which departments exist and where to find them. The prefix is the department's floor number printed in front of every aisle, and the tag is the sign above the department that groups its aisles.",
       "code": [
         {
@@ -31,7 +31,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "app/main.py",
           "source": "from fastapi import FastAPI\n\nfrom app.routers import items\n\napp = FastAPI()\napp.include_router(items.router)\n",
-          "output": "GET /items/ -> 200\n[\"pen\",\"ink\"]",
+          "output": "GET /items/  ->  200  [\"pen\",\"ink\"]",
           "explanation": "main.py imports the items module and plugs its router into the app. After uv run fastapi dev app/main.py, a GET request to http://127.0.0.1:8000/items/ returns status 200 and the JSON body [\"pen\",\"ink\"]. The /docs page shows the endpoint under the \"items\" tag."
         }
       ],
@@ -39,7 +39,7 @@ window.TOPICS.push({
       "commonMistakes": [
         "Repeating the prefix in the route path. With prefix=\"/items\", writing @router.get(\"/items/\") makes the URL /items/items/. Put only the part after the prefix in the route.",
         "Circular imports (module A imports B while B imports A, so Python fails because one of them is not finished loading). It happens when a router imports something from main.py while main.py imports the router. Move shared things such as the database engine into a separate module like app/db.py and import from there.",
-        "Running fastapi dev from inside the app folder. Start it from the project root, otherwise from app.routers import items cannot be found."
+        "Running fastapi dev from inside the app folder. Start it from the project root, so that imports such as from app.routers import items and relative paths such as .env behave as this topic expects."
       ],
       "sources": [
         { "title": "FastAPI: Bigger Applications - Multiple Files", "url": "https://fastapi.tiangolo.com/tutorial/bigger-applications/" }
@@ -55,7 +55,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from contextlib import asynccontextmanager\n\nfrom fastapi import FastAPI\n\nresources: dict[str, str] = {}\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    resources[\"greeting\"] = \"loaded at startup\"\n    print(\"startup\")\n    yield\n    print(\"shutdown\")\n    resources.clear()\n\n\napp = FastAPI(lifespan=lifespan)\n\n\n@app.get(\"/\")\ndef root() -> dict[str, str]:\n    return {\"greeting\": resources[\"greeting\"]}\n",
-          "output": "(terminal, when the server starts)\nstartup\n\nGET / -> 200\n{\"greeting\":\"loaded at startup\"}\n\n(terminal, after you press Ctrl+C)\nshutdown",
+          "output": "(terminal, when the server starts)\nstartup\n\nGET /  ->  200  {\"greeting\":\"loaded at startup\"}\n\n(terminal, after you press Ctrl+C)\nshutdown",
           "explanation": "Run it with uv run fastapi dev main.py. The word startup appears in the terminal once, as the server starts. The dictionary is filled before any request, so GET / returns the greeting. Pressing Ctrl+C stops the server and prints shutdown. The server also prints its own log lines between these; only your print lines are shown here."
         }
       ],
@@ -93,7 +93,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from typing import Annotated\n\nfrom fastapi import Depends, FastAPI\n\nfrom config import Settings, get_settings\n\napp = FastAPI()\n\n\n@app.get(\"/info\")\ndef info(\n    settings: Annotated[Settings, Depends(get_settings)],\n) -> dict[str, str | bool]:\n    return {\"app_name\": settings.app_name, \"debug\": settings.debug}\n",
-          "output": "GET /info -> 200\n{\"app_name\":\"Shop API\",\"debug\":true}",
+          "output": "GET /info  ->  200  {\"app_name\":\"Shop API\",\"debug\":true}",
           "explanation": "FastAPI calls get_settings and passes the result in as settings. app_name keeps its default because no variable sets it, while debug is True because .env contains DEBUG=true. If you delete the .env file and restart, debug becomes false."
         }
       ],
@@ -111,7 +111,7 @@ window.TOPICS.push({
     {
       "id": "cors-middleware",
       "title": "CORS middleware",
-      "explanation": "Middleware is code that runs around every request and response that passes through the app, before your route function and after it. FastAPI lets you add middleware with app.add_middleware(...). A common one is CORS.\n\nAn origin is the combination of scheme, host and port of a web address. A page served from http://localhost:5173 (a typical frontend development server) and an API at http://127.0.0.1:8000 are different origins, because the host and port differ. By default a browser refuses to let JavaScript (the programming language that runs inside web pages) on a page read responses from a different origin than the page's own. CORS, Cross-Origin Resource Sharing, is the standard way for the API to say \"this other origin is allowed\", by sending a header (a name and value line sent with a response) called access-control-allow-origin.\n\nFastAPI ships a ready middleware for this: CORSMiddleware. You give it allow_origins, a list of the exact origins you trust. allow_credentials=True lets the browser send cookies and login information. allow_methods and allow_headers list which HTTP methods and request headers are permitted; [\"*\"] means all of them. For requests that could change data, the browser first sends a preflight (a small automatic OPTIONS request asking \"am I allowed?\"), and the middleware answers it for you.\n\nCORS is enforced only by browsers. A Python script, curl or a mobile app ignores it completely, so it is not a security barrier for your API. To see the header yourself, use curl -i (it prints the response headers) and add the header with -H. Run these in Git Bash or a macOS/Linux terminal, as in topic 31.",
+      "explanation": "Middleware is code that runs around every request and response that passes through the app, before your route function and after it. FastAPI lets you add middleware with app.add_middleware(...). A common one is CORS.\n\nAn origin is the combination of scheme, host and port of a web address. A page served from http://localhost:5173 (a typical frontend development server) and an API at http://127.0.0.1:8000 are different origins, because the host and port differ. By default a browser refuses to let JavaScript (the programming language that runs inside web pages) on a page read responses from a different origin than the page's own. CORS, Cross-Origin Resource Sharing, is the standard way for the API to say \"this other origin is allowed\", by sending a header (a name and value line sent with a response) called access-control-allow-origin.\n\nFastAPI ships a ready middleware for this: CORSMiddleware. You give it allow_origins, a list of the exact origins you trust. allow_credentials=True lets the browser send cookies (small pieces of data a site stores in the browser, often used to stay logged in) and login information. allow_methods and allow_headers list which HTTP methods and request headers are permitted; [\"*\"] (a wildcard, meaning every value) means all of them. For requests that could change data, the browser first sends a preflight (a small automatic request using the HTTP method OPTIONS (\"am I allowed?\"), asking \"am I allowed?\"), and the middleware answers it for you.\n\nCORS is enforced only by browsers. A Python script, curl or a mobile app ignores it completely, so it is not a security barrier for your API. To see the header yourself, use curl -i (it prints the response headers) and add the header with -H. Run these in Git Bash or a macOS/Linux terminal, as in topic 31.",
       "analogy": "A guest list at the door. The browser is the bouncer standing in front of the guest, which is the web page. The API answers with a list of origins it welcomes. If the page's origin is on the list, the bouncer lets the page read the reply; if not, the reply is held back. Someone who walks in without a bouncer (curl, a script) is not stopped by the list at all.",
       "code": [
         {
@@ -119,14 +119,14 @@ window.TOPICS.push({
           "filename": "main.py",
           "source": "from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI()\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"http://localhost:5173\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n\n@app.get(\"/ping\")\ndef ping() -> dict[str, bool]:\n    return {\"ok\": True}\n",
           "output": "",
-          "explanation": "Only the page origin http://localhost:5173 is on the guest list. Run it with uv run fastapi dev main.py. The file itself prints nothing; the next example shows requests against it."
+          "explanation": "Replace main.py with this version. Only the page origin http://localhost:5173 is on the guest list. Run it with uv run fastapi dev main.py. The file itself prints nothing; the next example shows requests against it."
         },
         {
           "language": "bash",
           "filename": "check-cors.sh",
           "source": "curl -i -H \"Origin: http://localhost:5173\" http://127.0.0.1:8000/ping\ncurl -i -H \"Origin: http://evil.example\" http://127.0.0.1:8000/ping",
-          "output": "HTTP/1.1 200 OK\naccess-control-allow-credentials: true\naccess-control-allow-origin: http://localhost:5173\ncontent-type: application/json\n(other headers omitted)\n\n{\"ok\":true}\n\nHTTP/1.1 200 OK\ncontent-type: application/json\n(other headers omitted)\n\n{\"ok\":true}",
-          "explanation": "Both requests succeed with 200 and the body {\"ok\":true}, because the server answers anyone. The difference is the header: for the listed origin the response contains access-control-allow-origin: http://localhost:5173, while for http://evil.example it does not, so a browser would stop that page from reading the reply."
+          "output": "HTTP/1.1 200 OK\naccess-control-allow-credentials: true\naccess-control-allow-origin: http://localhost:5173\ncontent-type: application/json\n(other headers omitted)\n\n{\"ok\":true}\n\nHTTP/1.1 200 OK\naccess-control-allow-credentials: true\ncontent-type: application/json\n(other headers omitted)\n\n{\"ok\":true}",
+          "explanation": "Both requests succeed with 200 and the body {\"ok\":true}, because the server answers anyone. The difference is one header: for the listed origin the response contains access-control-allow-origin: http://localhost:5173, while for http://evil.example it does not, so a browser would stop that page from reading the reply. The access-control-allow-credentials header appears in both replies; the browser decides by access-control-allow-origin."
         }
       ],
       "productionNote": "You need CORS whenever a single-page app (a website that loads one page and updates it with JavaScript) or web frontend is served from a different domain or port than the API, for example frontend on app.example.com and API on api.example.com. List the exact production origins, and read them from settings (the previous sub-topic) so dev and production can differ.",
@@ -150,8 +150,8 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from fastapi import BackgroundTasks, FastAPI\n\napp = FastAPI()\n\nlog: list[str] = []\n\n\ndef write_log(message: str) -> None:\n    log.append(message)\n\n\n@app.post(\"/notify/{name}\")\ndef notify(name: str, background_tasks: BackgroundTasks) -> dict[str, str]:\n    background_tasks.add_task(write_log, f\"notified {name}\")\n    return {\"queued\": name}\n\n\n@app.get(\"/log\")\ndef read_log() -> list[str]:\n    return log\n",
-          "output": "POST /notify/ada -> 200\n{\"queued\":\"ada\"}\n\nGET /log -> 200\n[\"notified ada\"]",
-          "explanation": "The POST returns {\"queued\":\"ada\"} immediately. After the response is sent, write_log runs with the message \"notified ada\" and appends it to the list. The later GET /log shows that entry. Note that add_task receives write_log without parentheses, followed by its argument."
+          "output": "POST /notify/ada  ->  200  {\"queued\":\"ada\"}\n\nGET /log  ->  200  [\"notified ada\"]",
+          "explanation": "Replace main.py with this version. The POST returns {\"queued\":\"ada\"} immediately. After the response is sent, write_log runs with the message \"notified ada\" and appends it to the list. The later GET /log shows that entry. Note that add_task receives write_log without parentheses, followed by its argument."
         }
       ],
       "productionNote": "Common uses are welcome emails after sign-up, audit log lines, and refreshing a cache after a write. When a job must survive restarts, can take minutes, or needs retries, move it to a real job queue instead.",
@@ -169,12 +169,12 @@ window.TOPICS.push({
     {
       "question": "A router is created with APIRouter(prefix=\"/items\") and has a route @router.get(\"/\"). Which URL path answers that route once the router is included in the app?",
       "options": [
-        "/",
         "/items/",
+        "/",
         "/items/items/",
         "/router/items/"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "explanation": "The prefix is put in front of every route path in the router, so \"/items\" plus \"/\" gives /items/. Without a prefix the route would answer at /. /items/items/ happens only if you repeat the prefix inside the route path."
     },
     {
@@ -191,8 +191,8 @@ window.TOPICS.push({
     {
       "question": "A Settings class (BaseSettings) has a field debug: bool = False, and the .env file contains DEBUG=true. What value does settings.debug have?",
       "options": [
-        "False, because the default in the class always wins",
-        "The string \"true\", because .env files only contain text",
+        "False, because the default written in the class always wins over any .env file",
+        "The string \"true\", because .env files only contain plain text and nothing converts it",
         "True: the name matches ignoring case, and the text is validated and converted to bool",
         "It raises an error because the names DEBUG and debug differ"
       ],
@@ -202,9 +202,9 @@ window.TOPICS.push({
     {
       "question": "Your API has CORSMiddleware that allows only http://localhost:5173. Can a Python script running on another machine still call your API?",
       "options": [
-        "No, CORS rejects every client whose origin is not on the list",
-        "No, the API rejects requests that do not come from a browser",
-        "No, a script needs allow_credentials=True first",
+        "No, CORS rejects every client of any kind whose origin is not on the allowed list",
+        "No, the API automatically rejects every request that does not come from a browser",
+        "No, a script must first be given allow_credentials=True before it can call the API",
         "Yes, CORS is enforced only by browsers, so scripts and curl are not blocked by it"
       ],
       "answerIndex": 3,

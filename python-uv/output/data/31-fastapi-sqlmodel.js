@@ -34,7 +34,7 @@ window.TOPICS.push({
     {
       "id": "engine-and-sqlite-url",
       "title": "Engine and SQLite URL",
-      "explanation": "A table class is only a description. To use a real database you need an engine: the object that manages connections to one database. You create it once per app, with `create_engine(url)`.\n\nThe URL tells SQLModel which database to use. For SQLite, `sqlite:///database.db` means a file called `database.db` in the current folder (three slashes, then a relative path). `sqlite://` with nothing after it means a temporary database that lives only in memory and disappears when the program ends. That is handy for demos and tests.\n\n`SQLModel.metadata.create_all(engine)` looks at every class declared with `table=True` and creates any table that does not exist yet. It never changes a table that already exists.\n\nTo talk to the database you open a `Session(engine)`: one unit of work. Inside it, `session.add(obj)` stages a new row and `session.commit()` saves everything staged so far.\n\nTo read rows, `session.exec(select(Hero))` runs a query (`select` builds the SELECT statement for you) and `.all()` collects the results into a list. `with Session(engine) as session:` closes the session automatically at the end of the block.\n\nIn a real FastAPI app with a SQLite file you also pass `connect_args={\"check_same_thread\": False}`. By default Python's SQLite driver refuses to let a connection be used from a thread other than the one that made it (a thread is one line of execution inside a program, see topic 22). FastAPI runs ordinary `def` endpoints in a pool of threads, so different requests may touch the engine from different threads. The setting turns that check off. It is safe here because each request gets its own session (next sub-topic).\n\nFor debugging, `create_engine(url, echo=True)` prints every SQL statement the library sends.",
+      "explanation": "A table class is only a description. To use a real database you need an engine: the object that manages connections to one database. You create it once per app, with `create_engine(url)`.\n\nThe URL tells SQLModel which database to use. For SQLite, `sqlite:///database.db` means a file called `database.db` in the current folder (three slashes, then a relative path). `sqlite://` with nothing after it means a temporary database that lives only in memory and disappears when the program ends. That is handy for demos and tests.\n\n`SQLModel.metadata.create_all(engine)` looks at every class declared with `table=True` and creates any table that does not exist yet. It never changes a table that already exists.\n\nTo talk to the database you open a `Session(engine)`: one unit of work. Inside it, `session.add(obj)` stages a new row and `session.commit()` saves everything staged so far.\n\nTo read rows, `session.exec(select(Hero))` runs a query (`select` builds the SELECT statement for you) and `.all()` collects the results into a list. `with Session(engine) as session:` closes the session automatically at the end of the block.\n\nIn a real FastAPI app with a SQLite file you also pass `connect_args={\"check_same_thread\": False}`. By default Python's SQLite driver refuses to let a connection be used from a thread other than the one that made it (a thread is one line of execution inside a program, see topic 22). \n\nWhy this matters: FastAPI runs ordinary `def` endpoints in a pool of threads, so different requests may touch the engine from different threads. The setting turns that check off. It is safe here because each request gets its own session (next sub-topic).\n\nFor debugging, `create_engine(url, echo=True)` prints every SQL statement the library sends.",
       "analogy": "The engine is the phone line to the cabinet's clerk: you set it up once. A session is one phone call: you make several requests, then say \"commit\" to confirm that all of them should really be written down. If you hang up without saying commit, nothing is saved.",
       "code": [
         {
@@ -58,7 +58,7 @@ window.TOPICS.push({
     {
       "id": "session-dependency-with-yield",
       "title": "Session dependency with yield",
-      "explanation": "In a web app many requests arrive at once, and each one needs a database session. The clean way is a dependency (topic 30) that opens a session, hands it to the endpoint with `yield`, and closes it when the request is done.\n\n`def get_session():` contains `with Session(engine) as session:` followed by `yield session`. Everything before the `yield` is setup, and the code after it (here, closing the session at the end of the `with` block) is cleanup that runs after the response is sent.\n\nThen define an alias once: `SessionDep = Annotated[Session, Depends(get_session)]`. `Annotated` attaches extra information to a type, and `Depends` tells FastAPI to call `get_session` for you. Any endpoint can now just write `session: SessionDep`.\n\nThe tables are created at module level with `SQLModel.metadata.create_all(engine)`, so they exist when the app starts. Topic 32 moves this into a cleaner startup hook.\n\nSave the code below as main.py, then start it with `uv run fastapi dev main.py` (topic 28). A file `database.db` appears next to main.py. Open http://127.0.0.1:8000/docs and use \"Try it out\" on `GET /heroes/`, or use curl, a command-line tool that sends HTTP requests (available in Git Bash, macOS and Linux terminals).",
+      "explanation": "In a web app many requests arrive at once, and each one needs a database session. The clean way is a dependency (topic 30) that opens a session, hands it to the endpoint with `yield`, and closes it when the request is done.\n\n`def get_session():` contains `with Session(engine) as session:` followed by `yield session`. Everything before the `yield` is setup, and the code after it (here, closing the session at the end of the `with` block) is cleanup that runs after the response is sent.\n\nThen define an alias once: `SessionDep = Annotated[Session, Depends(get_session)]`. `Annotated` attaches extra information to a type, and `Depends` tells FastAPI to call `get_session` for you. Any endpoint can now just write `session: SessionDep`.\n\nThe tables are created at module level with `SQLModel.metadata.create_all(engine)`, so they exist when the app starts. Topic 32 moves this into a cleaner startup hook.\n\nSave the code below as main.py, then start it with `uv run fastapi dev main.py` (topic 28). A file `database.db` appears next to main.py. Open http://127.0.0.1:8000/docs and use \"Try it out\" on `GET /heroes/`, or use curl, a command-line tool that sends HTTP requests (Git Bash is a Linux-style terminal that comes with Git for Windows; macOS and Linux terminals work too).",
       "analogy": "Each customer gets their own phone call to the clerk, and the call hangs up automatically when the customer leaves. Nobody shares a line, so one customer's half-finished request can never get mixed into another's.",
       "code": [
         {
@@ -88,14 +88,14 @@ window.TOPICS.push({
     {
       "id": "create-and-read-endpoints",
       "title": "Create and read endpoints",
-      "explanation": "To create a hero, the endpoint receives a `Hero` as the request body, then runs three session calls in order: `session.add(hero)` stages the row, `session.commit()` writes it to the database, and `session.refresh(hero)` reloads the object from the database so fields the database filled in, such as `id`, are present. Then it returns the hero.\n\nTo read many heroes, `select(Hero).offset(offset).limit(limit)` skips `offset` rows and returns at most `limit` rows. This is pagination: fetching a big table one page at a time. `Query(le=100)` (topic 29) caps `limit` at 100 so a client cannot ask for a million rows.\n\nTo read one hero, `session.get(Hero, hero_id)` looks the row up by primary key and returns the object, or `None` if no such row exists. When it is `None`, raise `HTTPException(status_code=404, detail=\"Hero not found\")`.\n\nThe requests below assume a fresh empty database (delete `database.db` first if you tried the previous step with data). You can send them from the `/docs` page or with curl as in the previous sub-topic.",
+      "explanation": "To create a hero, the endpoint receives a `Hero` as the request body, then runs three session calls in order: `session.add(hero)` stages the row, `session.commit()` writes it to the database, and `session.refresh(hero)` reloads the object from the database so fields the database filled in, such as `id`, are present. Then it returns the hero.\n\nTo read many heroes, `select(Hero).offset(offset).limit(limit)` skips `offset` rows and returns at most `limit` rows. This is pagination: fetching a big table one page at a time. `Query(le=100)` (topic 29) caps `limit` at 100 so a client cannot ask for a million rows.\n\nTo read one hero, `session.get(Hero, hero_id)` looks the row up by primary key and returns the object, or `None` if no such row exists. When it is `None`, raise `HTTPException(status_code=404, detail=\"Hero not found\")`.\n\nReplace main.py with the version below. The requests assume a fresh empty database (delete `database.db` first if you tried the previous step with data). You can send them from the `/docs` page or with curl as in the previous sub-topic.",
       "analogy": "Creating is filing a new card and getting back the card with its number stamped on it (add, commit, refresh). Reading one is asking the clerk for the card with a given number; if there is no such card, the clerk says \"not found\".",
       "code": [
         {
           "language": "python",
           "filename": "main.py",
           "source": "from typing import Annotated\n\nfrom fastapi import Depends, FastAPI, HTTPException, Query\nfrom sqlmodel import Field, Session, SQLModel, create_engine, select\n\n\nclass Hero(SQLModel, table=True):\n    id: int | None = Field(default=None, primary_key=True)\n    name: str = Field(index=True)\n    age: int | None = Field(default=None, index=True)\n\n\nengine = create_engine(\n    \"sqlite:///database.db\", connect_args={\"check_same_thread\": False}\n)\nSQLModel.metadata.create_all(engine)\n\n\ndef get_session():\n    with Session(engine) as session:\n        yield session\n\n\nSessionDep = Annotated[Session, Depends(get_session)]\n\napp = FastAPI()\n\n\n@app.post(\"/heroes/\")\ndef create_hero(hero: Hero, session: SessionDep) -> Hero:\n    session.add(hero)\n    session.commit()\n    session.refresh(hero)\n    return hero\n\n\n@app.get(\"/heroes/\")\ndef read_heroes(\n    session: SessionDep,\n    offset: int = 0,\n    limit: Annotated[int, Query(le=100)] = 100,\n) -> list[Hero]:\n    statement = select(Hero).offset(offset).limit(limit)\n    return list(session.exec(statement).all())\n\n\n@app.get(\"/heroes/{hero_id}\")\ndef read_hero(hero_id: int, session: SessionDep) -> Hero:\n    hero = session.get(Hero, hero_id)\n    if not hero:\n        raise HTTPException(status_code=404, detail=\"Hero not found\")\n    return hero\n",
-          "output": "POST /heroes/ body {\"name\": \"Ada\", \"age\": 36}  ->  200  {\"id\":1,\"name\":\"Ada\",\"age\":36}\nGET /heroes/1  ->  200  {\"id\":1,\"name\":\"Ada\",\"age\":36}\nGET /heroes/9  ->  404  {\"detail\":\"Hero not found\"}",
+          "output": "POST /heroes/ body {\"name\": \"Ada\", \"age\": 36}  ->  200  {\"name\":\"Ada\",\"age\":36,\"id\":1}\nGET /heroes/1  ->  200  {\"name\":\"Ada\",\"age\":36,\"id\":1}\nGET /heroes/9  ->  404  {\"detail\":\"Hero not found\"}",
           "explanation": "The output lines are the responses to three requests sent in order, not text printed by the file. The new hero gets id 1 from the database. The id appears in the response only because of `session.refresh`. Note that with this single `Hero` model a client could also send an `id` in the body; the last sub-topic fixes that."
         }
       ],
@@ -120,7 +120,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from typing import Annotated\n\nfrom fastapi import Depends, FastAPI, HTTPException, Query\nfrom sqlmodel import Field, Session, SQLModel, create_engine, select\n\n\nclass Hero(SQLModel, table=True):\n    id: int | None = Field(default=None, primary_key=True)\n    name: str = Field(index=True)\n    age: int | None = Field(default=None, index=True)\n\n\nclass HeroUpdate(SQLModel):\n    name: str | None = None\n    age: int | None = None\n\n\nengine = create_engine(\n    \"sqlite:///database.db\", connect_args={\"check_same_thread\": False}\n)\nSQLModel.metadata.create_all(engine)\n\n\ndef get_session():\n    with Session(engine) as session:\n        yield session\n\n\nSessionDep = Annotated[Session, Depends(get_session)]\n\napp = FastAPI()\n\n\n@app.post(\"/heroes/\")\ndef create_hero(hero: Hero, session: SessionDep) -> Hero:\n    session.add(hero)\n    session.commit()\n    session.refresh(hero)\n    return hero\n\n\n@app.get(\"/heroes/\")\ndef read_heroes(\n    session: SessionDep,\n    offset: int = 0,\n    limit: Annotated[int, Query(le=100)] = 100,\n) -> list[Hero]:\n    statement = select(Hero).offset(offset).limit(limit)\n    return list(session.exec(statement).all())\n\n\n@app.get(\"/heroes/{hero_id}\")\ndef read_hero(hero_id: int, session: SessionDep) -> Hero:\n    hero = session.get(Hero, hero_id)\n    if not hero:\n        raise HTTPException(status_code=404, detail=\"Hero not found\")\n    return hero\n\n\n@app.patch(\"/heroes/{hero_id}\")\ndef update_hero(hero_id: int, hero: HeroUpdate, session: SessionDep) -> Hero:\n    hero_db = session.get(Hero, hero_id)\n    if not hero_db:\n        raise HTTPException(status_code=404, detail=\"Hero not found\")\n    hero_data = hero.model_dump(exclude_unset=True)\n    hero_db.sqlmodel_update(hero_data)\n    session.add(hero_db)\n    session.commit()\n    session.refresh(hero_db)\n    return hero_db\n\n\n@app.delete(\"/heroes/{hero_id}\")\ndef delete_hero(hero_id: int, session: SessionDep) -> dict[str, bool]:\n    hero = session.get(Hero, hero_id)\n    if not hero:\n        raise HTTPException(status_code=404, detail=\"Hero not found\")\n    session.delete(hero)\n    session.commit()\n    return {\"ok\": True}\n",
-          "output": "PATCH /heroes/1 body {\"age\": 37}  ->  200  {\"id\":1,\"name\":\"Ada\",\"age\":37}\nDELETE /heroes/1  ->  200  {\"ok\":true}\nGET /heroes/1  ->  404  {\"detail\":\"Hero not found\"}",
+          "output": "PATCH /heroes/1 body {\"age\": 37}  ->  200  {\"name\":\"Ada\",\"age\":37,\"id\":1}\nDELETE /heroes/1  ->  200  {\"ok\":true}\nGET /heroes/1  ->  404  {\"detail\":\"Hero not found\"}",
           "explanation": "The output lines are responses to requests sent in order. The PATCH changes only the age; the name stays \"Ada\". After the delete, the same id gives 404 because the row is gone."
         }
       ],
@@ -163,21 +163,21 @@ window.TOPICS.push({
     {
       "question": "Why is the primary key declared as `id: int | None = Field(default=None, primary_key=True)`?",
       "options": [
-        "Because SQLite only accepts ids that are None",
+        "Because SQLite only accepts ids that are None when a table is first created in a new file",
+        "Because `None` makes the column an index, which is a lookup structure that speeds up searches",
         "Because the database assigns the id when the row is saved, so a new object has no id yet",
-        "Because `None` makes the column an index",
-        "Because Python requires every attribute to default to None"
+        "Because Python requires every attribute of every class to default to None, whatever its type"
       ],
-      "answerIndex": 1,
+      "answerIndex": 2,
       "explanation": "A hero you have just created in Python has not been saved, so no id exists yet. The attribute is `None` until the database assigns a number on commit."
     },
     {
       "question": "What does `session.refresh(hero)` do after `session.commit()`?",
       "options": [
         "It reloads the object from the database so values the database filled in, such as `id`, are present",
-        "It deletes the row and inserts it again",
-        "It closes the session",
-        "It creates the table if it does not exist"
+        "It deletes the row from the table and then inserts the same row again from scratch",
+        "It closes the session so that no further queries can be made through it",
+        "It creates the table if it does not exist yet, using the model class as a blueprint"
       ],
       "answerIndex": 0,
       "explanation": "After a commit the object's data is considered stale. Refresh reads the row again so the object, and the response built from it, includes the new id."
@@ -185,9 +185,9 @@ window.TOPICS.push({
     {
       "question": "A client sends PATCH with body `{\"age\": 37}`. Why do we call `model_dump(exclude_unset=True)`?",
       "options": [
-        "To make the age a string",
-        "To remove the id from the model",
-        "To validate that the age is positive",
+        "To make the age a string before it is stored in the database",
+        "To remove the id column from the model so it cannot be changed",
+        "To validate that the age is a positive number before saving it, rejecting the request if not",
         "To get only the fields the client sent, so name is not overwritten with None"
       ],
       "answerIndex": 3,
@@ -196,10 +196,10 @@ window.TOPICS.push({
     {
       "question": "What is the main reason to have a separate `HeroPublic` model for responses?",
       "options": [
-        "It makes the database faster",
+        "It makes the database faster by storing fewer columns for each hero row on disk",
         "It controls exactly which fields leave the server, so `secret_name` is hidden and `id` is always included",
-        "It creates a second table in the database",
-        "It lets clients choose their own id"
+        "It creates a second table in the database that holds a public copy of every hero, which clients then read instead of the main table",
+        "It lets clients choose their own id when they create a hero, instead of the database"
       ],
       "answerIndex": 1,
       "explanation": "The return type filters the response to the fields of `HeroPublic`, so private columns of the table model are never sent."
@@ -207,13 +207,46 @@ window.TOPICS.push({
     {
       "question": "Why do we pass `connect_args={\"check_same_thread\": False}` to `create_engine` for a SQLite file in a FastAPI app?",
       "options": [
-        "It makes SQLite store data in memory",
-        "It creates the tables automatically",
-        "FastAPI may use the engine from different threads, and SQLite's Python driver would otherwise refuse that",
-        "It lets several requests share one session safely"
+        "It makes SQLite store all of its data in memory instead of in a file on disk",
+        "It creates the tables automatically the first time the engine is used by a request",
+        "It lets several requests share one session safely, so only one session is ever needed",
+        "FastAPI may use the engine from different threads, and SQLite's Python driver would otherwise refuse that"
       ],
-      "answerIndex": 2,
+      "answerIndex": 3,
       "explanation": "Plain `def` endpoints run in a thread pool, so a connection can be used from a thread other than the one that opened it. The setting turns off the driver's check. Each request still gets its own session."
+    },
+    {
+      "question": "What does the `yield` in `get_session` do?",
+      "options": [
+        "Hands the session to the endpoint, then runs the cleanup after the response",
+        "Returns a session and closes it at once, before the endpoint can use it",
+        "Creates the database tables when the first request arrives",
+        "Stops the server after the first request has been answered"
+      ],
+      "answerIndex": 0,
+      "explanation": "Code before `yield` sets up the session and the value after it is given to the endpoint. When the response is done, the code after `yield` runs, which closes the session."
+    },
+    {
+      "question": "What does the URL `sqlite:///database.db` mean?",
+      "options": [
+        "A database held only in memory, which disappears when the program ends",
+        "A file named database.db in the current folder",
+        "A remote server called database.db that the app connects to over the network",
+        "An error, because SQLite needs a port number in the URL"
+      ],
+      "answerIndex": 1,
+      "explanation": "Three slashes followed by a relative path point SQLite at a file in the current folder. The in-memory database uses `sqlite://` with nothing after it."
+    },
+    {
+      "question": "What must a delete endpoint check before calling session.delete(hero)?",
+      "options": [
+        "That model_dump was called without exclude_unset, so every field is present",
+        "That create_all has run again, so that the table still exists",
+        "That the id is None, because only unsaved heroes can be deleted",
+        "That the hero exists, returning 404 if not"
+      ],
+      "answerIndex": 3,
+      "explanation": "`session.get` returns `None` when no row has that id, and deleting `None` would fail. So the endpoint raises a 404 error first when the hero is missing."
     }
   ]
 });

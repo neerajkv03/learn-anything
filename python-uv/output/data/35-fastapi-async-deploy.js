@@ -10,14 +10,14 @@ window.TOPICS.push({
     {
       "id": "async-def-vs-def",
       "title": "async def vs def endpoints",
-      "explanation": "In topic 22 you learned that an async def function (a coroutine) runs on the event loop, a single loop that switches between tasks whenever one of them hits an await. FastAPI lets you write each endpoint either way, and the choice matters.\n\nAn async def endpoint runs directly on the event loop. It may only await non-blocking calls. A blocking call is one that makes the whole thread wait and do nothing, such as time.sleep, a synchronous database query or a call made with the requests library. While it waits, the loop cannot serve any other request, so one slow call freezes every client.\n\nA plain def endpoint is different. FastAPI runs it in a thread pool (a set of worker threads kept ready for jobs), so blocking inside it only stalls that one thread while other requests continue. This makes def the safe choice for blocking code.\n\nThe rule of thumb: if the library you call offers an async API that you await (for example an async HTTP client), use async def. Otherwise use def. The SQLModel Session from topic 31 is synchronous, so endpoints that use it should be plain def. For most apps both styles are fast enough, so correctness matters more than micro-speed.\n\nThe bad version is writing time.sleep(0.1) inside an async def endpoint: it would block the loop for 0.1 seconds on every call, and all other requests would queue behind it.",
+      "explanation": "In topic 22 you learned that an async def function (a coroutine) runs on the event loop, a single loop that switches between tasks whenever one of them hits an await. FastAPI lets you write each endpoint either way, and the choice matters.\n\nAn async def endpoint runs directly on the event loop. It may only await non-blocking calls. A blocking call is one that makes the whole thread wait and do nothing, such as time.sleep, a synchronous database query or a call made with the requests library. While it waits, the loop cannot serve any other request, so one slow call freezes every client.\n\nA plain def endpoint is different. FastAPI runs it in a thread pool (a set of worker threads kept ready for jobs), so blocking inside it only stalls that one thread while other requests continue. This makes def the safe choice for blocking code.\n\nThe rule of thumb: if the library you call offers an async API that you await (for example an async HTTP client), use async def. Otherwise use def. The SQLModel Session from topic 31 is synchronous (it waits for each database answer before the code continues), so endpoints that use it should be plain def. For most apps both styles are fast enough, so correctness matters more than micro-speed.\n\nThe bad version is writing time.sleep(0.1) inside an async def endpoint: it would block the loop for 0.1 seconds on every call, and all other requests would queue behind it.",
       "analogy": "The event loop is one super-fast waiter who must never stand waiting at a single table, because every other table would go unserved: he only takes orders and hands them over. A def endpoint is a team of waiters (the thread pool) where each one may stand and wait at a table without stopping the others. Blocking work belongs with the team, non-blocking work with the fast waiter.",
       "code": [
         {
           "language": "python",
           "filename": "main.py",
           "source": "import asyncio\nimport time\n\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/sync\")\ndef sync_endpoint() -> dict[str, str]:\n    # Blocking is OK in a plain def: FastAPI runs it in a thread pool.\n    time.sleep(0.1)\n    return {\"kind\": \"def\"}\n\n\n@app.get(\"/async\")\nasync def async_endpoint() -> dict[str, str]:\n    # Only non-blocking waits (await) are allowed in async def.\n    await asyncio.sleep(0.1)\n    return {\"kind\": \"async\"}\n",
-          "output": "GET /sync  -> 200 {\"kind\":\"def\"}\nGET /async -> 200 {\"kind\":\"async\"}",
+          "output": "GET /sync   ->  200  {\"kind\":\"def\"}\nGET /async  ->  200  {\"kind\":\"async\"}",
           "explanation": "Save this as main.py in a project that has fastapi[standard] installed (topic 28). Both endpoints pause for 0.1 seconds and return JSON. The def one blocks its own thread with time.sleep, which is fine. The async def one uses await asyncio.sleep, which hands control back to the event loop while it waits. The output lines show the request and the response status and body that a client receives."
         }
       ],
@@ -58,7 +58,7 @@ window.TOPICS.push({
     {
       "id": "docker-image-with-uv",
       "title": "Docker image with uv",
-      "explanation": "Topic 24 introduced Docker: a Dockerfile is a recipe that builds an image (a packaged filesystem with your app and everything it needs), and a container is a running copy of that image. Here we apply the uv pattern from that topic to a FastAPI app.\n\nThe Dockerfile below starts from a slim Python image (a small Docker base image that contains only the essentials), copies the uv program in from the official uv image (pinned, meaning fixed to this exact version, 0.13.7), and sets two environment variables from topic 24 (compile bytecode, meaning store Python's precompiled form so startup is faster; copy files instead of linking, meaning copy the packages in rather than sharing them).\n\nThen it installs only the dependencies first, using uv sync --locked --no-install-project --no-dev. The --mount options let this step read uv.lock and pyproject.toml and reuse uv's download cache without copying them into the image layer (one cached build step in the image). Because this layer only changes when the dependencies change, Docker caches it and rebuilds are fast.\n\nNext it copies your code and runs uv sync --locked --no-dev again to install the project itself. --locked fails if uv.lock is out of date and --no-dev leaves out development tools like pytest. The ENV PATH line puts the virtual environment's bin folder first, so the command fastapi is found.\n\nFinally CMD sets the command run when the container starts. Write it in exec form, a JSON list of strings, so the server is started directly and receives stop signals (like the one docker stop sends) and shuts down quickly. Run one worker per container. This file expects your app at app/main.py, and it needs a file named .dockerignore (that exact name, no other part) in the project folder, containing one line: .venv, so your local virtual environment is not copied in.",
+      "explanation": "Topic 24 introduced Docker: a Dockerfile is a recipe that builds an image (a packaged filesystem with your app and everything it needs), and a container is a running copy of that image. Here we apply the uv pattern from that topic to a FastAPI app.\n\nThe Dockerfile below starts from a slim Python image (a small Docker base image that contains only the essentials), copies the uv program in from the official uv image (pinned, meaning fixed to this exact version, 0.13.7), and sets two environment variables from topic 24 (compile bytecode, meaning store Python's precompiled form so startup is faster; copy files instead of linking, meaning copy the packages in rather than sharing them).\n\nThen it installs only the dependencies first, using uv sync --locked --no-install-project --no-dev. The --mount options let this step read uv.lock and pyproject.toml and reuse uv's download cache without copying them into the image layer (one cached build step in the image). Because this layer only changes when the dependencies change, Docker caches it and rebuilds are fast.\n\nNext it copies your code and runs uv sync --locked --no-dev again to install the project itself. --locked fails if uv.lock is out of date and --no-dev leaves out development tools like pytest. The ENV PATH line puts the virtual environment's bin folder first, so the command fastapi is found.\n\nFinally CMD sets the command run when the container starts. Write it in exec form, a JSON list of strings, so the server is started directly and receives stop signals (like the one docker stop sends) and shuts down quickly. Run one worker per container. This file expects your app at app/main.py (the multi-file layout from topic 32; if your app is a single main.py in the project root, change that path in CMD to main.py), and it needs a file named .dockerignore (that exact name, no other part) in the project folder, containing one line: .venv, so your local virtual environment is not copied in.",
       "analogy": "The image is a shipping container with the shop already fully set up inside: shelves stocked, till installed. You can unload it on any machine that has Docker, open the doors, and the shop is ready for business without any setup.",
       "code": [
         {
@@ -90,13 +90,13 @@ window.TOPICS.push({
     {
       "id": "sqlite-in-production",
       "title": "SQLite in production (WAL, single writer, backups)",
-      "explanation": "SQLite (topic 25) is a good fit for one server, but you must know its limits. It allows many readers at the same time, but only one writer at a time. If a second writer arrives while the first is writing, it fails with the error sqlite3.OperationalError: database is locked.\n\nTwo settings help. First, WAL (Write-Ahead Logging) mode: writes go to a separate log file first and are merged into the main file later, so readers keep reading while a write happens. You switch it on with the PRAGMA journal_mode=WAL statement (a PRAGMA is a SQLite setting command). The setting is stored in the database file, so you do it once. It returns the new mode as text. WAL does not work for ':memory:' databases, so the example uses a real file in a temporary folder.\n\nSecond, a timeout: sqlite3.connect(path, timeout=5) makes a writer wait up to 5 seconds for the lock instead of failing at once.\n\nIn Docker, files written inside a container disappear when the container is replaced. Keep the database on a volume (storage that Docker manages outside the container), for example docker run -v shop-data:/app/data ... mounts the volume shop-data at /app/data.\n\nFor backups, use Connection.backup(target), which copies the database safely even while it is in use. Copying the .db file by hand during a write can give you a broken copy.\n\nSQLite suits one server. If many app servers must write to the same data, or you have heavy concurrent writes, move to a server database such as PostgreSQL.\n\nIn the example, we close both connections before the with block ends, because Windows cannot delete a folder that still contains open files.",
-      "analogy": "The database is a notebook that many people can read at once but only one person can write in. WAL is like letting the writer draft on a side sheet, so readers can keep reading the notebook, and the draft is copied into the notebook afterwards.",
+      "explanation": "SQLite (topic 25) is a good fit for one server, but you must know its limits. It allows many readers at the same time, but only one writer at a time. If a second writer arrives while the first is writing, it fails with the error sqlite3.OperationalError: database is locked.\n\nTwo settings help. First, WAL (Write-Ahead Logging) mode: writes go to a separate log file first and are merged into the main file later, so readers keep reading while a write happens. You switch it on with the PRAGMA journal_mode=WAL statement (a PRAGMA is a SQLite setting command). The setting is stored in the database file, so you do it once. It returns the new mode as text. WAL does not work for ':memory:' databases, so the example uses a real file in a temporary folder.\n\nSecond, a timeout: sqlite3.connect(path, timeout=30) sets how long a writer waits for the lock before the \"database is locked\" error is raised. Python's default is 5 seconds; a longer wait such as 30 suits apps that write often.\n\nIn Docker, files written inside a container disappear when the container is replaced. Keep the database on a volume (storage that Docker manages outside the container), for example docker run -v shop-data:/app/data ... mounts the volume shop-data at /app/data.\n\nFor backups, use Connection.backup(target), which copies the database safely even while it is in use. Copying the .db file by hand during a write can give you a broken copy.\n\nSQLite suits one server. If many app servers must write to the same data, or you have heavy concurrent writes, move to a server database such as PostgreSQL.\n\nIn the example, we close both connections before the with block ends, because Windows cannot delete a folder that still contains open files.",
+      "analogy": "The database is a notebook that many people can read at once but only one person can write in. WAL is like letting the writer draft on a side sheet, so readers can keep reading the notebook, and the draft is copied into the notebook afterwards. The volume is a locked cabinet bolted to the building, so the notebook survives when the shop is rebuilt; a backup is a photocopy kept somewhere else.",
       "code": [
         {
           "language": "python",
           "filename": "sqlite_prod.py",
-          "source": "import sqlite3\nimport tempfile\nfrom pathlib import Path\n\nwith tempfile.TemporaryDirectory() as folder:\n    con = sqlite3.connect(Path(folder) / \"app.db\", timeout=5)\n    print(con.execute(\"PRAGMA journal_mode=WAL\").fetchone()[0])\n    con.execute(\"CREATE TABLE notes (body TEXT)\")\n    with con:\n        con.execute(\"INSERT INTO notes VALUES (?)\", (\"hi\",))\n\n    backup = sqlite3.connect(Path(folder) / \"backup.db\")\n    con.backup(backup)\n    print(backup.execute(\"SELECT body FROM notes\").fetchall())\n\n    # Close before the temp folder is deleted (Windows can't delete open files).\n    backup.close()\n    con.close()\n",
+          "source": "import sqlite3\nimport tempfile\nfrom pathlib import Path\n\nwith tempfile.TemporaryDirectory() as folder:\n    con = sqlite3.connect(Path(folder) / \"app.db\", timeout=30)\n    print(con.execute(\"PRAGMA journal_mode=WAL\").fetchone()[0])\n    con.execute(\"CREATE TABLE notes (body TEXT)\")\n    with con:\n        con.execute(\"INSERT INTO notes VALUES (?)\", (\"hi\",))\n\n    backup = sqlite3.connect(Path(folder) / \"backup.db\")\n    con.backup(backup)\n    print(backup.execute(\"SELECT body FROM notes\").fetchall())\n\n    # Close before the temp folder is deleted (Windows can't delete open files).\n    backup.close()\n    con.close()\n",
           "output": "wal\n[('hi',)]",
           "explanation": "The script creates a database file in a temporary folder, switches it to WAL mode (the PRAGMA returns the new mode, wal), stores one row, and then uses con.backup(backup) to copy the whole database into a second file. Reading the backup shows the row was copied. The temporary folder is deleted at the end of the with block."
         }
@@ -122,7 +122,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/health\")\ndef health() -> dict[str, str]:\n    return {\"status\": \"ok\"}\n",
-          "output": "GET /health -> 200 {\"status\":\"ok\"}",
+          "output": "GET /health  ->  200  {\"status\":\"ok\"}",
           "explanation": "A cheap endpoint with no database access and no authentication. Any answer with status 200 means the app is up."
         },
         {
@@ -136,7 +136,7 @@ window.TOPICS.push({
       "productionNote": "Health endpoints are used by Docker, Kubernetes probes, cloud load balancers and uptime monitors. Keep them fast and open; if you need a deeper check (for example that the database answers), make it a separate endpoint.",
       "commonMistakes": [
         "Making the health check slow by querying every dependency. A slow check can time out and cause healthy containers to be restarted.",
-        "Protecting /health with authentication. The probes send no credentials, so they fail and the app is reported as down."
+        "Protecting /health with authentication. The probes (the automatic checks that call /health) send no credentials, so they fail and the app is reported as down."
       ],
       "sources": [
         { "title": "Dockerfile reference: HEALTHCHECK", "url": "https://docs.docker.com/reference/dockerfile/#healthcheck" },
@@ -148,18 +148,18 @@ window.TOPICS.push({
     {
       "question": "Your endpoint uses a synchronous SQLModel Session to query the database. How should you declare it?",
       "options": [
-        "async def, because all FastAPI endpoints must be async",
-        "Plain def, so FastAPI runs it in a thread pool and the blocking query does not freeze the event loop",
+        "async def, because all FastAPI endpoints must be async and the framework refuses to run any other kind of function",
         "async def with time.sleep added so the loop has time to catch up",
+        "Plain def, so FastAPI runs it in a thread pool and the blocking query does not freeze the event loop",
         "Either way, because a blocking call never affects other requests"
       ],
-      "answerIndex": 1,
+      "answerIndex": 2,
       "explanation": "A synchronous session blocks while it waits for the database. In a plain def endpoint that only stalls one thread of the pool. In async def it would freeze the event loop and every other request."
     },
     {
       "question": "An in-memory counter (a module-level variable) shows different values when you run with --workers 4. Why?",
       "options": [
-        "Uvicorn randomly resets variables",
+        "Uvicorn randomly resets variables in every worker a few times a minute to free up memory",
         "Python integers cannot be shared between requests at all",
         "FastAPI copies the counter once per request",
         "Each worker is a separate process with its own memory, so each has its own counter"
@@ -171,7 +171,7 @@ window.TOPICS.push({
       "question": "Why should a Dockerfile use the exec form CMD [\"fastapi\", \"run\", ...] instead of the shell form?",
       "options": [
         "So the server process receives stop signals directly and shuts down quickly",
-        "Because the shell form cannot run Python programs",
+        "Because the shell form cannot run Python programs, only commands that are already built into the system",
         "Because the exec form makes the server use more workers",
         "Because the exec form installs the dependencies"
       ],
@@ -184,7 +184,7 @@ window.TOPICS.push({
         "It lets many writers write at once; readers are now limited to one",
         "Readers can continue while a write happens; there is still only one writer at a time",
         "It removes the need for backups; the database can grow without limit",
-        "It lets several servers safely share one file over a network; writes stay slow"
+        "It lets several servers safely share one file over a network; writes stay slow but never fail"
       ],
       "answerIndex": 1,
       "explanation": "WAL writes changes to a separate log so readers are not blocked. SQLite still allows only one writer at a time, which is why heavy concurrent writes call for a server database."
@@ -193,12 +193,45 @@ window.TOPICS.push({
       "question": "Why does a Docker HEALTHCHECK in a slim Python image (a small base image with only the essentials) use Python's urllib.request instead of curl?",
       "options": [
         "curl cannot make HTTP requests",
-        "urllib.request is the only way to read a /health endpoint",
+        "urllib.request is the only way to read a /health endpoint from inside a Docker container",
         "Slim images do not include curl, but Python is already there",
         "curl always reports a container as healthy"
       ],
       "answerIndex": 2,
       "explanation": "Slim images contain very little beyond Python. Using urllib.request avoids installing an extra tool, and urlopen raises an error on failure, which gives the non-zero exit code Docker needs."
+    },
+    {
+      "question": "Why must /health not require a login?",
+      "options": [
+        "Probes send no credentials, so a login requirement would mark a healthy app as down",
+        "Login is slower than the check's timeout, so the check would always time out and fail",
+        "/health must be an async endpoint, and async endpoints cannot check a login",
+        "HEALTHCHECK requires a login, so the endpoint would be asked for one twice"
+      ],
+      "answerIndex": 0,
+      "explanation": "Docker, load balancers and monitors call /health automatically and have no username or token to send. If the endpoint demanded one, they would get an error and wrongly report the app as down."
+    },
+    {
+      "question": "Why does the Dockerfile install from uv.lock and pyproject.toml before copying the rest of the code?",
+      "options": [
+        "Because Docker cannot read other files until the dependencies are in place",
+        "So the dependency layer stays cached until the dependencies change",
+        "So the app runs without installing packages at all",
+        "To make the container start faster on each run of the app"
+      ],
+      "answerIndex": 1,
+      "explanation": "Docker reuses a cached layer while its inputs are unchanged. Your code changes often but uv.lock and pyproject.toml rarely do, so rebuilds skip the slow install step."
+    },
+    {
+      "question": "Which command is meant for real traffic?",
+      "options": [
+        "uv run fastapi dev main.py",
+        "uv run pytest",
+        "uv add fastapi",
+        "uv run fastapi run main.py"
+      ],
+      "answerIndex": 3,
+      "explanation": "fastapi run uses production settings and does not reload on file changes. fastapi dev is for development only, pytest runs tests and uv add installs a package."
     }
   ]
 });

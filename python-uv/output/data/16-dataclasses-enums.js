@@ -84,7 +84,7 @@ window.TOPICS.push({
     {
       "id": "enum",
       "title": "Enum",
-      "explanation": "An enum (short for enumeration) defines a fixed set of named constants. You subclass `Enum` and list the members (the named values inside the enum): `class Color(Enum): RED = 1`. Each member has a `.name` (`\"RED\"`) and a `.value` (`1`). You can look a member up by value with `Color(2)` or by name with `Color[\"GREEN\"]`, and you can loop over all members with `for c in Color`.\n\nA plain `Enum` member is not equal to its raw value, so `Color.RED == 1` is False. This is deliberate: it stops you mixing up unrelated numbers. When you want members that also behave as strings, use `StrEnum`. Its members are real strings, so `Status.PENDING == \"pending\"` is True, and printing a member shows just the value. That makes it a good fit for JSON and databases.\n\n`auto()` assigns values for you so you do not have to number them. In a `StrEnum`, `auto()` uses the lowercase member name, so `SHIPPED = auto()` gets the value `\"shipped\"`.\n\nEnums replace \"magic strings\": loose text values scattered through code that break silently when misspelt. With an enum, a typo like `Status.SHIPED` fails immediately with an AttributeError.",
+      "explanation": "An enum (short for enumeration) defines a fixed set of named constants. You subclass `Enum` and list the members (the named values inside the enum): `class Color(Enum): RED = 1`. Each member has a `.name` (`\"RED\"`) and a `.value` (`1`). You can look a member up by value with `Color(2)` or by name with `Color[\"GREEN\"]`, and you can loop over all members with `for c in Color`.\n\nA plain `Enum` member is not equal to its raw value, so `Color.RED == 1` is False. This is deliberate: it stops you mixing up unrelated numbers. When you want members that also behave as strings, use `StrEnum`. Its members are real strings, so `Status.PENDING == \"pending\"` is True, and printing a member shows just the value. That makes it a good fit for JSON and databases.\n\n`auto()` assigns values for you so you do not have to number them. In a `StrEnum`, `auto()` uses the lowercase member name, so `SHIPPED = auto()` gets the value `\"shipped\"`.\n\nEnums replace \"magic strings\": loose text values scattered through code that break silently when misspelt. With an enum, a typo like `Status.SHIPED` fails immediately with an AttributeError (Python's error for asking an object for a name it does not have).",
       "analogy": "A traffic light: only red, amber and green exist. Nothing else is allowed, and everyone agrees on the names.",
       "code": [
         {
@@ -95,7 +95,7 @@ window.TOPICS.push({
           "explanation": "Printing a plain Enum member shows `Color.RED`; `.name` and `.value` give its parts, and `Color(2)` finds the member with value 2. The StrEnum members got the values \"pending\" and \"shipped\" from `auto()`, print as the plain string, and compare equal to ordinary strings. The list comprehension loops over every member in definition order."
         }
       ],
-      "productionNote": "Use enums for order states, user roles, HTTP methods and similar closed sets of choices. Prefer `StrEnum` when the value is stored or sent as text (JSON, database columns), and combine enums with dataclass fields, such as `status: Status = Status.PENDING`, for self-documenting records.",
+      "productionNote": "Use enums for order states, user roles and similar closed sets of choices. Prefer `StrEnum` when the value is stored or sent as text (JSON, database columns), and combine enums with dataclass fields, such as `status: Status = Status.PENDING`, for self-documenting records.",
       "commonMistakes": [
         "Comparing a plain Enum member to its raw value: `Color.RED == 1` is False. Compare to the member (`Color.RED`) or use `.value` explicitly.",
         "Using bare strings like \"shiped\" instead of enum members, so a typo goes unnoticed until something misbehaves.",
@@ -116,7 +116,7 @@ window.TOPICS.push({
     },
     {
       "question": "What is the correct way to give a dataclass field an empty-list default?",
-      "options": ["items: list[str] = []", "items: list[str] = list", "items: list[str] = field(default_factory=list)", "items: list[str] = field(default=[])"],
+      "options": ["items: list[str] = []", "items: list[str] = 'empty'","items: list[str] = field(default_factory=list)", "items: list[str] = field(default=[])"],
       "answerIndex": 2,
       "explanation": "default_factory calls list() for every new object, giving each its own list. A plain [] default raises a ValueError because it would be shared."
     },
@@ -131,6 +131,24 @@ window.TOPICS.push({
       "options": ["Status.SHIPPED", "SHIPPED", "1", "shipped"],
       "answerIndex": 3,
       "explanation": "In a StrEnum, auto() uses the lowercase member name as the value, and printing a StrEnum member shows its string value, so it prints shipped."
+    },
+    {
+      "question": "What is `Color.RED == 1` for `class Color(Enum): RED = 1`?",
+      "options": ["False", "True", "1", "An error"],
+      "answerIndex": 0,
+      "explanation": "A plain Enum member is its own object, not the number it holds, so comparing it to 1 gives False. Use Color.RED.value to get the 1."
+    },
+    {
+      "question": "Which function returns a changed copy of a frozen dataclass?",
+      "options": ["field", "dataclasses.replace", "dataclasses.copy_frozen", "dataclass.update"],
+      "answerIndex": 1,
+      "explanation": "dataclasses.replace(obj, name=value) builds a new instance with the given fields changed. The other names do not exist for this purpose, and field only configures a single field."
+    },
+    {
+      "question": "What does `field(repr=False)` do?",
+      "options": ["Encrypts the value", "Makes the field read-only", "Deletes the field", "Hides the field from the printed repr"],
+      "answerIndex": 3,
+      "explanation": "repr=False leaves the field out of the generated __repr__ text, but the field still exists and can be read and changed."
     }
   ]
 }

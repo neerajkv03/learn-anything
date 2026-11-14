@@ -10,7 +10,7 @@ window.TOPICS.push({
     {
       "id": "classes-and-instances",
       "title": "Classes and instances",
-      "explanation": "A class is a blueprint that describes what a kind of thing looks like and can do. An instance (also called an object) is one actual thing built from that blueprint. You define a class with the `class` keyword, and you create an instance by calling the class like a function: `rex = Dog()`. In fact, every value in Python is an object: numbers, strings and lists are all instances of built-in classes.\n\nBy convention, class names use CapWords (each word starts with a capital letter, no underscores), like `Dog` or `InvoiceItem`. This makes classes easy to tell apart from functions and variables, which use lowercase_with_underscores.\n\nA variable written directly inside the class body, like `species` below, is a class attribute: it belongs to the class and every instance can read it. You can check what an object is with `isinstance(obj, Class)`, and check whether two names point at the very same object with `is`. Two instances made from the same class are separate objects, even if they look identical.",
+      "explanation": "A class is a blueprint that describes what a kind of thing looks like and can do. An instance (also called an object) is one actual thing built from that blueprint. You define a class with the `class` keyword, and you create an instance by calling the class like a function: `rex = Dog()`. In fact, every value in Python is an object: numbers, strings and lists are all instances of built-in classes.\n\nBy convention, class names use CapWords (each word starts with a capital letter, no underscores), like `Dog` or `InvoiceItem`. This makes classes easy to tell apart from functions and variables, which use lowercase_with_underscores.\n\nA variable written directly inside the class body, like `species` below, is a class attribute: it belongs to the class and every instance can read it. Two instances made from the same class are separate objects, even if they look identical.\n\nYou can check what an object is with `isinstance(obj, Class)`, and check whether two names point at the very same object with `is`.",
       "analogy": "A cookie cutter is the class and the cookies are the instances. They all have the same shape, but each cookie is its own separate cookie.",
       "code": [
         {
@@ -21,7 +21,7 @@ window.TOPICS.push({
           "explanation": "`Dog()` builds a new object each time it is called. Both dogs can read the shared `species` attribute, `isinstance` confirms `rex` was built from `Dog`, and `rex is fido` is False because they are two different objects."
         }
       ],
-      "productionNote": "Real programs use classes to model domain objects such as User, Order and Invoice, and to wrap clients and services (a database client, an API client). Choose a class when data and the behaviour that works on it belong together.",
+      "productionNote": "Real programs use classes to model domain objects such as User, Order and Invoice, and to wrap clients and services (a client that talks to an outside service). Choose a class when data and the behaviour that works on it belong together.",
       "commonMistakes": [
         "Forgetting the parentheses when creating an instance: `rex = Dog` gives you the class itself, not a new object; you need `Dog()`.",
         "Creating a class for something that should just be a plain function. If there is no state to keep, a function is simpler."
@@ -33,7 +33,7 @@ window.TOPICS.push({
     {
       "id": "init-and-attributes",
       "title": "__init__ and attributes",
-      "explanation": "Most objects need their own data. The special method `__init__` runs automatically right after a new instance is created, and it is where you set that data up. Its first parameter is always `self`, which is the instance being built. Writing `self.owner = owner` stores the value on that instance as an attribute (a named piece of data attached to the object).\n\nPython passes `self` for you. When you write `Account(\"Ada\", 50)`, Python creates the object and calls `__init__` with the new object as `self`, followed by your arguments. You can give parameters default values, like `balance: float = 0.0`, so callers may leave them out.\n\nRemember the difference between the two kinds of attributes. Class attributes (written in the class body) are shared by every instance. Instance attributes (set on `self`) belong to one object only. Put anything that differs between objects in `__init__`.",
+      "explanation": "Most objects need their own data. The `__init__` method, a special method (its name starts and ends with double underscores; see the end of this topic), runs automatically right after a new instance is created, and it is where you set that data up. Its first parameter is always `self`, which is the instance being built. Writing `self.owner = owner` stores the value on that instance as an attribute (a named piece of data attached to the object).\n\nPython passes `self` for you. When you write `Account(\"Ada\", 50)`, Python creates the object and calls `__init__` with the new object as `self`, followed by your arguments. You can give parameters default values, like `balance: float = 0.0`, so callers may leave them out.\n\nRemember the difference between the two kinds of attributes. Class attributes (written in the class body) are shared by every instance. Instance attributes (set on `self`) belong to one object only. Put anything that differs between objects in `__init__`.",
       "analogy": "Filling in a new-employee form on their first day. Every employee gets their own form with their own details, but the form layout is the same for everyone.",
       "code": [
         {
@@ -58,7 +58,7 @@ window.TOPICS.push({
     {
       "id": "methods",
       "title": "Methods",
-      "explanation": "A method is a function defined inside a class. You call it on an object, like `acc.deposit(25)`, and Python automatically passes the object as the first argument `self`. Inside the method you use `self.balance` to read or change that object's data. Remember the parentheses: `acc.deposit` without `()` is just a reference to the method, it does not run it.\n\nA class method is marked with `@classmethod` (a decorator, which is a line starting with `@` that modifies the function below it). It receives the class itself, conventionally named `cls`, instead of an instance. Its most common use is an alternative constructor: a different way to build an object, such as parsing text. Calling `cls(owner, float(amount))` creates an instance of the class.\n\nA static method is marked with `@staticmethod` and receives neither `self` nor `cls`. It is an ordinary function that you keep inside the class because it is closely related, like a validation helper. You can call it on the class or on an instance.",
+      "explanation": "A method is a function defined inside a class. You call it on an object, like `acc.deposit(25)`, and Python automatically passes the object as the first argument `self`. Inside the method you use `self.balance` to read or change that object's data. Remember the parentheses: `acc.deposit` without `()` is just a reference to the method, it does not run it.\n\nA class method is marked with `@classmethod` (a decorator, which is a line starting with `@` that modifies the function below it). It receives the class itself, conventionally named `cls`, instead of an instance. Its most common use is an alternative constructor: a different way to build an object, such as parsing text. Calling `cls(owner, float(amount))` creates an instance of the class.\n\nThe quotes in `-> \"Account\"` write the class name as text, because the class is not finished yet while its body is being read. On Python 3.14 and later (including 3.15) hints are only looked up when something asks for them, so the quotes are optional there, but you will see them in a lot of existing code.\n\nA static method is marked with `@staticmethod` and receives neither `self` nor `cls`. It is an ordinary function that you keep inside the class because it is closely related, like a validation helper. You can call it on the class or on an instance.",
       "analogy": "Buttons on a microwave. Each button acts on that specific microwave. A class method is like the factory that builds a new microwave from a spec sheet, and a static method is like the printed safety label that belongs with it but does not act on it.",
       "code": [
         {
@@ -96,7 +96,7 @@ window.TOPICS.push({
       "productionNote": "Properties let you validate input and keep a stable public interface while the internals change: you can start with a plain attribute and later turn it into a property without changing any calling code.",
       "commonMistakes": [
         "Doing heavy or slow work (network calls, big calculations) inside a property. People expect attribute access to be cheap.",
-        "Causing infinite recursion by assigning `self.celsius = value` inside the celsius setter itself. Store the value in `self._celsius` instead."
+        "Causing infinite recursion (the setter keeps calling itself forever) by assigning `self.celsius = value` inside the celsius setter itself. Store the value in `self._celsius` instead."
       ],
       "sources": [
         { "title": "Python docs: property", "url": "https://docs.python.org/3/library/functions.html#property" }
@@ -116,7 +116,7 @@ window.TOPICS.push({
           "explanation": "Admin does not define `__init__`, so it inherits User's. Its `permissions` calls the parent version to get `['read']` and then adds two more items. An Admin counts as a User, so `isinstance` is True."
         }
       ],
-      "productionNote": "Frameworks rely on this pattern: you extend base classes for custom exceptions, web views, or test cases. Prefer shallow hierarchies and favour composition when classes are not truly an \"is-a\" relationship.",
+      "productionNote": "Frameworks rely on this pattern: you extend base classes for custom exceptions, web views, or test cases. Prefer shallow hierarchies and favour composition when the \"is-a\" test fails (an Admin is a kind of User, but a Car is not a kind of Engine).",
       "commonMistakes": [
         "Building deep inheritance chains that are hard to follow. Two or three levels is usually plenty.",
         "Overriding `__init__` in a child class and forgetting to call `super().__init__()`, so the parent's attributes are never set."
@@ -154,31 +154,31 @@ window.TOPICS.push({
     {
       "question": "Inside a method, what is `self`?",
       "options": [
-        "The class itself",
+        "The class that the method is defined in",
+        "A reserved built-in function that Python provides",
         "The instance the method is being called on",
-        "The parent class",
-        "A reserved built-in function"
+        "The parent class that this class inherits from"
       ],
-      "answerIndex": 1,
+      "answerIndex": 2,
       "explanation": "Python automatically passes the instance as the first argument, so `self` lets the method read and change that particular object's data."
     },
     {
       "question": "When does `__init__` run?",
       "options": [
-        "When the class is defined",
-        "When the program ends",
         "Right after a new instance is created",
-        "Only when you call it by hand"
+        "When the class definition is first read by Python",
+        "When the whole program finishes running",
+        "Only when you call it by hand in your code"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "explanation": "Calling `Account(\"Ada\")` creates the object and then Python automatically runs `__init__` to set it up."
     },
     {
       "question": "What does `@property` let you do?",
       "options": [
-        "Make a method run faster",
-        "Make a class attribute shared by all instances",
-        "Prevent a class from being inherited",
+        "Make a method run much faster than normal",
+        "Make a class attribute that is shared by all of its instances",
+        "Prevent a class from being used as a parent by other classes",
         "Access a method like an attribute, without parentheses"
       ],
       "answerIndex": 3,
@@ -187,24 +187,68 @@ window.TOPICS.push({
     {
       "question": "Which special method controls what `len(obj)` returns?",
       "options": [
-        "__len__",
         "__repr__",
+        "__len__",
         "__eq__",
         "__size__"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "explanation": "`len(obj)` calls `obj.__len__()`. `__repr__` is for text display and `__eq__` is for `==`; there is no `__size__` hook."
     },
     {
       "question": "In a child class, what does `super().method()` call?",
       "options": [
-        "The same method on the child, again",
+        "The same method on the child class, calling itself again",
+        "A static method defined on the object",
         "The version of `method` from the parent class",
-        "A static method on the object",
-        "The `__init__` method only"
+        "Only the `__init__` method of the parent class"
+      ],
+      "answerIndex": 2,
+      "explanation": "`super()` gives access to the parent class, so `super().method()` runs the parent's version, which lets a child extend rather than fully replace it."
+    },
+    {
+      "question": "What does `rex = Dog()` create?",
+      "options": [
+        "A new instance of Dog",
+        "The Dog class itself",
+        "A new file named Dog",
+        "A copy of the Dog method"
+      ],
+      "answerIndex": 0,
+      "explanation": "Calling a class like a function builds a new instance (object) of it. Without the parentheses, `rex = Dog` would only give another name to the class."
+    },
+    {
+      "question": "Which decorator makes a method receive the class as `cls` instead of an instance?",
+      "options": [
+        "@staticmethod",
+        "@property",
+        "@cls",
+        "@classmethod"
+      ],
+      "answerIndex": 3,
+      "explanation": "`@classmethod` passes the class itself as the first argument, which is why it suits alternative constructors. `@staticmethod` receives neither `self` nor `cls`."
+    },
+    {
+      "question": "If Admin(User) does not define permissions(), what does Admin(\"Ada\").permissions() use?",
+      "options": [
+        "Nothing; it raises an error because the method is missing",
+        "The permissions method inherited from User",
+        "A copy of the whole Admin class made on the fly",
+        "Only the __init__ method that Admin inherits"
       ],
       "answerIndex": 1,
-      "explanation": "`super()` gives access to the parent class, so `super().method()` runs the parent's version, which lets a child extend rather than fully replace it."
+      "explanation": "A child class automatically gets every method of its parent, so Python finds `permissions` on User and runs it."
+    },
+    {
+      "question": "What does `print(obj)` use when a class defines only __repr__?",
+      "options": [
+        "__str__ is required, so it errors",
+        "Nothing is printed",
+        "__repr__ is used as the text",
+        "__eq__ is used"
+      ],
+      "answerIndex": 2,
+      "explanation": "`print` prefers `__str__`, but when it is missing Python falls back to `__repr__`, so the object prints using that text."
     }
   ]
 }

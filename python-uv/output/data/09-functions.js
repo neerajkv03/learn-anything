@@ -4,7 +4,7 @@ window.TOPICS.push({
  "order": 9,
  "title": "Functions",
  "version": "Python 3.15.2 + uv 0.13.7",
- "summary": "A function is a named, reusable block of code. You will learn to define functions, give them flexible parameters, understand where names live (scope), and write tiny lambdas. Almost every real Python program is built from small functions like these.",
+ "summary": "A function is a named, reusable block of code. You will learn to define functions, give them flexible parameters (the names listed in the def line), understand where names live (scope), and write tiny lambdas (one-line unnamed functions). Almost every real Python program is built from small functions like these.",
  "prerequisites": [
   "08-comprehensions-unpacking"
  ],
@@ -39,7 +39,7 @@ window.TOPICS.push({
   {
    "id": "parameters-and-defaults",
    "title": "Parameters and defaults",
-   "explanation": "A default value lets a parameter be optional: `def connect(host, port=5432)`. If the caller leaves `port` out, Python uses 5432. Parameters with defaults must come after those without.\n\nWhen calling, you can pass arguments by keyword: `connect(\"db\", timeout=30)`. Keyword arguments make calls self-explanatory and let you skip over other defaults. Once you use a keyword argument in a call, every argument after it must also be a keyword argument, or Python raises a SyntaxError (an error for code that breaks Python's writing rules).\n\nDefault values are created once, when the `def` line runs, not on every call. That is harmless for numbers and strings, but dangerous for mutable (changeable) objects like lists. A default `[]` would be shared by every call and keep growing. The safe pattern is `tags=None`, then create a fresh list inside the function when it is `None`.",
+   "explanation": "A default value lets a parameter be optional: `def connect(host, port=5432)`. If the caller leaves `port` out, Python uses 5432. Parameters with defaults must come after those without.\n\nWhen calling, you can pass arguments by keyword: `connect(\"db\", timeout=30)`. Keyword arguments make calls self-explanatory and let you skip over other defaults. Once you use a keyword argument in a call, a plain positional argument cannot follow it, or Python raises a SyntaxError (an error for code that breaks Python's writing rules).\n\nDefault values are created once, when the `def` line runs, not on every call. That is harmless for numbers and strings, but dangerous for mutable (changeable) objects like lists. A default `[]` would be shared by every call and keep growing. The safe pattern is `tags=None`, then create a fresh list inside the function when it is `None`.",
    "analogy": "A coffee order: the size defaults to \"medium\" unless you say otherwise.",
    "code": [
     {
@@ -70,7 +70,7 @@ window.TOPICS.push({
   {
    "id": "args-and-kwargs",
    "title": "*args and **kwargs",
-   "explanation": "Sometimes you do not know how many arguments a caller will pass. A parameter written `*numbers` collects all extra positional arguments into a tuple (an unchangeable sequence). A parameter written `**info` collects extra keyword arguments into a dict (key-value pairs). The names `args` and `kwargs` are only convention.\n\nThe same symbols work at the call site in reverse: `total(*values)` unpacks a list into separate positional arguments, and `f(**options)` unpacks a dict into keyword arguments. Forgetting the `*` would pass the whole list as one argument.\n\nThese are great for wrappers that forward arguments to another function. But do not overuse `**kwargs`: if every function accepts anything, callers cannot tell what is valid. Prefer named parameters when you know them.",
+   "explanation": "Sometimes you do not know how many arguments a caller will pass. A parameter written `*numbers` collects all extra positional arguments into a tuple (an unchangeable sequence). A parameter written `**info` collects extra keyword arguments into a dict (key-value pairs). The names `args` and `kwargs` are only convention.\n\nThe same symbols work at the call site in reverse: `total(*values)` unpacks a list into separate positional arguments, and `f(**options)` unpacks a dict into keyword arguments. Forgetting the `*` would pass the whole list as one argument.\n\nThese are great for wrappers (small functions that pass arguments on to another function). But do not overuse `**kwargs`: if every function accepts anything, callers cannot tell what is valid. Prefer named parameters when you know them.",
    "analogy": "A \"bring anything\" potluck table: any number of dishes (args), each optionally labelled (kwargs).",
    "code": [
     {
@@ -81,7 +81,7 @@ window.TOPICS.push({
      "explanation": "`numbers` is the tuple `(1, 2, 3)`. `info` is a dict of the keyword arguments. `*values` spreads the list into two arguments."
     }
    ],
-   "productionNote": "Wrappers and decorators forward arguments with `*args, **kwargs`; logging and formatting helpers use them for flexibility.",
+   "productionNote": "Wrappers (small functions that pass arguments along) forward arguments with `*args, **kwargs`; logging and formatting helpers use them for flexibility.",
    "commonMistakes": [
     "Overusing **kwargs so callers cannot tell what the function accepts.",
     "Forgetting `*` when passing a list, so the list arrives as one argument."
@@ -137,7 +137,7 @@ window.TOPICS.push({
      "explanation": "`tax` reads the global `rate`. `reset` creates a separate local `counter`, so the global `counter` is still 0."
     }
    ],
-   "productionNote": "Avoiding global mutable state makes code easier to test and safer with threads.",
+   "productionNote": "Avoiding global mutable state makes code easier to test and safer when a program does several things at once.",
    "commonMistakes": [
     "Assigning to a global name inside a function and expecting the global to change; or reading it first and getting UnboundLocalError (an error for using a local name before it has been given a value).",
     "Relying on global variables instead of parameters and return values."
@@ -184,23 +184,23 @@ window.TOPICS.push({
   {
    "question": "What does a function without a `return` statement give back?",
    "options": [
+    "None",
     "0",
     "An empty string",
-    "None",
     "It raises an error"
    ],
-   "answerIndex": 2,
+   "answerIndex": 0,
    "explanation": "Without `return`, the call evaluates to `None`."
   },
   {
    "question": "Why is `def f(x=[])` dangerous?",
    "options": [
     "Lists cannot be defaults",
-    "The same list is created once and shared across calls",
     "It is a SyntaxError",
+    "The same list is created once and shared across calls",
     "The list is deleted after the first call"
    ],
-   "answerIndex": 1,
+   "answerIndex": 2,
    "explanation": "Default values are evaluated once at definition time, so a mutable default keeps changes between calls."
   },
   {
@@ -224,6 +224,28 @@ window.TOPICS.push({
    ],
    "answerIndex": 1,
    "explanation": "`*args` collects extra positional arguments into a tuple."
+  },
+  {
+   "question": "x = 0 at the top of a file. A function sets x = 5 inside its body, then is called. What is the top-level x afterwards?",
+   "options": [
+    "0",
+    "5",
+    "None",
+    "An error"
+   ],
+   "answerIndex": 0,
+   "explanation": "Assigning inside a function creates a local name, so the global x stays 0."
+  },
+  {
+   "question": "What does min([('pen', 10), ('bag', 900)], key=lambda p: p[1]) return?",
+   "options": [
+    "('bag', 900)",
+    "10",
+    "('pen', 10)",
+    "An error"
+   ],
+   "answerIndex": 2,
+   "explanation": "min compares the second item of each pair, and 10 is smaller than 900."
   }
  ]
 });

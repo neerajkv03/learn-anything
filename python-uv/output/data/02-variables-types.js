@@ -46,7 +46,7 @@ window.TOPICS.push({
           "explanation": "The underscores vanish when printed. `type(price)` reports the float class. `2 ** 100` means 2 to the power 100; ints never overflow (run out of room), so the full exact result is shown."
         }
       ],
-      "productionNote": "Never use `float` for money. Use `decimal.Decimal` or store whole cents as an `int`, so rounding errors cannot creep into totals.",
+      "productionNote": "Never use `float` for money. Use `decimal.Decimal` (a standard-library type for exact decimal numbers) or store whole cents as an `int`, so rounding errors cannot creep into totals.",
       "commonMistakes": [
         "Expecting `0.1 + 0.2 == 0.3` to be True. It is False because of tiny float errors.",
         "Using floats to store money amounts."
@@ -73,7 +73,7 @@ window.TOPICS.push({
       "productionNote": "Text is everywhere in real programs: user names, log messages, file contents and API data are all strings.",
       "commonMistakes": [
         "Writing `\"Age: \" + 30`, which raises a `TypeError` (an error meaning the value is the wrong type for that operation) because a string and an int cannot be added.",
-        "Mismatched quotes, such as `\"hello'`, which cause a `SyntaxError`."
+        "Mismatched quotes, such as `\"hello'`, which cause a `SyntaxError` (Python's error for code written in an invalid form)."
       ],
       "sources": [
         { "title": "Python tutorial: Text", "url": "https://docs.python.org/3/tutorial/introduction.html#text" }
@@ -154,8 +154,8 @@ window.TOPICS.push({
   "quiz": [
     {
       "question": "What does `print(int(7.9))` output?",
-      "options": ["8", "7", "7.9", "It raises an error"],
-      "answerIndex": 1,
+      "options": ["7", "8", "7.9", "It raises an error"],
+      "answerIndex": 0,
       "explanation": "`int()` truncates toward zero instead of rounding, so 7.9 becomes 7."
     },
     {
@@ -166,7 +166,7 @@ window.TOPICS.push({
     },
     {
       "question": "What does `\"5\" + 5` do?",
-      "options": ["It raises a TypeError (an error meaning the value is the wrong type for that operation)", "It gives 10", "It gives \"55\"", "It gives 5"],
+      "options": ["It raises a TypeError (an error meaning the value is the wrong type for that operation)", "It gives 10, after Python converts the string to a number", "It gives \"55\", after Python joins the two values as text", "It gives 5, because the string is simply ignored"],
       "answerIndex": 0,
       "explanation": "Python will not add a string and an int. You must convert one of them first, e.g. `int(\"5\") + 5`."
     },
@@ -175,6 +175,18 @@ window.TOPICS.push({
       "options": ["if x == none", "if x = None", "if x is none", "if x is None"],
       "answerIndex": 3,
       "explanation": "`None` is capitalised and the recommended check is `is None`. `=` assigns, and lowercase `none` is not defined."
+    },
+    {
+      "question": "What type does `type(19.99)` report?",
+      "options": ["<class 'int'>", "<class 'float'>", "<class 'str'>", "<class 'bool'>"],
+      "answerIndex": 1,
+      "explanation": "19.99 has a decimal point, so it is a float."
+    },
+    {
+      "question": "Which symbol starts a comment in Python?",
+      "options": ["//", "--", "#", "/*"],
+      "answerIndex": 2,
+      "explanation": "Python ignores everything from # to the end of the line. `//`, `--` and `/*` are not comments in Python."
     }
   ]
 });

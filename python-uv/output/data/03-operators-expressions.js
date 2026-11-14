@@ -13,7 +13,7 @@ window.TOPICS.push({
    "id": "arithmetic-operators",
    "title": "Arithmetic operators",
    "explanation": "An expression is a piece of code that produces a value, like `7 + 2`. An operator is a symbol that does something with values (`+`, `-`), and an operand is a value the operator works on. In `7 + 2`, the `+` is the operator and 7 and 2 are the operands.\n\nPython has `+` (add), `-` (subtract), `*` (multiply), and `/` (divide). Division with `/` always gives a float (a number with a decimal point), even when the answer is whole: `10 / 2` is `5.0`.\n\nThree more operators are very useful. `//` is floor division: it divides and rounds down to a whole number. `%` is the remainder left over after dividing. `**` raises a number to a power, so `2 ** 10` is 1024.\n\nBe careful with negatives: `//` always rounds toward minus infinity (down), so `-7 // 2` is `-4`, not `-3`.",
-   "analogy": "You share 7 sweets among 2 kids. `7 // 2` is how many each kid gets (3), and `7 % 2` is the sweet left over (1).",
+   "analogy": "You share 7 sweets among 2 kids. `7 / 2` is 3.5 sweets each if you split exactly, `7 // 2` is the 3 whole sweets each kid gets, and `7 % 2` is the 1 sweet left over.",
    "code": [
     {
      "language": "python",
@@ -65,7 +65,7 @@ window.TOPICS.push({
    "id": "logical-operators",
    "title": "Logical operators",
    "explanation": "Logical operators combine bools. `and` is true only if both sides are true. `or` is true if at least one side is true. `not` flips a value: `not True` is `False`.\n\nPython uses the English words, not `&&`, `||`, or `!` as in some other languages.\n\nThey are also short-circuit: Python stops as soon as the answer is known. In `a and b`, if `a` is false the result is already false, so `b` is never evaluated. In `a or b`, if `a` is true, `b` is skipped. This lets you write safe guards such as `count != 0 and 10 / count > 2`: when `count` is 0 the first test is false, so the division (which would raise a `ZeroDivisionError`, an error for dividing by zero) never runs.\n\nA classic trap: `x == 1 or 2` does not mean \"x is 1 or 2\". It means `(x == 1) or 2`, and since `2` is always truthy (counts as true), the whole thing is always truthy. Write `x == 1 or x == 2` instead.",
-   "analogy": "To enter a club you need an ID and a ticket (both required: `and`). You can pay with cash or card (either works: `or`).",
+   "analogy": "To enter a club you need an ID and a ticket (both required: `and`). You can pay with cash or card (either works: `or`). A sign on the door saying NOT MEMBERS ONLY flips the answer: `not` turns a true answer into a false one.",
    "code": [
     {
      "language": "python",
@@ -117,7 +117,7 @@ window.TOPICS.push({
    "id": "operator-precedence",
    "title": "Operator precedence",
    "explanation": "Precedence is the order in which Python evaluates the parts of an expression. From first to last: `**`, then `*` `/` `//` `%`, then `+` `-`, then comparisons, then `not`, then `and`, then `or`.\n\nOperators on the same level are evaluated left to right (except `**`, which goes right to left). Parentheses always override precedence, and they also make code easier to read.\n\nA surprise: `-2 ** 2` is `-4`, because `**` is done first, before the minus sign, so it is read as `-(2 ** 2)`. Likewise `True or False and False` is `True`, because `and` is evaluated before `or`.",
-   "analogy": "PEMDAS/BODMAS (the order rules from school maths): brackets first, then powers, then multiply and divide, then add and subtract.",
+   "analogy": "PEMDAS/BODMAS (the order rules from school maths): brackets first, then powers, then multiply and divide, then add and subtract. Logic words come last, like totalling the sum before deciding what it means: `not` is done first, then `and`, then `or`.",
    "code": [
     {
      "language": "python",
@@ -144,21 +144,21 @@ window.TOPICS.push({
   {
    "question": "What does `print(17 % 5)` output?",
    "options": [
-    "3",
     "2",
+    "3",
     "3.4",
     "12"
    ],
-   "answerIndex": 1,
+   "answerIndex": 0,
    "explanation": "`%` gives the remainder. 17 divided by 5 is 3 with 2 left over."
   },
   {
    "question": "What is the type of the result of `10 / 2`?",
    "options": [
-    "int",
+    "int (whole number)",
     "str",
     "float",
-    "bool"
+    "bool (True or False)"
    ],
    "answerIndex": 2,
    "explanation": "True division with `/` always returns a float, so the result is `5.0`."
@@ -184,6 +184,28 @@ window.TOPICS.push({
    ],
    "answerIndex": 3,
    "explanation": "Python reads it as `(x == 1) or 2`. The non-zero number 2 counts as true, so the whole expression is always truthy. Write `x == 1 or x == 2`."
+  },
+  {
+   "question": "After `score = 10` and then `score += 5`, what is `score`?",
+   "options": [
+    "5",
+    "15",
+    "50",
+    "10"
+   ],
+   "answerIndex": 1,
+   "explanation": "`score += 5` means `score = score + 5`, so 10 + 5 = 15."
+  },
+  {
+   "question": "With `age = 20`, which expression is True?",
+   "options": [
+    "age == 21",
+    "age != 20",
+    "age > 30",
+    "18 <= age < 65"
+   ],
+   "answerIndex": 3,
+   "explanation": "20 is at least 18 and below 65, so the chained comparison is True; the other three are False."
   }
  ]
 });

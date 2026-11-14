@@ -10,7 +10,7 @@ window.TOPICS.push({
     {
       "id": "request-bodies",
       "title": "Request bodies with Pydantic models",
-      "explanation": "A request body is the data a client sends inside the request, after the headers. For create and update operations it is usually JSON (topic 26). In FastAPI you declare the body by typing a function parameter with a Pydantic model class (topic 27). FastAPI reads the JSON, validates it against the model, converts it, and hands your function a ready model object.\n\nFastAPI decides where each parameter comes from using three rules. If the name appears in the path, for example `{item_id}`, it is a path parameter. If it has a simple type such as `int`, `str` or `bool` and is not in the path, it is a query parameter. If its type is a Pydantic model, it is read from the JSON body.\n\nYou can combine all three in one function. A body only makes sense on methods that carry one: POST, PUT and PATCH. Sending a body with GET is unreliable and many clients and servers ignore it.\n\nTo follow along, use the project from topic 28 (a folder with `pyproject.toml` and FastAPI installed). Put the code below in `main.py`, replacing what was there. In one terminal, run `uv run fastapi dev` and leave it running. Open a second terminal in the same folder and run the `curl` commands. `curl` is a command-line tool that sends HTTP requests; it comes with macOS, Linux and Windows 10 and later. In Windows PowerShell type `curl.exe` instead of `curl`, because plain `curl` is a different built-in command there. If quoting JSON in your shell is awkward, open `http://127.0.0.1:8000/docs` and use the \"Try it out\" button instead.\n\nIn the `curl` commands, `-s` hides the progress meter, `-X` sets the HTTP method, `-H` adds a header, `-d` gives the body, and `-w \"\\n%{http_code}\\n\"` prints the status code on its own line after the response body.\n\nThe model has `tags: list[str] = []`. Normally a mutable default in a function is a trap (topic 9), but Pydantic copies the default for every new instance, so each item gets its own empty list.",
+      "explanation": "A request body is the data a client sends inside the request, after the headers. For create and update operations it is usually JSON (topic 26). In FastAPI you declare the body by typing a function parameter with a Pydantic model class (topic 27). FastAPI reads the JSON, validates it against the model, converts it, and hands your function a ready model object.\n\nFastAPI decides where each parameter comes from using three rules. If the name appears in the path, for example `{item_id}`, it is a path parameter. If it has a simple type such as `int`, `str` or `bool` and is not in the path, it is a query parameter. If its type is a Pydantic model, it is read from the JSON body.\n\nYou can combine all three in one function. A body only makes sense on methods that carry one: POST, PUT and PATCH. Sending a body with GET is unreliable and many clients and servers ignore it.\n\nTo follow along, use the project from topic 28 (a folder with `pyproject.toml` and FastAPI installed). Put the code below in `main.py`, replacing what was there. In one terminal, run `uv run fastapi dev` and leave it running.\n\nOpen a second terminal in the same folder and run the `curl` commands. `curl` is a command-line tool that sends HTTP requests; it comes with macOS, Linux and Windows 10 and later. In Windows PowerShell type `curl.exe` instead of `curl`, because plain `curl` is a different built-in command there.\n\nIn the `curl` commands, `-s` hides the progress meter, `-X` sets the HTTP method, `-H` adds a header, `-d` gives the body, and `-w \"\\n%{http_code}\\n\"` prints the status code on its own line after the response body. If quoting JSON in your shell is awkward, open `http://127.0.0.1:8000/docs` and use the \"Try it out\" button instead.\n\nThe model has `tags: list[str] = []`. Normally a mutable default in a function is a trap (topic 9), but Pydantic copies the default for every new instance, so each item gets its own empty list.",
       "analogy": "A mail-order form. The address on the envelope is the path, which says which shop and which product. The checkboxes you tick on the outside, such as \"gift wrap\", are the query options. The filled-in order form inside the envelope is the body. FastAPI is the clerk who opens the envelope and checks that the order form is filled in correctly before anything is shipped.",
       "code": [
         {
@@ -178,7 +178,7 @@ window.TOPICS.push({
         "item_id from the path, limit from the query string, item from the JSON body",
         "All three from the JSON body",
         "item_id from the query string, limit from the path, item from the headers",
-        "All three from the query string"
+        "All three from the query string, because that is where FastAPI looks by default"
       ],
       "answerIndex": 0,
       "explanation": "A name in the path is a path parameter, a simple type outside the path is a query parameter, and a Pydantic model is read from the JSON body."
@@ -186,46 +186,79 @@ window.TOPICS.push({
     {
       "question": "An endpoint accepts a `UserIn` model that has a `password` field. How do you make sure the password is not in the response?",
       "options": [
-        "Return the password as an empty string",
-        "Declare a return type (or `response_model`) of a model without `password`, such as `BaseUser`",
-        "Use status code 204",
+        "Return the password as an empty string, so the field is still there but blank",
+        "Use status code 204, which tells FastAPI to drop sensitive fields from the reply",
+        "Declare a return type (or `response_model`) without `password`, such as `BaseUser`",
         "Nothing is needed, because FastAPI hides fields named password automatically"
       ],
-      "answerIndex": 1,
+      "answerIndex": 2,
       "explanation": "The declared return type filters the output, so only the fields of that model are sent. FastAPI does not treat any field name as secret on its own."
     },
     {
       "question": "What does `raise HTTPException(status_code=404, detail=\"Item not found\")` send to the client?",
       "options": [
-        "Status 200 with the body `Item not found`",
-        "Status 422 with a list of errors",
-        "Status 404 with the body `{\"detail\":\"Item not found\"}`",
-        "Status 500 with no body"
+        "Status 200 with the plain-text body `Item not found`",
+        "Status 422 with a list of validation errors in the body",
+        "Status 500 with an empty body, because exceptions crash the server",
+        "Status 404 with the body `{\"detail\":\"Item not found\"}`"
       ],
-      "answerIndex": 2,
+      "answerIndex": 3,
       "explanation": "FastAPI turns the exception into a response with the given status code and a JSON body that has the `detail` key."
     },
     {
       "question": "In which situation is your endpoint function not called at all?",
       "options": [
-        "When the client sends a valid request",
-        "When the function returns a value",
-        "When the endpoint uses a status code other than 200",
-        "When the request data fails validation, so FastAPI answers 422 before the function runs"
+        "When the client sends a valid request with all fields",
+        "When the request data fails validation (FastAPI answers 422 first)",
+        "When the function returns a value to the client",
+        "When the endpoint uses a status code other than 200"
       ],
-      "answerIndex": 3,
+      "answerIndex": 1,
       "explanation": "FastAPI validates path, query and body data first. If anything is invalid it replies 422 and the function body never runs."
     },
     {
       "question": "How do you make the query parameter `limit` accept at most 100?",
       "options": [
-        "`limit: Annotated[int, Query(ge=100)]` (sets a minimum, not a maximum)",
-        "`limit: Annotated[int, Path(le=100)]`",
-        "`limit: Annotated[int, Query(le=100)] = 10`",
-        "`limit: int(100)`"
+        "`limit: Annotated[int, Query(ge=100)] = 100`",
+        "`limit: Annotated[int, Path(le=100)] = 10`",
+        "`limit: int = Query(100)`",
+        "`limit: Annotated[int, Query(le=100)] = 10`"
+      ],
+      "answerIndex": 3,
+      "explanation": "`Query(le=100)` inside `Annotated` adds the rule \"less than or equal to 100\" to a query parameter. `ge=100` sets a minimum instead, `Path` is for path parameters, and `Query(100)` only sets a default of 100."
+    },
+    {
+      "question": "Which field of a 422 error entry tells you whether the bad value came from the body, query, path or header?",
+      "options": [
+        "`loc`",
+        "`type`",
+        "`msg`",
+        "`input`"
+      ],
+      "answerIndex": 0,
+      "explanation": "`loc` is the location of the error, a list that starts with `\"body\"`, `\"query\"`, `\"path\"` or `\"header\"` followed by the field name. `type` and `msg` describe the problem, and `input` is the bad value."
+    },
+    {
+      "question": "A DELETE endpoint returns no body. Which status code fits best?",
+      "options": [
+        "`200`",
+        "`201`",
+        "`204`",
+        "`404`"
       ],
       "answerIndex": 2,
-      "explanation": "`Query(le=100)` inside `Annotated` adds the rule \"less than or equal to 100\" to a query parameter. `Path` is for path parameters, and a default such as `= 10` makes it optional."
+      "explanation": "204 means \"No Content\": the request worked and there is nothing to send back. 200 usually comes with a body, 201 means something was created, and 404 means not found."
+    },
+    {
+      "question": "With `tag: Annotated[list[str] | None, Query()] = None`, what does `/search?tag=a&tag=b` give for `tag`?",
+      "options": [
+        "`\"a\"`",
+        "`[\"a\", \"b\"]`",
+        "`\"b\"`",
+        "A 422 error"
+      ],
+      "answerIndex": 1,
+      "explanation": "Repeating a query key builds a list when the parameter is a `list[str]` with `Query()`, so `tag` is `[\"a\", \"b\"]`."
     }
   ]
 });

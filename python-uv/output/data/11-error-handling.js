@@ -10,7 +10,7 @@ window.TOPICS.push({
     {
       "id": "what-exceptions-are",
       "title": "What exceptions are",
-      "explanation": "An exception is Python's way of saying \"something went wrong while the program was running\". For example, asking Python to turn the text \"abc\" into a number cannot work, so Python stops what it is doing and raises (signals) an exception. If nothing handles it, the whole program stops and Python prints a traceback.\n\nA traceback is a report of the chain of function calls that led to the error. Read it from the bottom up: the last line holds the exception type (such as ValueError) and a message explaining the problem. The lines above it show the file, line number and code where it happened, ending with the exact line that failed. Tracebacks are printed to stderr (the error output stream), not stdout (the normal output stream), so they do not appear in a program's regular printed output.\n\nCommon exceptions you will meet: ValueError (right type, wrong value, like int(\"abc\")), TypeError (wrong type, like 1 + \"a\"), KeyError (missing dictionary key), IndexError (list position that does not exist), ZeroDivisionError (dividing by zero) and FileNotFoundError (opening a file that is not there). Do not confuse these with a SyntaxError, which is a typo in the code itself that Python finds before running anything.",
+      "explanation": "An exception is Python's way of saying \"something went wrong while the program was running\". For example, asking Python to turn the text \"abc\" into a number cannot work, so Python stops what it is doing and raises (signals) an exception. If nothing handles it, the whole program stops and Python prints a traceback.\n\nA traceback is a report of the chain of function calls that led to the error. Read it from the bottom up: the last line holds the exception type (such as ValueError) and a message explaining the problem. The lines above it show the file, line number and code where it happened, ending with the exact line that failed. Tracebacks are printed to stderr (the error output stream), not stdout (the normal output stream), so they do not appear in a program's regular printed output.\n\nCommon exceptions you will meet:\nValueError: right type, wrong value, like int(\"abc\")\nTypeError: wrong type, like 1 + \"a\"\nKeyError: a dictionary key that does not exist\nIndexError: a list position that does not exist\nZeroDivisionError: dividing by zero\nFileNotFoundError: opening a file that is not there\n\nDo not confuse these with a SyntaxError, which is a typo in the code itself that Python finds before running anything.",
       "analogy": "A smoke alarm: it interrupts everything and tells you which room has the problem.",
       "code": [
         {
@@ -21,7 +21,7 @@ window.TOPICS.push({
           "explanation": "Running this stops with a traceback on stderr, so nothing appears on stdout. The traceback lists the call print(...), then to_number(\"abc\"), then the failing line return int(text). Its last line is: ValueError: invalid literal for int() with base 10: 'abc'. That bottom line names the error type and the bad value. The exact file paths and line numbers shown above it depend on your machine."
         }
       ],
-      "productionNote": "Reading tracebacks from logs is the first step in debugging production incidents. Always start at the bottom line, then walk upward to find the last line of your own code in the chain.",
+      "productionNote": "Reading tracebacks from logs (the saved record a program writes of its messages and errors) is the first step in debugging production incidents. Always start at the bottom line, then walk upward to find the last line of your own code in the chain.",
       "commonMistakes": [
         "Reading only the top of the traceback; the actual error type and message are at the bottom.",
         "Confusing syntax errors (found before the program runs) with exceptions (raised while it runs)."
@@ -35,7 +35,7 @@ window.TOPICS.push({
       "id": "try-except-else-finally",
       "title": "try / except / else / finally",
       "explanation": "The try statement lets you run risky code and decide what happens if it fails. Code inside try runs first. If an exception occurs, Python jumps to the matching except block, where \"except SomeError as e\" gives the caught exception the name e. If no exception occurs, the optional else block runs. The optional finally block runs no matter what, which makes it the right place for cleanup such as closing a file.\n\nAlways catch the most specific exception you can. Catching ValueError tells readers exactly what you expect to go wrong, while catching everything can hide genuine bugs. You can list several types in one clause with a tuple, like except (ValueError, TypeError):, or write several except blocks to handle each type differently. Python checks them from top to bottom and uses the first one that matches.\n\nKeep the try block small: only the line or two that can actually fail. Put the code that depends on success in else, so an error there is not accidentally treated as an error from the risky step.",
-      "analogy": "A trapeze artist with a safety net (except) and a crew that always tidies the ring afterwards (finally).",
+      "analogy": "A trapeze artist with a safety net (except), a crew that tidies the ring afterwards (finally), and a judge who scores only a routine that finished cleanly (else).",
       "code": [
         {
           "language": "python",
@@ -45,9 +45,9 @@ window.TOPICS.push({
           "explanation": "Call 1: 10 / 2 works, so else prints result=5.0 (the / operator always gives a float), then finally prints done. Call 2: dividing by zero raises ZeroDivisionError, so that handler runs, then finally. Call 3: int(\"x\") raises ValueError before the division, so \"not a number\" is printed, then finally. Notice finally printed done every time."
         }
       ],
-      "productionNote": "This pattern handles bad user input, missing files and failed network calls without crashing a whole service. Catch what you can actually recover from, and let everything else propagate so it shows up in logs.",
+      "productionNote": "This pattern handles bad user input, missing files and failed network calls without crashing a whole service. Catch what you can actually recover from, and let everything else travel up to the caller (propagate) so it shows up in logs (the saved record a program writes of its messages and errors).",
       "commonMistakes": [
-        "Using a bare except: or except Exception: pass, which silently hides real bugs.",
+        "Using a bare except: (an except with no error type) or except Exception: pass, which silently hides real bugs.",
         "Putting too much code inside try, so you cannot tell which line actually failed."
       ],
       "sources": [
@@ -81,7 +81,7 @@ window.TOPICS.push({
     {
       "id": "custom-exception-classes",
       "title": "Custom exception classes",
-      "explanation": "Built-in exceptions are general. For your own program you can create named errors such as PaymentError or NotFoundError. You do this by writing a class (a blueprint for objects, covered fully in a later topic) that inherits from Exception. The one-line pattern is: class PaymentError(Exception): pass, where pass simply means \"nothing more to add\". A docstring (a string on the first line of the class) can serve as the body instead.\n\nExceptions can form families. Define one base error for your app, then subclass it for specific cases. Callers can then catch the specific one (NotFoundError) or the whole family (AppError) with a single except clause.\n\nAlways inherit from Exception, never from BaseException. BaseException also covers things like Ctrl+C (KeyboardInterrupt), and you do not want your code to interfere with those.",
+      "explanation": "Built-in exceptions are general. For your own program you can create named errors such as PaymentError or NotFoundError. You do this by writing a class (a blueprint for objects, covered fully in a later topic) that inherits from Exception (takes on everything Exception already does). The one-line pattern is: class PaymentError(Exception): pass, where pass simply means \"nothing more to add\". A docstring (a string on the first line of the class) can serve as the body instead.\n\nExceptions can form families. Define one base error for your app, then write subclasses (new classes that inherit from it) for specific cases. Callers can then catch the specific one (NotFoundError) or the whole family (AppError) with a single except clause.\n\nAlways inherit from Exception, never from BaseException. BaseException also covers things like Ctrl+C (KeyboardInterrupt), and you do not want your code to interfere with those.",
       "analogy": "Hospital colour codes: a specific code tells staff exactly what kind of emergency it is.",
       "code": [
         {
@@ -118,7 +118,7 @@ window.TOPICS.push({
       "productionNote": "Code that talks to a database turns its low-level errors into one error type the rest of the app understands, without losing the root cause, so callers get a stable error type while logs still show what really failed.",
       "commonMistakes": [
         "Raising a new error without from, which produces the confusing \"During handling of the above exception...\" message.",
-        "Swallowing the original error and raising a new one with no link, losing the root cause."
+        "Swallowing the original error and raising a new one with the link cut (for example with `from None`), losing the root cause."
       ],
       "sources": [
         { "title": "Python tutorial: Exception Chaining", "url": "https://docs.python.org/3/tutorial/errors.html#exception-chaining" }
@@ -130,45 +130,67 @@ window.TOPICS.push({
       "question": "When does the else block after a try statement run?",
       "options": [
         "Every time, whether or not an error happened",
-        "Only when the try block finished without raising an exception",
         "Only when an exception was raised and handled",
+        "Only when try raised no exception",
         "Only when finally is missing"
       ],
-      "answerIndex": 1,
+      "answerIndex": 2,
       "explanation": "else runs only if the try block completed with no exception. finally is the block that always runs."
     },
     {
       "question": "Why should you avoid writing `except Exception: pass`?",
       "options": [
+        "It silently hides real bugs",
         "It is a syntax error",
         "It makes the program run slower",
-        "It silently hides real bugs, so failures go unnoticed",
         "It only works for ValueError"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "explanation": "Catching everything and doing nothing swallows errors, including genuine bugs, leaving no trace of what went wrong."
     },
     {
       "question": "What does `raise NewError(\"...\") from err` preserve?",
       "options": [
-        "The original exception, stored as __cause__ and shown in the traceback",
         "The value of every local variable",
         "Nothing; it only changes the message",
-        "The original exception, but only if it is a ValueError"
+        "The original exception, but only if it is a ValueError",
+        "The original error as __cause__"
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "explanation": "The from clause links the original exception as the new one's __cause__, so the traceback shows both the root cause and the new error."
     },
     {
       "question": "Which exception does `{\"a\": 1}[\"b\"]` raise?",
       "options": [
         "ValueError",
-        "IndexError",
+        "KeyError",
         "TypeError",
-        "KeyError"
+        "IndexError"
       ],
-      "answerIndex": 3,
+      "answerIndex": 1,
       "explanation": "Looking up a dictionary key that does not exist raises KeyError. IndexError is for list positions that are out of range."
+    },
+    {
+      "question": "What does raise ValueError(\"bad\") do inside a function?",
+      "options": [
+        "Stops the function and hands the exception to the caller",
+        "Prints bad on the screen and then keeps running the next line",
+        "Returns the text bad to the caller as an ordinary string value",
+        "Renames the function to ValueError for the rest of the program"
+      ],
+      "answerIndex": 0,
+      "explanation": "raise stops the current function and passes the exception up to whoever called it."
+    },
+    {
+      "question": "Which base class should your own exception class inherit from?",
+      "options": [
+        "print",
+        "KeyboardInterrupt",
+        "Exception",
+        "str"
+      ],
+      "answerIndex": 2,
+      "explanation": "Inherit from Exception. print is a function and str is the text type, and KeyboardInterrupt is reserved for Ctrl+C."
     }
   ]
 }

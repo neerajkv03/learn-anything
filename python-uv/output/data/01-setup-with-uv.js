@@ -4,13 +4,13 @@ window.TOPICS.push({
   "order": 1,
   "title": "Setup with uv",
   "version": "Python 3.15.2 + uv 0.13.7",
-  "summary": "Learn what a program, Python, and uv are, then install uv and use it to install Python 3.15. You will run your first script with `uv run`, try the interactive REPL, and use `print()` to show text on screen.",
+  "summary": "Learn what a program, Python, and uv are, then install uv and use it to install Python 3.15. You will run your first script with `uv run`, try the interactive REPL (a Python prompt that runs one line at a time), and use `print()` to show text on screen.",
   "prerequisites": [],
   "subtopics": [
     {
       "id": "what-python-and-uv-are",
       "title": "What Python and uv are",
-      "explanation": "A program is a list of instructions that tells a computer what to do. Python is a programming language: a set of words and rules you use to write those instructions. You save them in a text file that ends in `.py`.\n\nA computer cannot understand Python text directly. A tool called the interpreter reads your `.py` file and carries out the instructions, line by line, from top to bottom. When people say \"install Python\", they mostly mean installing the interpreter.\n\nReal projects also use packages: bundles of ready-made code written by other people (for example, code to read spreadsheets). uv, made by a company called Astral, is one tool that installs Python itself, runs your scripts, and manages the packages a project needs. uv is not a language; it is a helper for Python.\n\nYou will type commands in a terminal (also called the command line): a window where you type a text command and press Enter to run it. On Windows, open PowerShell; on macOS, open Terminal; on Linux, open your terminal app.",
+      "explanation": "A program is a list of instructions that tells a computer what to do. Python is a programming language: a set of words and rules you use to write those instructions. You save them in a text file that ends in `.py`.\n\nA computer cannot understand Python text directly. A tool called the interpreter reads your `.py` file and carries out the instructions, line by line, from top to bottom. When people say \"install Python\", they mostly mean installing the interpreter.\n\nReal projects also use packages: bundles of ready-made code written by other people (for example, code to read spreadsheets). uv, made by a company called Astral, is one tool that installs Python itself, runs your scripts, and manages the packages a project needs. uv is not a language; it is a helper for Python.\n\nYou will type commands in a terminal (also called the command line): a window where you type a text command and press Enter to run it. On Windows, open PowerShell (click Start, type PowerShell, press Enter); on macOS, open Terminal; on Linux, open your terminal app.",
       "analogy": "Python is the recipe language, the interpreter is the cook who follows the recipe step by step, and uv is the kitchen manager who buys the right stove (the Python version) and the right ingredients (packages).",
       "code": [
         {
@@ -159,8 +159,8 @@ window.TOPICS.push({
   "quiz": [
     {
       "question": "Which command runs the file `app.py` with uv?",
-      "options": ["uv start app.py", "uv run app.py", "python install app.py", "uv app.py --go"],
-      "answerIndex": 1,
+      "options": ["uv run app.py", "uv start app.py", "python install app.py", "uv app.py --go"],
+      "answerIndex": 0,
       "explanation": "`uv run app.py` runs the script with a suitable Python. The other commands are not valid ways to run a script."
     },
     {
@@ -182,9 +182,26 @@ window.TOPICS.push({
     },
     {
       "question": "Which command installs Python 3.15 with uv?",
-      "options": ["uv install python-3.15", "uv python install 3.15", "uv self update 3.15", "uv run python --install"],
-      "answerIndex": 1,
+      "options": ["uv install python-3.15", "uv self update 3.15", "uv run python --install-version", "uv python install 3.15"],
+      "answerIndex": 3,
       "explanation": "`uv python install 3.15` downloads a managed Python 3.15. `uv self update` updates uv itself, not Python."
+    },
+    {
+      "question": "Which command shows the uv version installed on your computer?",
+      "options": ["uv --version", "uv self update", "uv python list", "uv run --version"],
+      "answerIndex": 0,
+      "explanation": "`uv --version` prints the installed uv version. `uv self update` upgrades uv; the other two do not show it."
+    },
+    {
+      "question": "What is uv?",
+      "options": [
+        "A programming language you write programs in",
+        "A kind of variable that stores numbers in Python",
+        "A tool that installs Python and manages a project's scripts and packages",
+        "A text editor for writing code files"
+      ],
+      "answerIndex": 2,
+      "explanation": "uv is a helper tool for Python, not a language, variable or editor."
     }
   ]
 });

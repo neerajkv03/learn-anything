@@ -4,7 +4,7 @@ window.TOPICS.push({
  "order": 20,
  "title": "Testing with pytest",
  "version": "Python 3.15.2 + uv 0.13.7",
- "summary": "Automated tests are small programs that check your code for you. In this topic you add pytest with uv, write tests with plain assert, share setup with fixtures, cover many inputs with parametrize, check error paths with pytest.raises, and run everything with uv run pytest.",
+ "summary": "Automated tests are small programs that check your code for you. In this topic you add pytest with uv, write tests with plain assert, share setup with fixtures (reusable preparation code), cover many inputs with parametrize (one test run per row of data), check error paths with pytest.raises, and run everything with uv run pytest.",
  "prerequisites": [
   "19-stdlib-essentials"
  ],
@@ -168,22 +168,22 @@ window.TOPICS.push({
   {
    "id": "running-tests-uv-run-pytest",
    "title": "Running tests with uv run pytest",
-   "explanation": "`uv run pytest` runs pytest inside your project's environment, so it sees the right Python and the right installed packages. With no arguments it finds every test it can discover and runs them.\n\nUseful options: `-q` for quiet output, `-k name` to run only tests whose name contains `name`, `-x` to stop at the first failure, and `path::test_name` (for example `tests/test_calc.py::test_add`) to run one specific test.\n\nThe process exit code (a number a program returns to the shell) is 0 when all tests pass and non-zero otherwise. CI systems rely on that to mark a build green or red.\n\nYou can store settings in `[tool.pytest.ini_options]` in pyproject.toml, such as `testpaths` to tell pytest where tests live.",
+   "explanation": "`uv run pytest` runs pytest inside your project's environment, so it sees the right Python and the right installed packages. With no arguments it finds every test it can discover and runs them.\n\nUseful options: `-q` for quiet output, `-k name` to run only tests whose name contains `name`, `-x` to stop at the first failure, and `path::test_name` (for example `tests/test_calc.py::test_add`) to run one specific test.\n\nThe process exit code (a number a program returns to the terminal when it finishes) is 0 when all tests pass and non-zero otherwise. CI systems rely on that to mark a build green or red.\n\nYou can store more settings in the `[tool.pytest.ini_options]` section of pyproject.toml, such as `testpaths` to tell pytest where tests live. Add the new line under the heading you already created earlier in this topic; a heading must not appear twice in a TOML file.",
    "analogy": "Pressing one button to run the whole inspection line.",
    "code": [
     {
      "language": "bash",
      "filename": "terminal",
      "source": "uv run pytest -q",
-     "output": ".......                                                    [100%]\n7 passed in 0.05s",
-     "explanation": "Each dot is one passing test; F would mean failure. The count and timing vary with your project and machine."
+     "output": "..........                                                 [100%]\n10 passed in 0.05s",
+     "explanation": "Each dot is one passing test; F would mean failure. The four test files written in this topic hold 10 tests in total. The count and timing vary with your project and machine."
     },
     {
      "language": "toml",
      "filename": "pyproject.toml",
-     "source": "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]",
+     "source": "[tool.pytest.ini_options]\npythonpath = [\".\"]\ntestpaths = [\"tests\"]",
      "output": "",
-     "explanation": "Tells pytest to look for tests only under tests/, so it does not scan the whole project."
+     "explanation": "The section now holds both settings: the `pythonpath` line from earlier and the new `testpaths` line, which tells pytest to look for tests only under tests/, so it does not scan the whole project."
     }
    ],
    "productionNote": "Use the same command locally and in CI, so a result on your laptop predicts the result on the server.",
@@ -207,46 +207,79 @@ window.TOPICS.push({
   {
    "question": "How must test files and functions be named for pytest to find them by default?",
    "options": [
-    "Files end with .test and functions start with check_",
     "Files named test_*.py and functions starting with test_",
-    "Any file in a tests folder and any function",
+    "Files ending with .test and functions starting with check_",
+    "Any file inside a tests folder and any function name",
     "Files named pytest_*.py and functions ending with _test"
    ],
-   "answerIndex": 1,
+   "answerIndex": 0,
    "explanation": "By default pytest discovers files matching test_*.py (or *_test.py) and functions whose names start with test_."
   },
   {
    "question": "How does a test receive a fixture?",
    "options": [
+    "By calling the fixture function inside the test body",
     "By naming it as a parameter of the test function",
-    "By calling the fixture function inside the test",
-    "By importing it at the top of the file",
-    "By using the global keyword"
+    "By importing it at the top of the test file",
+    "By using the global keyword inside the test"
    ],
-   "answerIndex": 0,
+   "answerIndex": 1,
    "explanation": "pytest injects fixtures by matching test parameter names to fixture names; calling a fixture directly is an error."
   },
   {
    "question": "What does pytest.raises(ValueError) check?",
    "options": [
-    "That the code returns a ValueError object",
-    "That the code prints a ValueError message",
-    "That the block never fails",
-    "That the block raises ValueError, otherwise the test fails"
+    "That the code returns a ValueError object instead of a value",
+    "That the code prints a ValueError message to the screen",
+    "That the block raises ValueError, otherwise the test fails",
+    "That the block never fails, whatever happens inside it"
    ],
-   "answerIndex": 3,
+   "answerIndex": 2,
    "explanation": "The test passes only when the with block raises the given exception type; no exception or a different one fails the test."
   },
   {
    "question": "Which command runs tests in the uv project environment?",
    "options": [
-    "python test",
-    "pytest --uv",
-    "uv run pytest",
-    "uv test"
+    "python test --all",
+    "pytest --use-uv-env",
+    "uv test --all",
+    "uv run pytest"
+   ],
+   "answerIndex": 3,
+   "explanation": "uv run pytest runs pytest inside the project's environment so it uses the right Python and dependencies."
+  },
+  {
+   "question": "What does `@pytest.mark.parametrize(\"n, expected\", [(1, 2), (2, 4)])` do to a test?",
+   "options": [
+    "Runs it twice, once per row of values",
+    "Runs it once with both rows at the same time",
+    "Skips it unless n equals expected",
+    "Turns it into a fixture"
+   ],
+   "answerIndex": 0,
+   "explanation": "parametrize runs the same test once for each row of values, so here the test runs twice: first with n=1 and expected=2, then with n=2 and expected=4."
+  },
+  {
+   "question": "Which command adds pytest as a development-only dependency?",
+   "options": [
+    "uv add pytest --prod",
+    "uv add --dev pytest",
+    "uv run pytest --install",
+    "uv tool pytest"
+   ],
+   "answerIndex": 1,
+   "explanation": "The --dev flag records pytest in the development group, so it is installed for testing but is not part of what your app needs to run."
+  },
+  {
+   "question": "When does `assert total == 5` make a test fail?",
+   "options": [
+    "When total equals 5",
+    "Always, assert is only for errors",
+    "When total is not 5",
+    "Only when run without pytest"
    ],
    "answerIndex": 2,
-   "explanation": "uv run pytest runs pytest inside the project's environment so it uses the right Python and dependencies."
+   "explanation": "assert checks that the condition is true; if total is anything other than 5 the condition is false, so the assert raises an error and pytest reports the test as failed."
   }
  ]
 });

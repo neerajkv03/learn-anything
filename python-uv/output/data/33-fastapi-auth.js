@@ -42,7 +42,7 @@ window.TOPICS.push({
           "language": "python",
           "filename": "main.py",
           "source": "from typing import Annotated\n\nfrom fastapi import Depends, FastAPI\nfrom fastapi.security import OAuth2PasswordBearer\n\napp = FastAPI()\n\noauth2_scheme = OAuth2PasswordBearer(tokenUrl=\"token\")\n\n\n@app.get(\"/items/\")\ndef read_items(token: Annotated[str, Depends(oauth2_scheme)]) -> dict[str, str]:\n    return {\"token\": token}\n",
-          "output": "GET /items/   with header  Authorization: Bearer abc123\n-> 200  {\"token\":\"abc123\"}\n\nGET /items/   with no Authorization header\n-> 401  {\"detail\":\"Not authenticated\"}",
+          "output": "GET /items/  with header  Authorization: Bearer abc123  ->  200  {\"token\":\"abc123\"}\n\nGET /items/  with no Authorization header  ->  401  {\"detail\":\"Not authenticated\"}",
           "explanation": "`oauth2_scheme` is the dependency. Declaring `token: Annotated[str, Depends(oauth2_scheme)]` makes FastAPI run it first, and hand the extracted string (without the `Bearer ` prefix) to the function. This endpoint only echoes the token back; it does not check it yet. Real checking comes in the last sub-topic."
         }
       ],
@@ -66,7 +66,7 @@ window.TOPICS.push({
           "filename": "hashing.py",
           "source": "from pwdlib import PasswordHash\n\npassword_hash = PasswordHash.recommended()\n\nhashed = password_hash.hash(\"s3cret\")\n\nprint(hashed.startswith(\"$argon2id$\"))\nprint(password_hash.verify(\"s3cret\", hashed))\nprint(password_hash.verify(\"wrong\", hashed))\nprint(hashed == password_hash.hash(\"s3cret\"))\n",
           "output": "True\nTrue\nFalse\nFalse",
-          "explanation": "Line 1: the hash string begins with `$argon2id$`, naming the algorithm used. Line 2: the correct password verifies. Line 3: a wrong password does not. Line 4: hashing \"s3cret\" a second time gives a different string because a fresh random salt is used, so comparing hashes with `==` is False. This is why you must call `verify` instead of comparing hashes yourself."
+          "explanation": "Output line 1: the hash string begins with `$argon2id$`, naming the algorithm used. Output line 2: the correct password verifies. Output line 3: a wrong password does not. Output line 4: hashing \"s3cret\" a second time gives a different string because a fresh random salt is used, so comparing hashes with `==` is False. This is why you must call `verify` instead of comparing hashes yourself."
         }
       ],
       "productionNote": "Hash on signup and store only the hash; call `verify` on login. The slowness is intentional, so do not use fast hashes such as MD5 or SHA-256 for passwords. Follow the OWASP (Open Worldwide Application Security Project, which publishes security guides) password storage guidance when choosing settings.",
@@ -83,7 +83,7 @@ window.TOPICS.push({
     {
       "id": "jwt-tokens",
       "title": "JWT access tokens (PyJWT)",
-      "explanation": "A JWT (JSON Web Token) is a common format for the token the server hands out after login. It is a string of three parts separated by two dots: `header.payload.signature`. The payload is a small JSON object of claims (facts about the token). Two standard claims matter here: `sub` (subject: who the token is for, such as a username; it must be a string) and `exp` (expiry: the time after which the token is invalid).\n\nThe signature is computed from the header and payload using a secret key that only your server knows. Anyone can read the payload, because it is only encoded, not encrypted, so never put passwords or other secrets in it. But nobody can change the payload and keep a valid signature without the secret key. The server also needs no database lookup to trust the token, which is why it is called stateless.\n\nInstall PyJWT with `uv add pyjwt` and import it as `jwt`. `jwt.encode(payload, SECRET_KEY, algorithm=\"HS256\")` creates a token (HS256 is a signing method using one shared secret). `jwt.decode(token, SECRET_KEY, algorithms=[\"HS256\"])` checks the signature and expiry and returns the payload as a dict.\n\nWhen decoding fails, PyJWT raises an exception (an error object, from the error-handling topic). `jwt.InvalidSignatureError` means the signature does not match; `jwt.ExpiredSignatureError` means `exp` is in the past. Both are subclasses (more specific kinds) of `jwt.InvalidTokenError`, so catching `InvalidTokenError` handles every bad-token case.\n\nIn a real app the secret key comes from an environment variable or settings file (as in the structure topic), never from the code. Generate a strong one with `uv run python -c \"import secrets; print(secrets.token_hex(32))\"`. The example hard-codes a throwaway key only so it runs as-is; use at least 32 characters for HS256. Save it as `tokens.py`.",
+      "explanation": "A JWT (JSON Web Token) is a common format for the token the server hands out after login. It is a string of three parts separated by two dots: `header.payload.signature`. The payload is a small JSON object of claims (facts about the token). Two standard claims matter here: `sub` (subject: who the token is for, such as a username; it must be a string) and `exp` (expiry: the time after which the token is invalid).\n\nThe signature is computed from the header and payload using a secret key that only your server knows. Anyone can read the payload, because it is only encoded, not encrypted, so never put passwords or other secrets in it. But nobody can change the payload and keep a valid signature without the secret key. The server also needs no database lookup to trust the token, which is why it is called stateless (the server keeps no record of issued tokens, so it never looks one up to trust it).\n\nInstall PyJWT with `uv add pyjwt` and import it as `jwt`. `jwt.encode(payload, SECRET_KEY, algorithm=\"HS256\")` creates a token (HS256 is a signing method using one shared secret). `jwt.decode(token, SECRET_KEY, algorithms=[\"HS256\"])` checks the signature and expiry and returns the payload as a dict.\n\nWhen decoding fails, PyJWT raises an exception (an error object, from the error-handling topic). `jwt.InvalidSignatureError` means the signature does not match; `jwt.ExpiredSignatureError` means `exp` is in the past. Both are subclasses (more specific kinds) of `jwt.InvalidTokenError`, so catching `InvalidTokenError` handles every bad-token case.\n\nIn a real app the secret key comes from an environment variable or settings file (as in the structure topic), never from the code. Generate a strong one with `uv run python -c \"import secrets; print(secrets.token_hex(32))\"`. The example hard-codes a throwaway key only so it runs as-is; use at least 32 characters for HS256. Save it as `tokens.py`.",
       "analogy": "A concert wristband with a tamper-proof hologram and a printed end date. Anyone can read what is printed on it, but only the organiser owns the machine that makes a valid hologram, so forged or altered bands are spotted at the gate. After the printed date, the band stops working even if it is genuine.",
       "code": [
         {
@@ -109,14 +109,14 @@ window.TOPICS.push({
     {
       "id": "current-user-dependency",
       "title": "Current-user dependency",
-      "explanation": "Now we combine the pieces into a full login flow. The client sends `POST /token` with form fields `username` and `password`. Form data is the encoding browsers use for HTML (the markup language of web pages) forms (`username=ada&password=s3cret`), not JSON. FastAPI reads it with `OAuth2PasswordRequestForm`, which needs the `python-multipart` package; it is already included in `fastapi[standard]`. In `Depends()` with empty brackets, FastAPI uses the parameter's type (`OAuth2PasswordRequestForm`) as the dependency.\n\nThe `/token` endpoint looks up the user, checks the password with `verify`, and returns `{\"access_token\": <token>, \"token_type\": \"bearer\"}`. If the user is unknown or the password is wrong, it raises `HTTPException` with status 401. The `WWW-Authenticate: Bearer` header is added to the 401 response, as the standard requires. Notice that both failures use the same message, \"Incorrect username or password\", so an attacker cannot learn which usernames exist.\n\nNext, `get_current_user` is a dependency that depends on `oauth2_scheme`. It receives the token string, decodes it with `jwt.decode`, reads `sub`, and finds that user. If anything is wrong (bad signature, expired, malformed, or user gone), it raises 401 with `\"Could not validate credentials\"`. Any endpoint that declares this dependency is automatically protected, and receives the user.\n\nThe example keeps users in a dict called `users_db` instead of a real database to stay short. It is stored with a hashed password, never a plain one. A small helper function `unauthorized(detail)` builds the repeated 401 error. Save it as `main.py` and start it with `uv run fastapi dev`.",
+      "explanation": "Now we combine the pieces into a full login flow. The client sends `POST /token` with form fields `username` and `password`. Form data is the encoding browsers use for HTML (the markup language of web pages) forms (`username=ada&password=s3cret`), not JSON. FastAPI reads it with `OAuth2PasswordRequestForm`, which needs the `python-multipart` package; it is already included in `fastapi[standard]`.\n\nIn `Depends()` with empty brackets, FastAPI uses the parameter's type (`OAuth2PasswordRequestForm`) as the dependency.\n\nThe `/token` endpoint looks up the user, checks the password with `verify`, and returns `{\"access_token\": <token>, \"token_type\": \"bearer\"}`. If the user is unknown or the password is wrong, it raises `HTTPException` with status 401. The `WWW-Authenticate: Bearer` header is added to the 401 response, as the standard requires. Notice that both failures use the same message, \"Incorrect username or password\", so the response text does not reveal which usernames exist. (Response time can still differ, because the slow hash check is skipped for an unknown user; production code also checks a dummy hash in that case.)\n\nNext, `get_current_user` is a dependency that depends on `oauth2_scheme`. It receives the token string, decodes it with `jwt.decode`, reads `sub`, and finds that user. If anything is wrong (bad signature, expired, malformed, or user gone), it raises 401 with `\"Could not validate credentials\"`. Any endpoint that declares this dependency is automatically protected, and receives the user.\n\nThe example keeps users in a dict called `users_db` instead of a real database to stay short. It is stored with a hashed password, never a plain one. A small helper function `unauthorized(detail)` builds the repeated 401 error. Save it as `main.py` and start it with `uv run fastapi dev`.",
       "analogy": "Reception checks your ID once and gives you a wristband (the `/token` endpoint). Every gate then scans the wristband to know who you are (the current-user dependency), without bothering reception again. A gate with a faulty or expired wristband sends you back to reception.",
       "code": [
         {
           "language": "python",
           "filename": "main.py",
           "source": "from datetime import datetime, timedelta, timezone\nfrom typing import Annotated\n\nimport jwt\nfrom fastapi import Depends, FastAPI, HTTPException, status\nfrom fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm\nfrom pwdlib import PasswordHash\n\n# Load this from the environment in real apps. Use at least 32 characters.\nSECRET_KEY = \"dev-only-secret-key-change-me-0123456789\"\nALGORITHM = \"HS256\"\n\napp = FastAPI()\npassword_hash = PasswordHash.recommended()\noauth2_scheme = OAuth2PasswordBearer(tokenUrl=\"token\")\n\nusers_db = {\n    \"ada\": {\"username\": \"ada\", \"hashed_password\": password_hash.hash(\"s3cret\")},\n}\n\n\ndef unauthorized(detail: str) -> HTTPException:\n    return HTTPException(\n        status_code=status.HTTP_401_UNAUTHORIZED,\n        detail=detail,\n        headers={\"WWW-Authenticate\": \"Bearer\"},\n    )\n\n\n@app.post(\"/token\")\ndef login(form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> dict[str, str]:\n    user = users_db.get(form.username)\n    if user is None or not password_hash.verify(form.password, user[\"hashed_password\"]):\n        raise unauthorized(\"Incorrect username or password\")\n    expires = datetime.now(timezone.utc) + timedelta(minutes=30)\n    token = jwt.encode(\n        {\"sub\": user[\"username\"], \"exp\": expires}, SECRET_KEY, algorithm=ALGORITHM\n    )\n    return {\"access_token\": token, \"token_type\": \"bearer\"}\n\n\ndef get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict[str, str]:\n    try:\n        username = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])[\"sub\"]\n    except jwt.InvalidTokenError:\n        raise unauthorized(\"Could not validate credentials\")\n    user = users_db.get(username)\n    if user is None:\n        raise unauthorized(\"Could not validate credentials\")\n    return user\n\n\nCurrentUser = Annotated[dict[str, str], Depends(get_current_user)]\n\n\n@app.get(\"/users/me\")\ndef me(user: CurrentUser) -> dict[str, str]:\n    return {\"username\": user[\"username\"]}\n",
-          "output": "POST /token   form: username=ada&password=s3cret\n-> 200  {\"access_token\":\"<token>\",\"token_type\":\"bearer\"}\n\nPOST /token   form: username=ada&password=wrong\n-> 401  {\"detail\":\"Incorrect username or password\"}\n\nGET /users/me   with header  Authorization: Bearer <token>\n-> 200  {\"username\":\"ada\"}\n\nGET /users/me   with header  Authorization: Bearer garbage\n-> 401  {\"detail\":\"Could not validate credentials\"}",
+          "output": "POST /token  form: username=ada&password=s3cret  ->  200  {\"access_token\":\"<token>\",\"token_type\":\"bearer\"}\n\nPOST /token  form: username=ada&password=wrong  ->  401  {\"detail\":\"Incorrect username or password\"}\n\nGET /users/me  with header  Authorization: Bearer <token>  ->  200  {\"username\":\"ada\"}\n\nGET /users/me  with header  Authorization: Bearer garbage  ->  401  {\"detail\":\"Could not validate credentials\"}",
           "explanation": "`login` verifies the password against the stored hash and signs a token whose `sub` is the username and whose `exp` is 30 minutes away. `get_current_user` reverses this: it decodes the token, takes `sub`, and returns the matching user, or raises 401. `CurrentUser` is an `Annotated` alias (from the dependencies topic), so `me` only has to write `user: CurrentUser`. The response contains only the username, never the hashed password. The `<token>` placeholder stands for a long string that is different on every login."
         },
         {
@@ -145,20 +145,20 @@ window.TOPICS.push({
       "question": "A user is logged in with a valid token but tries to delete another user's data, which their role does not permit. Which status code is correct?",
       "options": [
         "401 Unauthorized",
-        "403 Forbidden",
         "404 Not Found",
-        "200 OK"
+        "200 OK",
+        "403 Forbidden"
       ],
-      "answerIndex": 1,
+      "answerIndex": 3,
       "explanation": "The server knows who the user is (authentication succeeded) but they are not allowed to do this (authorization failed), which is 403. 401 is for missing or invalid credentials."
     },
     {
       "question": "Why does hashing the same password twice with pwdlib give two different strings?",
       "options": [
-        "The hash function is broken and returns random text",
-        "The first hash is encrypted and the second is not",
+        "The hash function is broken and returns random text instead of a repeatable result",
+        "The first hash is encrypted and the second is not, so the two strings look different",
         "A random salt is mixed into every hash, and verify reads it back from the stored hash",
-        "Python adds the current time to every string it hashes"
+        "Python adds the current time to every string it hashes before the hash is stored"
       ],
       "answerIndex": 2,
       "explanation": "Each hash includes a fresh random salt, so equal passwords produce different hashes. The salt is stored inside the hash string, which lets verify still check a password correctly."
@@ -167,9 +167,9 @@ window.TOPICS.push({
       "question": "Can anyone who holds a JWT read its payload, and what stops them from changing it?",
       "options": [
         "Yes, the payload is readable; changing it breaks the signature, which only the secret key can produce",
-        "No, the payload is encrypted with the secret key",
-        "Yes, and nothing stops them, because JWTs cannot be protected",
-        "No, only the server can open a JWT"
+        "No, the payload is encrypted with the secret key, so only the server can read it",
+        "Yes, and nothing stops them, because JWTs cannot be protected against any changes",
+        "No, only the server can open a JWT, because the token is locked with a key that clients never receive"
       ],
       "answerIndex": 0,
       "explanation": "A JWT payload is only encoded, so anyone can read it and it must hold no secrets. It is signed, so any change makes the signature invalid when the server decodes it with the secret key."
@@ -178,11 +178,11 @@ window.TOPICS.push({
       "question": "Which header carries the access token on a request, and in what format?",
       "options": [
         "Token: <token>",
+        "Authorization: Bearer <token>",
         "Content-Type: <token>",
-        "Authorization: <token> Bearer",
-        "Authorization: Bearer <token>"
+        "Authorization: <token> Bearer"
       ],
-      "answerIndex": 3,
+      "answerIndex": 1,
       "explanation": "The token goes in the Authorization header, preceded by the word Bearer and a space. OAuth2PasswordBearer expects exactly this format."
     },
     {
@@ -190,11 +190,22 @@ window.TOPICS.push({
       "options": [
         "The request succeeds, because the signature is still valid",
         "jwt.decode raises ExpiredSignatureError, which is an InvalidTokenError, so the endpoint answers 401 Could not validate credentials",
-        "The server answers 403 Forbidden, because the user lacks permission",
+        "The server answers 403 Forbidden, because the user is known but lacks permission to use this endpoint at all",
         "The server automatically issues a new token and continues"
       ],
       "answerIndex": 1,
       "explanation": "decode checks the expiry as well as the signature. An expired token raises ExpiredSignatureError, a subclass of InvalidTokenError, which get_current_user catches and turns into a 401. The client must log in again."
+    },
+    {
+      "question": "A client sends the JSON body {\"username\": \"ada\", \"password\": \"s3cret\"} to POST /token. What happens?",
+      "options": [
+        "422 validation error, because /token expects form data",
+        "200 with an access token, because the credentials are correct",
+        "401 Incorrect username or password, because the login failed",
+        "404 Not Found, because the /token route does not accept JSON"
+      ],
+      "answerIndex": 0,
+      "explanation": "/token reads OAuth2PasswordRequestForm, which expects form-encoded fields, not JSON. FastAPI cannot find the fields, so it answers 422 (validation error) before the login code runs."
     }
   ]
 });

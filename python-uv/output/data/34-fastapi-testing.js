@@ -133,13 +133,13 @@ window.TOPICS.push({
     {
       "id": "in-memory-sqlite",
       "title": "In-memory SQLite test database",
-      "explanation": "Tests must never touch your real database file (`database.db`), because they would add junk rows or delete real data. Instead, tests use SQLite in memory: the whole database lives in RAM and disappears when the connection closes. The URL `sqlite://` (no file name) creates one.\n\nThe example below uses a heroes app like the one from the SQLModel topic. Create `main.py` with the code shown. Its lifespan creates the tables in the real `database.db`, but plain `TestClient(app)` never runs the lifespan, so tests leave the real file alone.\n\nThere is one catch. By default SQLAlchemy (the library under SQLModel) keeps a connection pool, which is a set of reusable database connections, and an in-memory database exists per connection. A second connection would see a different, empty database and fail with `no such table`. `poolclass=StaticPool` makes the engine reuse a single connection for everyone, so all sessions share the same in-memory database.\n\nAlso pass `connect_args={\"check_same_thread\": False}`. SQLite normally refuses to be used from a thread other than the one that created the connection, and TestClient runs your app in a different thread.\n\nThe steps in the test file are: create the test engine, create the tables with `SQLModel.metadata.create_all(engine)`, write a replacement for `get_session` that uses the test engine, and register it in `app.dependency_overrides`.\n\nThis version puts the override at module level, which means it stays active for the whole pytest run. That works for one file but is hard to manage, so the next sub-topic moves it into fixtures.",
+      "explanation": "Tests must never touch your real database file (`database.db`), because they would add junk rows or delete real data. Instead, tests use SQLite in memory: the whole database lives in RAM (the computer's working memory) and disappears when the connection closes. The URL `sqlite://` (no file name) creates one.\n\nThe example below uses a heroes app like the one from the SQLModel topic. Create `main.py` with the code shown. Its lifespan creates the tables in the real `database.db`, but plain `TestClient(app)` never runs the lifespan, so tests leave the real file alone.\n\nThere is one catch. By default SQLAlchemy (the library under SQLModel) keeps a connection pool, which is a set of reusable database connections, and an in-memory database exists per connection. A second connection would see a different, empty database and fail with `no such table`. `poolclass=StaticPool` makes the engine reuse a single connection for everyone, so all sessions share the same in-memory database.\n\nAlso pass `connect_args={\"check_same_thread\": False}`. SQLite normally refuses to be used from a thread other than the one that created the connection, and TestClient runs your app in a different thread.\n\nThe steps in the test file are: create the test engine, create the tables with `SQLModel.metadata.create_all(engine)`, write a replacement for `get_session` that uses the test engine, and register it in `app.dependency_overrides`.\n\nThis version puts the override at module level, which means it stays active for the whole pytest run. That works for one file but is hard to manage, so the next sub-topic moves it into fixtures.",
       "analogy": "A sandbox copy of the shop: you build a miniature replica, break anything you like, and the whole thing is thrown away afterwards. StaticPool is the rule that every customer walks into the same one sandbox instead of each getting a separate empty one.",
       "code": [
         {
           "language": "python",
           "filename": "main.py",
-          "source": "from collections.abc import AsyncIterator, Iterator\nfrom contextlib import asynccontextmanager\nfrom typing import Annotated\n\nfrom fastapi import Depends, FastAPI, HTTPException\nfrom sqlmodel import Field, Session, SQLModel, create_engine, select\n\n\nclass HeroCreate(SQLModel):\n    name: str\n    secret_name: str\n\n\nclass Hero(HeroCreate, table=True):\n    id: int | None = Field(default=None, primary_key=True)\n\n\nclass HeroPublic(SQLModel):\n    id: int\n    name: str\n\n\nengine = create_engine(\"sqlite:///database.db\")\n\n\ndef get_session() -> Iterator[Session]:\n    with Session(engine) as session:\n        yield session\n\n\nSessionDep = Annotated[Session, Depends(get_session)]\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI) -> AsyncIterator[None]:\n    SQLModel.metadata.create_all(engine)\n    yield\n\n\napp = FastAPI(lifespan=lifespan)\n\n\n@app.post(\"/heroes/\", response_model=HeroPublic)\ndef create_hero(hero: HeroCreate, session: SessionDep) -> Hero:\n    db_hero = Hero.model_validate(hero)\n    session.add(db_hero)\n    session.commit()\n    session.refresh(db_hero)\n    return db_hero\n\n\n@app.get(\"/heroes/\", response_model=list[HeroPublic])\ndef read_heroes(session: SessionDep) -> list[Hero]:\n    return list(session.exec(select(Hero)).all())\n\n\n@app.get(\"/heroes/{hero_id}\", response_model=HeroPublic)\ndef read_hero(hero_id: int, session: SessionDep) -> Hero:\n    hero = session.get(Hero, hero_id)\n    if hero is None:\n        raise HTTPException(status_code=404, detail=\"Hero not found\")\n    return hero",
+          "source": "from collections.abc import AsyncIterator, Iterator\nfrom contextlib import asynccontextmanager\nfrom typing import Annotated\n\nfrom fastapi import Depends, FastAPI, HTTPException\nfrom sqlmodel import Field, Session, SQLModel, create_engine, select\n\n\nclass HeroCreate(SQLModel):\n    name: str\n    secret_name: str\n\n\nclass Hero(HeroCreate, table=True):\n    id: int | None = Field(default=None, primary_key=True)\n\n\nclass HeroPublic(SQLModel):\n    id: int\n    name: str\n\n\nengine = create_engine(\n    \"sqlite:///database.db\", connect_args={\"check_same_thread\": False}\n)\n\n\ndef get_session() -> Iterator[Session]:\n    with Session(engine) as session:\n        yield session\n\n\nSessionDep = Annotated[Session, Depends(get_session)]\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI) -> AsyncIterator[None]:\n    SQLModel.metadata.create_all(engine)\n    yield\n\n\napp = FastAPI(lifespan=lifespan)\n\n\n@app.post(\"/heroes/\", response_model=HeroPublic)\ndef create_hero(hero: HeroCreate, session: SessionDep) -> Hero:\n    db_hero = Hero.model_validate(hero)\n    session.add(db_hero)\n    session.commit()\n    session.refresh(db_hero)\n    return db_hero\n\n\n@app.get(\"/heroes/\", response_model=list[HeroPublic])\ndef read_heroes(session: SessionDep) -> list[Hero]:\n    return list(session.exec(select(Hero)).all())\n\n\n@app.get(\"/heroes/{hero_id}\", response_model=HeroPublic)\ndef read_hero(hero_id: int, session: SessionDep) -> Hero:\n    hero = session.get(Hero, hero_id)\n    if hero is None:\n        raise HTTPException(status_code=404, detail=\"Hero not found\")\n    return hero",
           "output": "",
           "explanation": "The app under test. The public model hides `secret_name`. Importing this file creates the engine object but does not open or create database.db yet."
         },
@@ -219,10 +219,10 @@ window.TOPICS.push({
     {
       "question": "How do you make a protected endpoint see a fake user during a test?",
       "options": [
-        "Edit the endpoint code to skip the check while testing",
+        "Edit the endpoint code so it skips the check whenever tests are running",
         "Set `app.dependency_overrides[get_current_user] = fake_user`, using the function itself",
-        "Call `fake_user()` and pass the result to `client.get`",
-        "Delete the `get_current_user` function from main.py"
+        "Call `fake_user()` yourself and pass the returned value into `client.get`",
+        "Delete the `get_current_user` function from main.py before each test"
       ],
       "answerIndex": 1,
       "explanation": "The overrides dictionary maps the original dependency function to a replacement function. FastAPI then calls the replacement, and the endpoint code stays unchanged."
@@ -230,10 +230,10 @@ window.TOPICS.push({
     {
       "question": "Why does an in-memory SQLite test database use `poolclass=StaticPool`?",
       "options": [
-        "It makes the database file persist between test runs",
-        "It speeds up queries by caching results on disk",
+        "It makes the database file persist on disk between separate test runs, so that data from an earlier run is still there",
+        "It speeds up every query by caching the results of earlier queries on disk, so repeated reads skip the database",
         "It makes all sessions reuse one connection, so they share the same in-memory database instead of each seeing an empty one",
-        "It encrypts the data so tests cannot leak secrets"
+        "It encrypts the stored data so that tests can never leak any secrets, even if the connection is shared"
       ],
       "answerIndex": 2,
       "explanation": "An in-memory SQLite database belongs to one connection. Without StaticPool, a second connection gets a new empty database and you see `no such table`."
@@ -241,9 +241,9 @@ window.TOPICS.push({
     {
       "question": "Why should you call `app.dependency_overrides.clear()` after each test?",
       "options": [
-        "Because FastAPI refuses to start while overrides exist",
-        "Because it frees disk space used by the test database",
-        "Because it is required to make `assert` statements work",
+        "Because FastAPI refuses to start up at all while any overrides are still registered on the app object",
+        "Because it frees up the disk space used by the test database file once all the tests have finished running",
+        "Because it is required before `assert` statements are able to work properly inside the later test functions",
         "Because overrides are global to the app and would leak into later tests, breaking test isolation"
       ],
       "answerIndex": 3,
@@ -253,12 +253,34 @@ window.TOPICS.push({
       "question": "When does the app's lifespan startup code run when testing with `TestClient`?",
       "options": [
         "Every time you call `client.get`",
-        "Only when you use `with TestClient(app) as client:`",
-        "Never, lifespan code cannot run in tests",
-        "Only when pytest is run with the `-q` option"
+        "Only when pytest is run with the `-q` option",
+        "Never, because lifespan code cannot run at all inside tests",
+        "Only when you use `with TestClient(app) as client:`"
+      ],
+      "answerIndex": 3,
+      "explanation": "Plain `TestClient(app)` skips the lifespan. Entering the `with` block runs the startup code, and leaving the block runs the shutdown code."
+    },
+    {
+      "question": "Which assertion is the most stable way to check a 422 validation error?",
+      "options": [
+        "Assert status 422 and the loc or type of the first detail entry",
+        "Assert the exact msg text that FastAPI and Pydantic currently return",
+        "Assert status 200 because the request was still handled",
+        "Assert the response body is empty"
+      ],
+      "answerIndex": 0,
+      "explanation": "The status code and the loc (which field failed) or type (the error kind) are structured and rarely change. The msg wording can change between library versions, so asserting it makes tests brittle."
+    },
+    {
+      "question": "Why does the client fixture ask for the session fixture?",
+      "options": [
+        "Because fixtures cannot run without a session",
+        "So the test and the API share the same database session",
+        "To delete the database file from disk after every single test",
+        "To start a second server"
       ],
       "answerIndex": 1,
-      "explanation": "Plain `TestClient(app)` skips the lifespan. Entering the `with` block runs the startup code, and leaving the block runs the shutdown code."
+      "explanation": "The client fixture overrides the app's session dependency with the test session. That way, rows the test creates are visible to the API and the other way round."
     }
   ]
 });

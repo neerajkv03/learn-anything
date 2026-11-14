@@ -26,7 +26,7 @@ window.TOPICS.push({
       ],
       "productionNote": "Slices are used all the time to take the start or end of an ID (for example the first 3 characters as a country code) and to trim fixed-width data such as lines from old file formats. Remember that word[6] on a 6-letter word fails but word[6:] is safely empty.",
       "commonMistakes": [
-        "Off-by-one with the stop position: word[0:3] gives 3 characters (positions 0, 1, 2), not 4, because stop is excluded.",
+        "Off-by-one error (landing one position too far or too short) with the stop position: word[0:3] gives 3 characters (positions 0, 1, 2), not 4, because stop is excluded.",
         "Using word[6] on a 6-letter word. The last valid index is 5 (or -1), so this raises IndexError.",
         "Thinking the first character is at index 1. Counting starts at 0."
       ],
@@ -40,7 +40,7 @@ window.TOPICS.push({
     {
       "id": "common-string-methods",
       "title": "Common string methods",
-      "explanation": "A method is a function that belongs to a value and is called with a dot: text.upper(). The value before the dot is the thing the method works on. Strings have dozens of methods; a handful cover most daily work.\n\nCleaning: strip() removes spaces and line breaks (whitespace) from both ends, lower() and upper() change letter case, and title() capitalises each word. Searching: startswith() and endswith() answer True or False, find() gives the index of the first match (or -1 if not found), and the in operator checks whether a smaller string appears inside a bigger one.\n\nSplitting and joining: split(\"@\") cuts a string at every \"@\" and returns a list (an ordered collection written in square brackets). split() with no argument cuts on any whitespace. The reverse is join: you call it on the separator, not on the list, like \"-\".join([\"2026\", \"11\", \"11\"]). replace(old, new) swaps every occurrence of old for new. All of these return a new string and leave the original unchanged, which is why you can chain them: raw.strip().lower().",
+      "explanation": "A method is a function that belongs to a value and is called with a dot: text.upper(). The value before the dot is the thing the method works on. Strings have dozens of methods; a handful cover most daily work.\n\nCleaning: strip() removes spaces and line breaks (whitespace) from both ends, lower() and upper() change letter case, and title() capitalises each word.\n\nSearching: startswith() and endswith() answer True or False, find() gives the index of the first match (or -1 if not found), and the in operator checks whether a smaller string appears inside a bigger one.\n\nSplitting and joining: split(\"@\") cuts a string at every \"@\" and returns a list (an ordered collection written in square brackets). split() with no argument cuts on any whitespace. The reverse is join: you call it on the separator, not on the list, like \"-\".join([\"2026\", \"11\", \"11\"]). replace(old, new) swaps every occurrence of old for new. None of these change the original string. Each returns a new value: a string, a list (split), a number (find), or True/False (startswith, endswith). Methods that return a string can be chained: raw.strip().lower().",
       "analogy": "A Swiss Army knife: one object with many small tools. The string is the knife, and each method is a blade you fold out with a dot.",
       "code": [
         {
@@ -98,8 +98,8 @@ window.TOPICS.push({
     {
       "id": "escapes-and-multiline-strings",
       "title": "Escapes and multiline strings",
-      "explanation": "Some characters are hard to type inside quotes, like a line break. An escape sequence is a backslash followed by a letter that stands for one special character: \\n is a new line, \\t is a tab, \\\\ is one backslash, and \\\" is a double quote inside a double-quoted string.\n\nThe backslash can cause trouble, for example in Windows paths: \"C:\\new\" contains \\n, which becomes a line break. A raw string, written with r before the quote (r\"C:\\new\\table\"), treats backslashes as plain characters. Raw strings are also the usual choice for regular expressions (patterns for matching text). One catch: a raw string cannot end with a single backslash.\n\nTriple quotes (\"\"\"...\"\"\") let a string span several lines; the line breaks you type become part of the string. They are used for long text, SQL, and docstrings (the description placed at the start of a function or file).",
-      "analogy": "Special codes on a typewriter: one key does not print a letter at all, it means \"go to the next line\". An escape is that special key written as a code.",
+      "explanation": "Some characters are hard to type inside quotes, like a line break. An escape sequence is a backslash followed by a character that stands for one special character: \\n is a new line, \\t is a tab, \\\\ is one backslash, and \\\" is a double quote inside a double-quoted string.\n\nThe backslash can cause trouble, for example in Windows paths: \"C:\\new\" contains \\n, which becomes a line break. A raw string, written with r before the quote (r\"C:\\new\\table\"), treats backslashes as plain characters. Raw strings are also the usual choice for regular expressions (patterns for matching text). One catch: a raw string cannot end with a single backslash.\n\nTriple quotes (\"\"\"...\"\"\") let a string span several lines; the line breaks you type become part of the string. They are used for long text, SQL, and docstrings (the description placed at the start of a function or file).",
+      "analogy": "Special codes on a typewriter: one key does not print a letter at all, it means \"go to the next line\". An escape is that special key written as a code. A raw string switches the special keys off, so a backslash prints as itself.",
       "code": [
         {
           "language": "python",
@@ -155,22 +155,22 @@ window.TOPICS.push({
       "question": "What is the value of \"Python\"[1:4]?",
       "options": [
         "\"Pyt\"",
+        "\"thon\"",
         "\"yth\"",
-        "\"ytho\"",
-        "\"thon\""
+        "\"ytho\""
       ],
-      "answerIndex": 1,
+      "answerIndex": 2,
       "explanation": "The slice starts at index 1 (y) and stops before index 4, so it takes positions 1, 2, 3: y, t, h."
     },
     {
       "question": "After running s = \" hi \" and then s.strip() on its own line, what is s?",
       "options": [
-        "\"hi\"",
-        "\"HI\"",
         "\" hi \" (unchanged)",
+        "\"hi\" (spaces removed)",
+        "\"HI\" (upper-cased)",
         "An error is raised"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "explanation": "Strings are immutable and strip() returns a new string. Since the result was not stored, s still holds \" hi \"."
     },
     {
@@ -187,13 +187,35 @@ window.TOPICS.push({
     {
       "question": "Why would you write r\"C:\\new\" instead of \"C:\\new\"?",
       "options": [
-        "It makes the string run faster",
+        "It makes the string run faster than a normal one",
         "It stops \\n from being turned into a newline",
-        "It converts the path to uppercase",
-        "It lets the string span several lines"
+        "It converts the whole path to uppercase letters",
+        "It lets the string span several lines of text"
       ],
       "answerIndex": 1,
       "explanation": "In a raw string, backslashes are kept as plain characters, so \\n stays as a backslash followed by n instead of becoming a line break."
+    },
+    {
+      "question": "What is `\"Python\"[-1]`?",
+      "options": [
+        "\"P\"",
+        "\"y\"",
+        "\"n\"",
+        "An IndexError is raised"
+      ],
+      "answerIndex": 2,
+      "explanation": "-1 counts from the end, so it is the last character, which is n."
+    },
+    {
+      "question": "What does `\"a-b-c\".split(\"-\")` give?",
+      "options": [
+        "['a', 'b', 'c']",
+        "'a-b-c'",
+        "'abc'",
+        "['a-b-c']"
+      ],
+      "answerIndex": 0,
+      "explanation": "split cuts the text at each dash and returns a list (an ordered group of values) of the pieces."
     }
   ]
 });

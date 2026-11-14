@@ -4,7 +4,7 @@ window.TOPICS.push({
  "order": 24,
  "title": "Production Workflow",
  "version": "Python 3.15.2 + uv 0.13.7",
- "summary": "Learn how to take a uv project from your laptop to production: reproducible installs with a lockfile, automatic checks in GitHub Actions, small cached Docker images, configuration through environment variables, and multi-package repos with workspaces. These habits make sure what you tested is exactly what you ship.",
+ "summary": "Learn how to take a uv project from your laptop to production: reproducible installs with a lockfile (the exact-version list of packages), automatic checks in GitHub Actions (GitHub's built-in CI server), small cached Docker images (sealed, reusable app bundles), configuration through environment variables, and multi-package repos (workspaces). These habits make sure what you tested is exactly what you ship.",
  "prerequisites": [
   "23-scripts-packaging"
  ],
@@ -42,7 +42,7 @@ window.TOPICS.push({
   {
    "id": "uv-in-ci",
    "title": "uv in CI",
-   "explanation": "CI (continuous integration) means a server automatically runs your checks every time someone pushes code or opens a pull request (a request to merge changes). GitHub Actions is GitHub's built-in CI system; you describe it in a YAML file (a simple indented text format) under .github/workflows/.\n\nA typical uv workflow checks out the code (downloads your repository onto the CI machine), installs uv with the astral-sh/setup-uv action (a ready-made, reusable step published for GitHub Actions; it can also cache, meaning save and reuse, downloads), installs Python, runs uv sync --locked, and then runs your quality tools through uv run: ruff check (lint), ruff format --check (formatting), mypy (types), and pytest (tests).\n\nPin the uv version (here 0.13.7) so a new uv release cannot change your CI behavior unexpectedly. Also make sure the Python version in CI matches your .python-version file.\n\nAction major versions (checkout@v5, setup-uv@v7) change over time, so check the linked docs for the current ones when you write your own workflow.",
+   "explanation": "CI (continuous integration) means a server automatically runs your checks every time someone pushes code or opens a pull request (a request to merge changes). GitHub Actions is GitHub's built-in CI system; you describe it in a YAML file (a simple indented text format) under .github/workflows/.\n\nA typical uv workflow has these steps:\n1. Check out the code (download your repository onto the CI machine).\n2. Install uv with the astral-sh/setup-uv action (a ready-made, reusable step published for GitHub Actions; it can also cache, meaning save and reuse, downloads).\n3. Install Python.\n4. Run uv sync --locked.\n5. Run ruff check through uv run (lint).\n6. Run ruff format --check through uv run (formatting), then mypy (types).\n7. Run pytest through uv run (tests).\n\nPin the uv version (lock it to exactly 0.13.7) so a new uv release cannot change your CI behavior unexpectedly. Also make sure the Python version in CI matches your .python-version file.\n\nAction major versions (checkout@v5, setup-uv@v7) change over time, so check the linked docs for the current ones when you write your own workflow.",
    "analogy": "An automatic quality gate at the factory exit: every product is checked, every time, the same way, no matter who built it.",
    "code": [
     {
@@ -53,7 +53,7 @@ window.TOPICS.push({
      "explanation": "This file runs on every push and pull request. uv python install picks the Python version from your project (for example .python-version). Any failing step turns the check red. Nothing prints locally; results appear in the GitHub Actions tab."
     }
    ],
-   "productionNote": "Turn on branch protection in GitHub (a GitHub setting that blocks merging until checks pass) so a pull request cannot be merged until this CI job passes.",
+   "productionNote": "Turn on branch protection in GitHub (a branch is a separate line of work in git; branch protection is a GitHub setting that blocks merging until checks pass) so a pull request cannot be merged until this CI job passes.",
    "commonMistakes": [
     "Not using --locked, so CI may install different versions than you committed.",
     "Not enabling the cache, which makes every run slower.",
@@ -73,7 +73,7 @@ window.TOPICS.push({
   {
    "id": "uv-in-docker",
    "title": "uv in Docker",
-   "explanation": "Docker packages your app together with its environment into an image (a sealed bundle) that runs the same everywhere. An image is built in layers, one per instruction in the Dockerfile (the recipe file). Docker reuses a cached layer if nothing it depends on changed.\n\nThe trick is ordering: dependencies first, code last. Install dependencies first, in a layer that only depends on pyproject.toml and uv.lock, using uv sync --locked --no-install-project --no-dev. Only then copy your code and run uv sync --locked --no-dev again to install your own project. Since dependencies change rarely and code changes constantly, most rebuilds reuse the expensive dependency layer.\n\nSome supporting details. The uv binary comes from the official image ghcr.io/astral-sh/uv, pinned to a version. Cache mounts and bind mounts (RUN --mount=...) let uv reuse its download cache and read the two files without copying them into a layer. UV_COMPILE_BYTECODE=1 precompiles your code into bytecode (Python's pre-translated form of your code), so the app starts faster. UV_LINK_MODE=copy avoids a warning when the cache and the environment live on different file systems. Finally, put .venv/bin on PATH so python runs inside the project environment.\n\nAdd .venv to .dockerignore (a list of files Docker must not copy) so your local virtual environment never ends up in the image.",
+   "explanation": "Docker packages your app together with its environment into an image (a sealed bundle) that runs the same everywhere. An image is built in layers, one per instruction in the Dockerfile (the recipe file). Docker reuses a cached layer if nothing it depends on changed.\n\nThe trick is ordering: dependencies first, code last. Install dependencies first, in a layer that only depends on pyproject.toml and uv.lock, using uv sync --locked --no-install-project --no-dev. Only then copy your code and run uv sync --locked --no-dev again to install your own project. Since dependencies change rarely and code changes constantly, most rebuilds reuse the expensive dependency layer.\n\nSome supporting details:\n- The uv binary comes from the official image ghcr.io/astral-sh/uv, pinned to a version.\n- Cache mounts and bind mounts (RUN --mount=...) let uv reuse its download cache and read the two files without copying them into a layer.\n- UV_COMPILE_BYTECODE=1 precompiles your code into bytecode (Python's pre-translated form of your code), so the app starts faster.\n- UV_LINK_MODE=copy avoids a warning when the cache and the environment live on different file systems.\n- Putting .venv/bin on PATH makes python run inside the project environment.\n\nAdd .venv to .dockerignore (a list of files Docker must not copy) so your local virtual environment never ends up in the image.",
    "analogy": "Packing a moving truck: heavy furniture (dependencies) goes in first because it rarely changes; small boxes (your code) go in last, so they are easy to swap.",
    "code": [
     {
@@ -107,7 +107,7 @@ window.TOPICS.push({
   {
    "id": "environment-variables-config",
    "title": "Environment variables and configuration",
-   "explanation": "An environment variable is a named setting (a key=value pair) that the operating system hands to a running program. Settings that differ between machines (a database address, a debug switch) and secrets (API keys, passwords) should come from environment variables, not be hard-coded in your source code. Then the same code runs on your laptop, in CI, and in production.\n\nIn Python, os.environ behaves like a dictionary. os.environ.get(\"NAME\", default) returns a default when the variable is missing. os.environ[\"NAME\"] raises a KeyError when it is missing, which is what you want for required values: fail fast with a clear error instead of running half-configured.\n\nEnvironment variables are always strings, so convert types yourself: int(...) for numbers, and compare to \"true\" for booleans. Beware that the string \"false\" is truthy in Python (any non-empty string is), so if os.environ.get(\"DEBUG\", \"false\"): is always true.\n\nFor local development, uv run --env-file .env main.py loads a .env file (lines like KEY=value) before running. Never commit a .env file that contains secrets; add it to .gitignore. Read all settings in one place, such as a Settings dataclass, instead of scattering os.environ calls everywhere.",
+   "explanation": "An environment variable is a named setting (a key=value pair) that the operating system hands to a running program. Settings that differ between machines (a database address, a debug switch) and secrets (API keys, passwords) should come from environment variables, not be hard-coded in your source code. Then the same code runs on your laptop, in CI, and in production.\n\nIn Python, os.environ behaves like a dictionary. os.environ.get(\"NAME\", default) returns a default when the variable is missing. os.environ[\"NAME\"] raises a KeyError when it is missing, which is what you want for required values: fail fast with a clear error instead of running half-configured.\n\nEnvironment variables are always strings, so convert types yourself: int(...) for numbers, and compare to \"true\" for booleans. Beware that the string \"false\" is truthy in Python (any non-empty string is), so if os.environ.get(\"DEBUG\", \"false\"): is always true.\n\nFor local development, uv run --env-file .env main.py loads a .env file (a plain text file named exactly .env that you create in the project folder, with lines like KEY=value) before running. Never commit a .env file that contains secrets; add it to .gitignore. Read all settings in one place, such as a Settings dataclass, instead of scattering os.environ calls everywhere.",
    "analogy": "A hotel room: the building (your code) is identical for every guest, while the preferences card (environment variables) changes with each stay.",
    "code": [
     {
@@ -185,19 +185,19 @@ window.TOPICS.push({
    "question": "Which flag makes uv sync fail if the lockfile is out of date with pyproject.toml?",
    "options": [
     "--frozen",
-    "--locked",
     "--no-dev",
+    "--locked",
     "--check-only"
    ],
-   "answerIndex": 1,
+   "answerIndex": 2,
    "explanation": "--locked verifies uv.lock against pyproject.toml and fails on a mismatch. --frozen skips that check, and --no-dev only skips dev dependencies."
   },
   {
    "question": "Why install dependencies before copying your code in a Dockerfile?",
    "options": [
-    "Docker requires dependencies to come first",
-    "It makes the image smaller by deleting code",
-    "It lets Python import faster",
+    "Docker requires every dependency to be installed before it will copy any files",
+    "It makes the image smaller by deleting your code afterwards",
+    "It lets Python import modules faster at run time",
     "The dependency layer stays cached when only your code changes"
    ],
    "answerIndex": 3,
@@ -208,7 +208,7 @@ window.TOPICS.push({
    "options": [
     "The string \"false\" is non-empty, so it is truthy and the branch always runs",
     "os.environ cannot take a default",
-    "It raises KeyError when DEBUG is missing",
+    "It raises a KeyError (a missing-key error) whenever DEBUG is not set at all",
     "Nothing, it works correctly"
    ],
    "answerIndex": 0,
@@ -218,23 +218,34 @@ window.TOPICS.push({
    "question": "What do the members of a uv workspace share?",
    "options": [
     "Their version numbers",
-    "A single virtual environment per file",
     "One uv.lock file",
+    "Separate uv.lock files for each member",
     "The same PyPI upload"
    ],
-   "answerIndex": 2,
+   "answerIndex": 1,
    "explanation": "All workspace members are locked together in one uv.lock, which keeps their dependency versions compatible."
   },
   {
    "question": "Should a .env file containing secrets be committed to git?",
    "options": [
-    "Yes, so teammates have it",
     "No, keep it out of git and inject secrets through the platform",
-    "Yes, but only in private repositories",
+    "Yes, so teammates have it",
+    "Yes, but only in private repositories, since only team members can read them",
     "Only if the file is renamed"
    ],
-   "answerIndex": 1,
+   "answerIndex": 0,
    "explanation": "Secrets in git history are hard to remove and easy to leak. Keep .env in .gitignore and supply real secrets via the platform or CI secret storage."
+  },
+  {
+   "question": "In CI, why run `uv sync --locked` instead of plain `uv sync`?",
+   "options": [
+    "It installs faster by skipping packages that your tests do not import",
+    "It removes the virtual environment afterwards",
+    "It upgrades every package to the newest version",
+    "It fails if uv.lock is out of date instead of silently changing it"
+   ],
+   "answerIndex": 3,
+   "explanation": "--locked makes uv stop with an error when uv.lock no longer matches pyproject.toml, so CI never tests versions you did not commit. Plain uv sync would quietly update the lockfile."
   }
  ]
 });

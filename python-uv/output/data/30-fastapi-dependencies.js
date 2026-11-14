@@ -49,7 +49,7 @@ window.TOPICS.push({
     {
       "id": "dependencies-with-yield",
       "title": "Dependencies with yield",
-      "explanation": "Some resources must be opened before the endpoint runs and closed after it finishes: a database connection, a file, a lock. A dependency can do this by being a generator function (topic 17), a function that uses `yield` instead of `return`.\n\nCode before the `yield` runs first, before the endpoint. The yielded value is what the endpoint receives. Code after the `yield` runs once the endpoint has finished, which makes it the place for cleanup.\n\nWrap the `yield` in `try` and `finally` (topic 11). The `finally` block runs even if the endpoint raises an error, so the cleanup is never skipped. Without `try/finally`, an error in the endpoint would be raised at the `yield`, and the lines after it would not run.\n\nUse exactly one `yield` in the dependency. In the example, the list `events` records what happened. After a request to `/use`, a request to `/events` shows `[\"open\", \"close\"]`: the resource was opened, handed to the endpoint, then closed.\n\nA caution about the timing: do not rely on the cleanup having run before the client sees the response. It runs right after the endpoint finishes, which is why the next request already sees `close` in the list.",
+      "explanation": "Some resources must be opened before the endpoint runs and closed after it finishes: a database connection, a file, or a lock (a tool that stops two parts of a program from using the same thing at once). A dependency can do this by being a generator function (topic 17), a function that uses `yield` instead of `return`.\n\nCode before the `yield` runs first, before the endpoint. The yielded value is what the endpoint receives. Code after the `yield` runs once the endpoint has finished, which makes it the place for cleanup.\n\nWrap the `yield` in `try` and `finally` (topic 11). The `finally` block runs even if the endpoint raises an error, so the cleanup is never skipped. Without `try/finally`, an error in the endpoint would be raised at the `yield`, and the lines after it would not run.\n\nUse exactly one `yield` in the dependency. In the example, the list `events` records what happened. After a request to `/use`, a request to `/events` shows `[\"open\", \"close\"]`: the resource was opened, handed to the endpoint, then closed.\n\nA caution about the timing: do not rely on the cleanup having run before the client sees the response. It runs after the response has been sent, which is why the next request already sees `close` in the list.",
       "analogy": "Borrowing a library book. The librarian hands you the book (the `yield`). You read it, which is your endpoint running. When you are done, the book is checked back in automatically, even if you tore a page and left in a hurry (the `finally`).",
       "code": [
         {
@@ -136,49 +136,93 @@ window.TOPICS.push({
     }
   ],
   "quiz": [
-    {
-      "question": "Why do you write `Depends(get_user)` and not `Depends(get_user())`?",
-      "options": [
-        "Parentheses are only allowed on functions that take no arguments.",
-        "FastAPI must call the function itself for each request; with parentheses you would call it once yourself and pass its result.",
-        "Without parentheses the function runs faster.",
-        "Parentheses would make the dependency run twice per request."
-      ],
-      "answerIndex": 1,
-      "explanation": "`Depends` needs the function object so FastAPI can call it with the right request data every time. `get_user()` runs it immediately and passes whatever it returned."
-    },
-    {
-      "question": "When does the code after `yield` in a dependency run?",
-      "options": [
-        "Before the endpoint function starts.",
-        "Never, because `yield` ends the function.",
-        "After the endpoint has finished, which makes it the place for cleanup.",
-        "Only when the endpoint returns a 200 status."
-      ],
-      "answerIndex": 2,
-      "explanation": "The part before `yield` is setup, the yielded value goes to the endpoint, and the part after (ideally in `finally`) runs once the endpoint is done, even if it raised an error."
-    },
-    {
-      "question": "Which HTTP header does the parameter `x_token: Annotated[str, Header()]` read?",
-      "options": [
-        "A header literally named `x_token`.",
-        "`X-Token` (underscores become hyphens; names are not case-sensitive).",
-        "`token`, because the `x_` prefix is removed.",
-        "Any header, because `Header()` does not name one."
-      ],
-      "answerIndex": 1,
-      "explanation": "FastAPI converts underscores in the parameter name to hyphens, so `x_token` matches `X-Token`, regardless of capitalisation."
-    },
-    {
-      "question": "How can you run a check on every route of an app without adding a parameter to each endpoint?",
-      "options": [
-        "Put the check in the `status_code=` of every route.",
-        "Set the check as the `response_model` of the app.",
-        "Use `Depends(check)` as a default value for the endpoint's return type.",
-        "Pass it to the app: `FastAPI(dependencies=[Depends(check)])`."
-      ],
-      "answerIndex": 3,
-      "explanation": "Dependencies listed in `FastAPI(dependencies=[...])` run for every route. Their return values are ignored, so they suit checks that pass or raise an error."
-    }
-  ]
+      {
+        "question": "Why do you write `Depends(get_user)` and not `Depends(get_user())`?",
+        "options": [
+          "FastAPI must call the function itself for each request; with parentheses you would call it once yourself and pass its result.",
+          "Parentheses are only allowed on functions that take no arguments.",
+          "Without parentheses the function runs faster.",
+          "Parentheses would make the dependency run twice per request."
+        ],
+        "answerIndex": 0,
+        "explanation": "`Depends` needs the function object so FastAPI can call it with the right request data every time. `get_user()` runs it immediately and passes whatever it returned."
+      },
+      {
+        "question": "When does the code after `yield` in a dependency run?",
+        "options": [
+          "Before the endpoint function starts running, as the first setup step.",
+          "Never, because `yield` ends the function for good and stops all later code.",
+          "After the endpoint has finished, which makes it the place for cleanup.",
+          "Only when the endpoint returns a 200 status code and nothing else."
+        ],
+        "answerIndex": 2,
+        "explanation": "The part before `yield` is setup, the yielded value goes to the endpoint, and the part after (ideally in `finally`) runs once the endpoint is done, even if it raised an error."
+      },
+      {
+        "question": "Which HTTP header does the parameter `x_token: Annotated[str, Header()]` read?",
+        "options": [
+          "A header literally named `x_token`, underscore included.",
+          "`X-Token` (underscores become hyphens; names are not case-sensitive).",
+          "`token`, because the `x_` prefix is removed by FastAPI.",
+          "Any header at all, because `Header()` does not name one."
+        ],
+        "answerIndex": 1,
+        "explanation": "FastAPI converts underscores in the parameter name to hyphens, so `x_token` matches `X-Token`, regardless of capitalisation."
+      },
+      {
+        "question": "How can you run a check on every route of an app without adding a parameter to each endpoint?",
+        "options": [
+          "Put the check in the `status_code=` of every route.",
+          "Set the check as the `response_model` of the app.",
+          "Use `Depends(check)` as a default value for the endpoint's return type.",
+          "Pass it to the app: `FastAPI(dependencies=[Depends(check)])`."
+        ],
+        "answerIndex": 3,
+        "explanation": "Dependencies listed in `FastAPI(dependencies=[...])` run for every route. Their return values are ignored, so they suit checks that pass or raise an error."
+      },
+      {
+        "question": "Within one request, two dependencies both depend on get_user. How many times does FastAPI call get_user?",
+        "options": [
+          "Once; the result is reused for that request",
+          "Twice, once for each dependant that asks",
+          "Never, because it only ever runs once on startup",
+          "Once for the whole life of the server"
+        ],
+        "answerIndex": 0,
+        "explanation": "FastAPI caches a dependency's result for the duration of one request, so every dependant shares it. A new request calls it again."
+      },
+      {
+        "question": "Why should the cleanup after yield sit in a finally block?",
+        "options": [
+          "Because it makes the whole function run noticeably faster for every request",
+          "So the yield can return twice",
+          "So it still runs when the endpoint raises an error",
+          "So FastAPI can skip the call whenever it decides to"
+        ],
+        "answerIndex": 2,
+        "explanation": "If the endpoint raises, the error comes back into the dependency at the yield. A finally block guarantees the cleanup (closing a connection, for example) still happens."
+      },
+      {
+        "question": "get_user depends on get_token, and get_token raises HTTPException 401. What runs next?",
+        "options": [
+          "The endpoint still runs first, and only afterwards the 401 is sent",
+          "Nothing more: get_user and the endpoint never run",
+          "get_user still runs, but with token set to None instead",
+          "FastAPI retries get_token a second time before giving up"
+        ],
+        "answerIndex": 1,
+        "explanation": "An exception in a dependency stops the chain at once. FastAPI sends the 401 response and skips every later step."
+      },
+      {
+        "question": "Where do you put dependencies=[Depends(check)] to protect only one route?",
+        "options": [
+          "Inside the endpoint's parameter list, as an extra argument of the function",
+          "In the response_model setting of that route, next to the return type",
+          "In the status_code argument of the decorator, beside the HTTP code",
+          "In that route's decorator, e.g. @app.get(\"/x\", dependencies=[Depends(check)])"
+        ],
+        "answerIndex": 3,
+        "explanation": "The decorator's dependencies list runs the check for that route only, without adding a parameter to the function."
+      }
+    ]
 });

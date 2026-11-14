@@ -138,7 +138,7 @@ window.TOPICS.push({
   "quiz": [
     {
       "question": "Given `class User(BaseModel)` with `id: int` and `name: str`, what does `User(id=\"7\", name=\"Ada\").id` hold?",
-      "options": ["The integer 7, because lax mode converts the text", "The text \"7\", because hints are ignored", "Nothing: it always raises ValidationError", "None, because the type does not match"],
+      "options": ["The integer 7, because lax mode converts the text", "The text \"7\", because type hints are simply ignored", "Nothing: it always raises ValidationError for text", "None, because the type does not match the hint"],
       "answerIndex": 0,
       "explanation": "In the default lax mode Pydantic converts sensible input to the declared type, so the text \"7\" becomes the integer 7."
     },
@@ -156,15 +156,39 @@ window.TOPICS.push({
     },
     {
       "question": "What is the difference between `model_dump()` and `model_dump_json()`?",
-      "options": ["Both return a dict; the second one is faster", "The first returns a JSON string; the second returns a dict", "The first returns a dict; the second returns a JSON string", "The first only works on nested models"],
-      "answerIndex": 2,
+      "options": ["Both return a dict; the second one is just faster", "The first returns a JSON string; the second returns a dict", "The first only works on models that contain nested models", "The first returns a dict; the second returns a JSON string"],
+      "answerIndex": 3,
       "explanation": "`model_dump()` gives a Python dict you can keep working with; `model_dump_json()` gives a JSON text string ready to send or store."
     },
     {
       "question": "Which option of `model_dump` returns only the fields the caller explicitly provided?",
-      "options": ["exclude_none=True", "mode=\"json\"", "exclude_unset=True", "include_all=True"],
-      "answerIndex": 2,
+      "options": ["exclude_unset=True", "exclude_none=True", "mode=\"json\"", "include_all=True"],
+      "answerIndex": 0,
       "explanation": "`exclude_unset=True` leaves out every field that was not given when the model was created. `exclude_none` drops fields whose value is None, and `mode=\"json\"` only makes values JSON-safe. `include_all` does not exist."
+    },
+    {
+      "question": "Customer has a field address: Address, and Address has zip_code: str. What is the loc of a missing zip_code?",
+      "options": ["('zip_code',)", "('address', 'zip_code')", "('customer', 'address')", "('address',)"],
+      "answerIndex": 1,
+      "explanation": "`loc` is the path from the outer model down to the failing field: first the field name `address`, then `zip_code`. The model class name `Customer` is not part of it."
+    },
+    {
+      "question": "Which method returns how many problems a ValidationError found?",
+      "options": ["errors()", "len(e)", "error_count()", "e.count()"],
+      "answerIndex": 2,
+      "explanation": "`e.error_count()` returns the number of problems as an integer. `e.errors()` returns the list of problem details, not a count."
+    },
+    {
+      "question": "Which Field rule means 'zero or more'?",
+      "options": ["gt=0", "min_length=0", "le=0", "ge=0"],
+      "answerIndex": 3,
+      "explanation": "`ge` means greater than or equal to, so `ge=0` allows 0 and everything above. `gt=0` excludes zero and `le=0` allows only zero or below."
+    },
+    {
+      "question": "Which method parses a JSON string into a model?",
+      "options": ["model_validate_json", "model_dump_json", "json.loads", "model_dump"],
+      "answerIndex": 0,
+      "explanation": "`model_validate_json` reads JSON text and validates it into a model in one step. `model_dump_json` goes the other way, and `json.loads` gives only a plain dict."
     }
   ]
 });

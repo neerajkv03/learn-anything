@@ -26,7 +26,7 @@ window.TOPICS.push({
       ],
       "productionNote": "if/elif/else is how business rules live in code: validating input, picking a shipping cost by weight band, or deciding which error message to show. Keep each branch short, order bands from the most specific to the most general, and always think about what the final `else` should do for unexpected values.",
       "commonMistakes": [
-        "Mixing tabs and spaces or indenting lines unevenly, which raises IndentationError (Python's error for badly lined-up indentation). Configure your editor to insert 4 spaces when you press Tab.",
+        "Mixing tabs and spaces or indenting lines unevenly, which raises IndentationError (Python's error for badly lined-up indentation; mixed tabs and spaces show up as TabError, a kind of IndentationError). Configure your editor to insert 4 spaces when you press Tab.",
         "Forgetting the colon at the end of the if, elif, or else line, which raises SyntaxError (Python's error for code that is not written in valid form).",
         "Ordering conditions so a broad one hides a narrow one. With `score >= 50` checked first, a score of 95 would get grade C because that branch matches first and the rest never run."
       ],
@@ -40,7 +40,7 @@ window.TOPICS.push({
     {
       "id": "truthiness",
       "title": "Truthiness",
-      "explanation": "In a condition, Python does not need an actual True or False. Every value can be treated as true or false, which is called truthiness. You can see how Python judges a value by wrapping it in `bool(...)`, which converts a value into True or False.\n\nThe falsy values (those treated as false) are: `False`, `None` (Python's \"nothing here\" value), the number zero (`0` and `0.0`), the empty string `\"\"`, and empty containers such as `[]`, `{}`, `set()`, and `()` (these are covered in topic 07). Everything else is truthy. Note that the string `\"0\"` and the list `[0]` are truthy, because they are not empty.\n\nThis gives the usual way Python programmers test for emptiness: `if items:` means \"if items is not empty\". It reads naturally and is the style Python programmers expect.",
+      "explanation": "In a condition, Python does not need an actual True or False. Every value can be treated as true or false, which is called truthiness. You can see how Python judges a value by wrapping it in `bool(...)`, which converts a value into True or False.\n\nThe falsy values (those treated as false) are: `False`, `None` (Python's \"nothing here\" value), the number zero (`0` and `0.0`), the empty string `\"\"`, and empty containers (collections that hold several items) such as `[]`, `{}`, `set()`, and `()` (these are covered in topic 07). Everything else is truthy. Note that the string `\"0\"` and the list `[0]` are truthy, because they are not empty.\n\nThis gives the usual way Python programmers test for emptiness: `if items:` means \"if items is not empty\". It reads naturally and is the style Python programmers expect.",
       "analogy": "A box is \"true\" if it has anything in it and \"false\" if it is empty. It does not matter what is inside, even a box holding a single 0 counts as not empty.",
       "code": [
         {
@@ -110,11 +110,11 @@ window.TOPICS.push({
           "explanation": "command.split() turns the text into the list [\"move\", \"north\"]. The first case needs a one-item list, so it fails. The second case matches: the first item is \"move\" and the second is \"north\", which is saved as direction."
         }
       ],
-      "productionNote": "match is a good fit for parsing commands, routing message or event types, and handling HTTP status codes. Always include `case _:` so unexpected input is handled on purpose instead of silently doing nothing.",
+      "productionNote": "match is a good fit for parsing commands, routing message or event types, and handling HTTP status codes (numbers a web server sends back, such as 404 for not found). Always include `case _:` so unexpected input is handled on purpose instead of silently doing nothing.",
       "commonMistakes": [
-        "Using a bare name as a constant, like `case OK:`. A bare name is a capture pattern: it matches anything and assigns it to OK. To compare against a constant, use a literal (like `200`) or a dotted name such as `codes.OK`.",
+        "Using a bare name as a constant, like `case OK:`. A bare name is a capture pattern: it matches anything and assigns it to OK. To compare against a constant, use a literal (like `200`) or a dotted name such as `codes.OK` (a name read from inside another name, here the `OK` value stored in `codes`).",
         "Forgetting `case _:` as the default, so unmatched values fall through with no response.",
-        "Putting a catch-all capture or `_` before more specific cases. The first match wins, so later cases never run."
+        "Putting a catch-all (`case _:` or a bare capture name such as `case other:`) before other cases. Python refuses to run the file and reports a SyntaxError, because the cases after it could never be reached. Always put the catch-all last."
       ],
       "sources": [
         {
@@ -143,12 +143,12 @@ window.TOPICS.push({
     {
       "question": "With score = 95 and the conditions ordered `score >= 50` first, then `score >= 70`, then `score >= 90`, which branch runs?",
       "options": [
-        "The score >= 90 branch",
         "The score >= 50 branch",
+        "The score >= 90 branch",
         "The score >= 70 branch",
         "All three branches"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "explanation": "Python checks from top to bottom and runs only the first true branch. 95 >= 50 is true, so that branch runs and the others are skipped."
     },
     {
@@ -166,12 +166,23 @@ window.TOPICS.push({
       "question": "What does `case _:` do in a match statement?",
       "options": [
         "It matches any value, so it works as the default case",
-        "It raises an error",
-        "It matches only the value None",
-        "It matches only an empty list"
+        "It raises an error whenever it is reached",
+        "It matches only the value None and nothing else",
+        "It matches only an empty list and nothing else"
       ],
       "answerIndex": 0,
       "explanation": "The underscore is the wildcard pattern. It matches anything without storing it, so placed last it acts as the default case."
+    },
+    {
+      "question": "Which value does `case [\"move\", direction]:` match?",
+      "options": [
+        "Any value at all",
+        "A list of exactly two items whose first item is \"move\"",
+        "Only the text \"move\"",
+        "An empty list"
+      ],
+      "answerIndex": 1,
+      "explanation": "The pattern matches a two-item list whose first item is \"move\"; the second item is stored in direction."
     }
   ]
 });

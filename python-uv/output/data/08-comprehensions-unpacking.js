@@ -4,7 +4,7 @@ window.TOPICS.push({
   "order": 8,
   "title": "Comprehensions & Unpacking",
   "version": "Python 3.15.2 + uv 0.13.7",
-  "summary": "Learn Python's compact ways to build collections (list, dict and set comprehensions), process values one at a time with generator expressions, split and merge collections with unpacking, and order data with sorted and a custom sort rule. These tools turn many-line loops into short, readable lines.",
+  "summary": "Learn Python's compact ways to build collections with comprehensions (one-line loop recipes: list, dict and set), process values one at a time with generator expressions (recipes that produce values only when asked), split and merge collections with unpacking, and order data with sorted and a custom sort rule. These tools turn many-line loops into short, readable lines.",
   "prerequisites": ["07-collections"],
   "subtopics": [
     {
@@ -131,32 +131,44 @@ window.TOPICS.push({
   "quiz": [
     {
       "question": "What does [x * 2 for x in range(3)] produce?",
-      "options": ["[0, 1, 2]", "[0, 2, 4]", "[2, 4, 6]", "[0, 2, 4, 6]"],
-      "answerIndex": 1,
+      "options": ["[0, 1, 2]", "[2, 4, 6]", "[0, 2, 4]", "[0, 2, 4, 6]"],
+      "answerIndex": 2,
       "explanation": "range(3) yields 0, 1, 2. Doubling each gives 0, 2, 4, so the result is [0, 2, 4]."
     },
     {
       "question": "Why is sum(p for p in prices) usually better than sum([p for p in prices]) on big data?",
       "options": [
         "It avoids building a temporary list, so it uses less memory",
-        "It runs the loop in parallel on several CPU cores",
-        "It sorts the prices first",
-        "It lets you reuse the values afterwards"
+        "It runs the loop in parallel on several processors at once",
+        "It sorts all the prices first, before adding them",
+        "It lets you reuse the values afterwards as often as you like"
       ],
       "answerIndex": 0,
       "explanation": "A generator expression produces values one at a time, so sum never needs the whole list in memory."
     },
     {
       "question": "After first, *rest = [1, 2, 3], what is rest?",
-      "options": ["2", "(2, 3)", "[2, 3]", "[1, 2, 3]"],
-      "answerIndex": 2,
+      "options": ["2", "(2, 3)", "[1, 2, 3]", "[2, 3]"],
+      "answerIndex": 3,
       "explanation": "first takes 1, and the starred name collects everything left over as a list: [2, 3]."
     },
     {
       "question": "What does {**{\"a\": 1}, **{\"a\": 2}} give?",
-      "options": ["{'a': 1}", "{'a': 3}", "{'a': [1, 2]}", "{'a': 2}"],
-      "answerIndex": 3,
+      "options": ["{'a': 1}", "{'a': 2}", "{'a': 3}", "{'a': [1, 2]}"],
+      "answerIndex": 1,
       "explanation": "When keys repeat in a ** merge, the later value wins, so 'a' ends up as 2."
+    },
+    {
+      "question": "How many items does {w[0] for w in ['ant', 'bee', 'ape']} contain?",
+      "options": ["1", "2", "3", "It raises an error"],
+      "answerIndex": 1,
+      "explanation": "The first letters are a, b, a. A set keeps one copy of each, so it holds 2."
+    },
+    {
+      "question": "What does sorted(['bob', 'Alice', 'Carol'], key=str.lower) return?",
+      "options": ["['Alice', 'bob', 'Carol']", "['Alice', 'Carol', 'bob']", "['bob', 'Alice', 'Carol']", "['Carol', 'bob', 'Alice']"],
+      "answerIndex": 0,
+      "explanation": "key=str.lower compares names ignoring case: alice, bob, carol."
     }
   ]
 }

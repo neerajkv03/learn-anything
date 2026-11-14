@@ -10,7 +10,7 @@ window.TOPICS.push({
     {
       "id": "what-a-database-and-sql-are",
       "title": "What a database and SQL are",
-      "explanation": "A database is an organised, permanent store of data. A variable disappears when your program ends; data in a database stays until you delete it. Most databases you will meet are relational: the data lives in tables, which look like spreadsheets. A table has columns (named, typed fields such as title or year) and rows (one record each, such as one book).\n\nSQL (Structured Query Language) is the language you use to ask a database to create, read, change or delete data. By convention SQL keywords are written in UPPERCASE, for example SELECT. SQL is a separate language from Python: you write it inside Python strings and hand those strings to the database.\n\nSQLite is a whole database stored in a single file. It needs no server and no installation, because Python includes it as the standard-library module sqlite3 (a module is a file of ready-made code that you load with import). You do not need uv add for it. Python ships its own copy of the SQLite library, so its version can differ from the SQLite 3.54.1 this course targets; you can check yours with sqlite3.sqlite_version.\n\nIn the example, sqlite3.connect(\":memory:\") opens a temporary database kept in RAM (the computer's working memory); it vanishes when the program ends, which is ideal for experiments. connect returns a connection object (an object is a value with its own data and abilities) that you use to talk to the database. con.execute(...) sends one SQL statement and returns a cursor, a pointer over the results. Calling .fetchone() on it returns the next result row, and each row comes back as a Python tuple.\n\nTo run it: create a file named sql_intro.py in your project folder, paste the code, open a terminal in that folder and run uv run sql_intro.py.",
+      "explanation": "A database is an organised, permanent store of data. A variable disappears when your program ends; data in a database stays until you delete it. Most databases you will meet are relational: the data lives in tables, which look like spreadsheets. A table has columns (named, typed fields such as title or year) and rows (one record each, such as one book).\n\nSQL (Structured Query Language) is the language you use to ask a database to create, read, change or delete data. By convention SQL keywords are written in UPPERCASE, for example SELECT. SQL is a separate language from Python: you write it inside Python strings and hand those strings to the database.\n\nSQLite is a whole database stored in a single file. It needs no server and no installation, because Python includes it as the standard-library module sqlite3 (a module is a file of ready-made code that you load with import). You do not need uv add for it. Python uses a SQLite library that is bundled with it (Windows and macOS installers) or installed alongside it (most Linux systems), so its version can differ from the SQLite 3.54.1 this course targets; you can check yours with sqlite3.sqlite_version.\n\nIn the example, sqlite3.connect(\":memory:\") opens a temporary database kept in RAM (the computer's working memory); it vanishes when the program ends, which is ideal for experiments. connect returns a connection object (an object is a value with its own data and abilities) that you use to talk to the database. con.execute(...) sends one SQL statement and returns a cursor, a pointer over the results. Calling .fetchone() on it returns the next result row, and each row comes back as a Python tuple.\n\nTo run it: create a file named sql_intro.py in your project folder, paste the code, open a terminal in that folder and run uv run sql_intro.py.",
       "analogy": "A database is a filing cabinet. Each table is a drawer of identical index cards (the rows), and every card has the same printed boxes (the columns). SQL is the request slip you hand the clerk, such as 'bring me the cards for books after 1900'.",
       "code": [
         {
@@ -98,7 +98,7 @@ window.TOPICS.push({
       ],
       "productionNote": "Use placeholders for every query with a value from outside your code: login forms, search boxes, API parameters. This is the standard defence against SQL injection, and libraries built on top of databases do it for you.",
       "commonMistakes": [
-        "Writing (name) instead of (name,). Without the comma it is just a string in parentheses, and sqlite3 treats each character as a separate value, raising an error about the wrong number of bindings.",
+        "Writing (name) instead of (name,). Without the comma it is just a string in parentheses, and sqlite3 treats each character as a separate value, raising an error about the wrong number of values (sqlite3 calls these bindings).",
         "Using an f-string for SQL 'just for a quick script'. Quick scripts become real code; make placeholders a habit."
       ],
       "sources": [
@@ -134,7 +134,7 @@ window.TOPICS.push({
     {
       "id": "row-factories-and-closing-connections",
       "title": "Row factories and closing connections",
-      "explanation": "By default each row is a plain tuple, so you must remember that position 0 is id and position 1 is title. Setting con.row_factory = sqlite3.Row changes that. A row factory is the function a connection uses to build each row. sqlite3.Row rows can be read by column name, row[\"title\"], and still by position, row[0]. To get a real dictionary, call dict(row). Set row_factory before you run the query; rows from queries already run are not changed.\n\nYou should close a connection when you are finished with it, with con.close(). Open connections can hold file locks, which leads to errors like 'database is locked' in other programs or threads. Commit first, then close; closing does not save pending changes.\n\nThe standard library helper contextlib.closing (from the same contextlib module as the contextmanager you met earlier) turns any object with a close method into a context manager. with closing(sqlite3.connect(...)) as con: closes the connection automatically when the block ends, even if an error happens.",
+      "explanation": "By default each row is a plain tuple, so you must remember that position 0 is id and position 1 is title. Setting con.row_factory = sqlite3.Row changes that. A row factory is the function a connection uses to build each row. sqlite3.Row rows can be read by column name, row[\"title\"], and still by position, row[0]. To get a real dictionary, call dict(row). Set row_factory before you run the query; rows from queries already run are not changed.\n\nYou should close a connection when you are finished with it, with con.close(). Open connections can hold file locks (a lock stops other programs from changing the file at the same time), which leads to errors like 'database is locked' in other programs or in other parts of your program running at the same time. Commit first, then close; closing does not save pending changes.\n\nThe standard library helper contextlib.closing (from the same contextlib module as the contextmanager you met earlier) turns any object with a close method into a context manager. with closing(sqlite3.connect(...)) as con: closes the connection automatically when the block ends, even if an error happens.",
       "analogy": "Plain tuple rows are cards with unlabeled boxes, so you must remember which position holds what. sqlite3.Row gives the boxes printed labels. Closing the connection is locking the cabinet when you leave.",
       "code": [
         {
@@ -194,10 +194,10 @@ window.TOPICS.push({
     {
       "question": "What does declaring a column as `INTEGER PRIMARY KEY` give you?",
       "options": [
-        "A text column that must be unique",
+        "A text column that must be unique and is typed in by hand each time",
         "A unique whole-number id that is filled in automatically when you insert a row, readable afterwards through cur.lastrowid",
-        "A column that can never be read by a SELECT",
-        "A column whose value is encrypted"
+        "A hidden column that can never be read by any SELECT query",
+        "A column whose stored values are automatically encrypted"
       ],
       "answerIndex": 1,
       "explanation": "An INTEGER PRIMARY KEY uniquely identifies each row and is assigned automatically if you leave it out of the INSERT. cur.lastrowid gives you the id of the row you just inserted."
@@ -205,13 +205,46 @@ window.TOPICS.push({
     {
       "question": "How do you read a column named title from a fetched row by its name?",
       "options": [
+        "Call row.title() on a default tuple row, which has methods named after columns",
         "Set con.row_factory = sqlite3.Row, then use row[\"title\"]",
-        "Call row.title() on a default tuple row",
-        "Use row.get(\"title\") on a default tuple row",
-        "Add ORDER BY title to the query"
+        "Use row.get(\"title\") on a default tuple row, just like a dictionary",
+        "Add ORDER BY title to the query so rows come back labeled"
+      ],
+      "answerIndex": 1,
+      "explanation": "Default rows are tuples and only support positions. sqlite3.Row adds access by column name, and dict(row) converts it to a dictionary."
+    },
+    {
+      "question": "Which call makes a throwaway database that lives only in memory?",
+      "options": [
+        "sqlite3.connect(\"temp.db\")",
+        "sqlite3.connect()",
+        "sqlite3.connect(\":memory:\")",
+        "sqlite3.memory()"
+      ],
+      "answerIndex": 2,
+      "explanation": "The special name \":memory:\" tells SQLite to keep the database in RAM, so it vanishes when the connection closes. \"temp.db\" would create a file on disk."
+    },
+    {
+      "question": "Which statement counts the rows in the books table?",
+      "options": [
+        "COUNT books",
+        "SELECT books.length",
+        "SELECT ALL ROWS FROM books",
+        "SELECT COUNT(*) FROM books"
+      ],
+      "answerIndex": 3,
+      "explanation": "COUNT(*) is an SQL function that counts rows, and FROM books names the table to count. The other forms are not valid SQL."
+    },
+    {
+      "question": "What does a database table store?",
+      "options": [
+        "Rows of data arranged in named columns",
+        "Python functions that run when you query it",
+        "Only one single value per database file",
+        "A history of the SQL commands you have run"
       ],
       "answerIndex": 0,
-      "explanation": "Default rows are tuples and only support positions. sqlite3.Row adds access by column name, and dict(row) converts it to a dictionary."
+      "explanation": "A table is like a spreadsheet sheet: each row is one record and each column has a name and a type. It holds data, not code or command history."
     }
   ]
 });
