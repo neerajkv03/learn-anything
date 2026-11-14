@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "12-packages-modules",
   "order": 12,
   "title": "Packages & Modules",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn how Go splits code into packages (folders of related code), how capitalization decides what other packages can use, and how a module (a versioned collection of packages described by go.mod) tracks outside dependencies. You will lay out a project with cmd/ and internal/, add libraries with go get, read major-version import paths like /v5, and keep go.mod clean with go mod tidy.",
   "prerequisites": [
     "11-error-handling"

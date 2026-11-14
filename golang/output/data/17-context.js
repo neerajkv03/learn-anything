@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "17-context",
   "order": 17,
   "title": "Context",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "The context package gives every piece of concurrent work a shared way to hear \"stop now\", to know its time limit, and to read a few request-scoped facts such as a request ID. You will cancel work by hand, bound it with timeouts, pass a context through a call chain, and attach values safely.",
   "prerequisites": [
     "16-sync-patterns"

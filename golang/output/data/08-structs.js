@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "08-structs",
   "order": 8,
   "title": "Structs",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "A struct is a type that groups several named values (fields) into one value, such as a User with a name and an age. You will create structs with keyed literals, read and change their fields, reuse one struct inside another by embedding, write one-off anonymous structs, and learn exactly what copying and == do with them.",
   "prerequisites": [
     "07-maps"

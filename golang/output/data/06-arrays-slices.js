@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "06-arrays-slices",
   "order": 6,
   "title": "Arrays & Slices",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Go stores ordered collections in arrays (fixed length) and slices (growable views onto an array). You will learn how slicing shares memory, how append, len and cap work, how to loop over a slice, and how to sort and search with the standard slices package.",
   "prerequisites": [
     "05-strings-formatting"

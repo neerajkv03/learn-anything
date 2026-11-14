@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "23-logging-config",
   "order": 23,
   "title": "Logging & Configuration",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn to write structured log lines with the standard library package log/slog, control how much is logged with levels, and switch to JSON output. Then learn to feed settings into a program from environment variables and command-line flags, and gather them into one validated Config struct (a struct that holds all settings) at startup.",
   "prerequisites": [
     "22-http-client"

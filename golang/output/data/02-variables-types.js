@@ -3,9 +3,11 @@ window.TOPICS.push({
   "id": "02-variables-types",
   "order": 2,
   "title": "Variables & Basic Types",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn how to store values in named variables with var and :=, and how Go's four everyday types (int, float64, string, bool) behave. You will see the zero value every variable starts with, how to define constants and lists of named numbers with iota (Go's way of writing an enum, a fixed set of named choices), and how to convert between numeric types explicitly.",
-  "prerequisites": ["01-getting-started"],
+  "prerequisites": [
+    "01-getting-started"
+  ],
   "subtopics": [
     {
       "id": "var-and-short-declaration",
@@ -29,8 +31,14 @@ window.TOPICS.push({
         "Trying to assign a different kind of value, such as `age = \"old\"`. The variable's type is fixed, so this is a compile error."
       ],
       "sources": [
-        { "title": "Go spec: Variable declarations", "url": "https://go.dev/ref/spec#Variable_declarations" },
-        { "title": "Go spec: Short variable declarations", "url": "https://go.dev/ref/spec#Short_variable_declarations" }
+        {
+          "title": "Go spec: Variable declarations",
+          "url": "https://go.dev/ref/spec#Variable_declarations"
+        },
+        {
+          "title": "Go spec: Short variable declarations",
+          "url": "https://go.dev/ref/spec#Short_variable_declarations"
+        }
       ]
     },
     {
@@ -54,9 +62,18 @@ window.TOPICS.push({
         "Putting a value outside a sized type's range, such as 300 in a uint8 (maximum 255). Constants like this are rejected at compile time."
       ],
       "sources": [
-        { "title": "Go spec: Numeric types", "url": "https://go.dev/ref/spec#Numeric_types" },
-        { "title": "Go spec: String types", "url": "https://go.dev/ref/spec#String_types" },
-        { "title": "Go spec: Boolean types", "url": "https://go.dev/ref/spec#Boolean_types" }
+        {
+          "title": "Go spec: Numeric types",
+          "url": "https://go.dev/ref/spec#Numeric_types"
+        },
+        {
+          "title": "Go spec: String types",
+          "url": "https://go.dev/ref/spec#String_types"
+        },
+        {
+          "title": "Go spec: Boolean types",
+          "url": "https://go.dev/ref/spec#Boolean_types"
+        }
       ]
     },
     {
@@ -79,7 +96,10 @@ window.TOPICS.push({
         "Expecting an int or string to be nil (nil is Go's word for \"no value\"; these types can never hold it). Those types can never be nil; they start at 0 and \"\"."
       ],
       "sources": [
-        { "title": "Go spec: The zero value", "url": "https://go.dev/ref/spec#The_zero_value" }
+        {
+          "title": "Go spec: The zero value",
+          "url": "https://go.dev/ref/spec#The_zero_value"
+        }
       ]
     },
     {
@@ -103,8 +123,14 @@ window.TOPICS.push({
         "Forgetting that `type Weekday int` makes a distinct type: a Weekday cannot be mixed with a plain int variable without a conversion."
       ],
       "sources": [
-        { "title": "Go spec: Constant declarations", "url": "https://go.dev/ref/spec#Constant_declarations" },
-        { "title": "Go spec: Iota", "url": "https://go.dev/ref/spec#Iota" }
+        {
+          "title": "Go spec: Constant declarations",
+          "url": "https://go.dev/ref/spec#Constant_declarations"
+        },
+        {
+          "title": "Go spec: Iota",
+          "url": "https://go.dev/ref/spec#Iota"
+        }
       ]
     },
     {
@@ -129,7 +155,10 @@ window.TOPICS.push({
         "Expecting `int(3.99)` to round to 4. It truncates to 3."
       ],
       "sources": [
-        { "title": "Go spec: Conversions", "url": "https://go.dev/ref/spec#Conversions" }
+        {
+          "title": "Go spec: Conversions",
+          "url": "https://go.dev/ref/spec#Conversions"
+        }
       ]
     }
   ],

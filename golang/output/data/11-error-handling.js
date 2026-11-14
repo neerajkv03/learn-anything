@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "11-error-handling",
   "order": 11,
   "title": "Error Handling",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Go reports expected failures as ordinary values of the built-in error type instead of exceptions (a crash-and-catch system used by some other languages). You will learn to check and return errors, wrap them with context, inspect them with errors.Is, errors.As and errors.AsType, define your own error types, and know the narrow cases where panic (a crash for serious bugs) and recover (stopping a crash) are appropriate.",
   "prerequisites": [
     "10-methods-interfaces"

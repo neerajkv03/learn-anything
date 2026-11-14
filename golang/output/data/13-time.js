@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "13-time",
   "order": 13,
   "title": "Time & Dates",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn how Go represents a moment in time (time.Time) and a length of time (time.Duration). You will convert between time zones while storing UTC (the standard world reference time, with no daylight-saving shifts) and format dates with Go's reference layout (a sample date written in the shape you want), and use timers and tickers to run things later or repeatedly.",
   "prerequisites": [
     "12-packages-modules"

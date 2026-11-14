@@ -54,3 +54,68 @@ Released 2026-11-10 (per https://go.dev/doc/devel/release). Go 1.27.0 released 2
 - 1.26: built-in new accepts an expression operand; errors.AsType generic version of As. https://go.dev/doc/go1.26
 - 1.25: sync.WaitGroup.Go. https://go.dev/doc/go1.25
 - 1.24: testing.B.Loop; omitzero json tag option. https://go.dev/doc/go1.24
+
+## Gin 1.12.0 (released 2026-02-28)
+- Release: v1.12.0 marked Latest, 28 Feb 2026 (year from pkg.go.dev). https://github.com/gin-gonic/gin/releases/tag/v1.12.0
+- Min Go: go.mod `go 1.25.0`, no toolchain line. https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/go.mod
+- Min Go bumped to 1.24 (#4388), then CI and docs to Go 1.25+ (#4550). https://github.com/gin-gonic/gin/releases/tag/v1.12.0
+- Context: new `GetError` and `GetErrorSlice` (#4502). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Context: new `Delete` method (commit 38e7651). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Context: Protocol Buffers support in content negotiation (#4423). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Context: ClientIP fixed for multiple X-Forwarded-For values (#4472). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Context: always trusts X-Forwarded-For headers from a Unix socket (#3359), behavior change. https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Binding: `encoding.UnmarshalText` support in uri/query binding (#4203). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Binding: form binding improves empty slice/array handling (#4380); empty value error fixed (#2169). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Binding: BSON now uses mongo-driver v2 (#4549). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Render: BSON protocol support (#4145). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Render: `Data.Render` writes content length (#4206). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Gin: new option to use escaped path (#4420). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Gin: `RunFd` closes `os.File`, fixing a resource leak (#4422). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Gin: literal colon routes fixed with `engine.Handler()` (#4415). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Logger: latency coloring (#4146); option to skip query string output (#4547). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Recovery: suppresses `http.ErrAbortHandler` (#4336). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Response: hijack behavior refined (#4373); `Flush()` no longer panics without `http.Flusher` (#4479). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Tree: panic in `findCaseInsensitivePathRec` with `RedirectFixedPath` fixed (#4535). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Debug: version mismatch fixed (#4403). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Perf: fewer allocations in `findCaseInsensitivePath` (#4417); regex replaced in `redirectTrailingSlash` (#4414). https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Refactor: `sync.OnceValue` in ginS; `maps.Clone`/`maps.Copy` usage. https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Removals, deprecations, changed defaults: none listed in CHANGELOG or release page. https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/CHANGELOG.md
+- Release page: `golang.org/x/crypto` to v0.45.0 (#4449), quic-go to v0.57.1. https://github.com/gin-gonic/gin/releases/tag/v1.12.0
+
+## Gin 1.11.0 (released 2025-09-20)
+- Release: 20 Sep 2025 per pkg.go.dev. https://pkg.go.dev/github.com/gin-gonic/gin?tab=versions
+- Features: experimental HTTP/3 via quic-go (#3210); `BindPlain` (#3904); `OnlyFilesFS` exported (#3939). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Features: `unixMilli`/`unixMicro` time binding (#4190); form collection default values and array format (#4048, #3986). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Features: `GetXxx` context getters cover more Go native types (#3633). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Min Go: "update Gin minimum Go version to 1.21" (#3960). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Build: Trivy scanning in CI (#4359); Go 1.24 and 1.25 added to CI (#4154, #4341). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Build: sonic v1.13.2 to v1.14.0 (#4342). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Fix: middleware re-entry in `HandleContext` (#3987); nil handler check in context (#3413). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Fix: TOML decode duplicate decoding and validation (#4193); no panic on method-not-allowed with empty tree (#4003). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Enhancement: `strings.Cut` in binding (#3522); `SaveUploadedFile` takes optional permission parameter (#4068). https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+- Removals, deprecations, changed defaults: none listed in CHANGELOG. https://raw.githubusercontent.com/gin-gonic/gin/v1.11.0/CHANGELOG.md
+
+## Gin extension libs (checked 2026-11-15)
+- jwt/v5 latest stable: v5.3.1, published Jan 28 2026, marked Latest. pkg.go.dev warns page is not module's latest; newest version UNCONFIRMED. https://github.com/golang-jwt/jwt/releases ; https://pkg.go.dev/github.com/golang-jwt/jwt/v5
+- jwt/v5 identifiers all present: NewWithClaims(method SigningMethod, claims Claims, opts ...TokenOption) *Token; SigningMethodHS256 *SigningMethodHMAC (var); RegisteredClaims struct; NewNumericDate(t time.Time) *NumericDate; ParseWithClaims(tokenString string, claims Claims, keyFunc Keyfunc, options ...ParserOption) (*Token, error); WithValidMethods(methods []string) ParserOption; WithExpirationRequired() ParserOption; ErrTokenExpired var; (*Token).SignedString(key any) (string, error); Token.Valid bool field. https://pkg.go.dev/github.com/golang-jwt/jwt/v5
+- gin-contrib/cors latest stable: v1.7.11, Nov 8 (2026 per pkg.go.dev), marked Latest; page flags not module's latest. https://github.com/gin-contrib/cors/releases ; https://pkg.go.dev/github.com/gin-contrib/cors
+- gin-contrib/cors min Go: `go 1.26.10` (go.mod at tag v1.7.11). https://raw.githubusercontent.com/gin-contrib/cors/v1.7.11/go.mod
+- cors API present: func New(config Config) gin.HandlerFunc; func Default() gin.HandlerFunc; Config.AllowOrigins []string, AllowMethods []string, AllowHeaders []string, ExposeHeaders []string, AllowCredentials bool, MaxAge time.Duration. https://pkg.go.dev/github.com/gin-contrib/cors
+- validator/v10 latest stable: v10.30.6, marked Latest; date Nov 2 on releases page vs Oct 29 2026 on pkg.go.dev (conflict, not resolved). Newest UNCONFIRMED (pkg.go.dev not-latest warning). https://github.com/go-playground/validator/releases ; https://pkg.go.dev/github.com/go-playground/validator/v10
+- gin v1.12.0 go.mod: `go 1.25.0`; requires github.com/go-playground/validator/v10 v10.30.1. https://raw.githubusercontent.com/gin-gonic/gin/v1.12.0/go.mod
+- validator: type ValidationErrors present (methods Error(), Translate(ut)); underlying type UNCONFIRMED. https://pkg.go.dev/github.com/go-playground/validator/v10
+- validator: FieldError interface methods Tag() string, Field() string, Param() string. https://pkg.go.dev/github.com/go-playground/validator/v10
+- validator: (*Validate).RegisterValidation(tag string, fn Func, callValidationEvenIfNull ...bool) error. https://pkg.go.dev/github.com/go-playground/validator/v10
+- validator: FieldLevel interface present (Top, Parent, Field, FieldName, StructFieldName, Param, GetTag, ExtractType; GetStructFieldOK* deprecated). https://pkg.go.dev/github.com/go-playground/validator/v10
+- gin v1.12.0: SetMode(value string); const ReleaseMode = "release"; const TestMode = "test"; CreateTestContext(w http.ResponseWriter) (c *Context, r *Engine). https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0: BasicAuth(accounts Accounts) HandlerFunc; type Accounts map[string]string. https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0: (*Engine).SetTrustedProxies(trustedProxies []string) error. https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0: Engine field HandleMethodNotAllowed bool (405 if another method matches; else NoMethod/NotFound path). https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0 (page offset 100000)
+- gin v1.12.0: (*Engine).NoRoute(handlers ...HandlerFunc); (*Engine).NoMethod(handlers ...HandlerFunc); (*Engine).Handler() http.Handler. https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0 Context: ShouldBindJSON(obj any) error; ShouldBindUri(obj any) error; ShouldBindQuery(obj any) error; ShouldBind(obj any) error. https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0 Context: FormFile(name string) (*multipart.FileHeader, error); SaveUploadedFile(file *multipart.FileHeader, dst string, perm ...fs.FileMode) error (perm variadic). https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0 Context: AbortWithStatusJSON(code int, jsonObj any); Error(err error) *Error; Errors field type errorMsgs; GetError(key any) error. https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0 Context: GetString(key any) string; MustGet(key any) any; Set(key any, value any) (key is any, not string-only). https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0 Context: ClientIP() string; DefaultQuery(key, defaultValue string) string; Param(key string) string. https://pkg.go.dev/github.com/gin-gonic/gin@v1.12.0
+- gin v1.12.0 binding: var Validator StructValidator = &defaultValidator{}; StructValidator methods ValidateStruct(any) error, Engine() any. https://pkg.go.dev/github.com/gin-gonic/gin/binding@v1.12.0
+- UNCONFIRMED: newest jwt/v5 and validator/v10 releases beyond the "Latest" tags shown; ValidationErrors underlying type; gin v1.12.0 Context.Errors exact type beyond "errorMsgs" field line.

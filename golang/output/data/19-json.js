@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "19-json",
   "order": 19,
   "title": "JSON",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "JSON is the text format almost every web API uses to exchange data. You will convert structs to JSON and back with encoding/json, control field names and omission with struct tags, decode JSON of unknown shape into a map, and stream JSON with Encoder and Decoder. You will also learn what Go 1.27 changed under the hood with encoding/json/v2.",
   "prerequisites": [
     "18-files-io"

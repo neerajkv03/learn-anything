@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "10-methods-interfaces",
   "order": 10,
   "title": "Methods & Interfaces",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn how to attach functions (methods) to your own types, choose between value and pointer receivers, and describe behaviour with interfaces that types satisfy automatically. You will also inspect what is inside an interface value, use any and fmt.Stringer, and see why small interfaces like io.Writer make code flexible and easy to test.",
   "prerequisites": [
     "09-pointers"

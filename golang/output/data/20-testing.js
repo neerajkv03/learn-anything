@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "20-testing",
   "order": 20,
   "title": "Testing",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Go ships a testing tool in the standard library and the go command. You will write tests with go test, group cases in tables with subtests, clean up with helpers, measure speed with benchmarks, see which lines your tests run with coverage, and let a fuzzer hunt for inputs that break your code.",
   "prerequisites": [
     "19-json"

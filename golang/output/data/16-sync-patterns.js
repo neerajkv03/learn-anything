@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "16-sync-patterns",
   "order": 16,
   "title": "Synchronization & Patterns",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Goroutines that share a variable can corrupt it, which is called a data race. This topic shows how to detect races with the -race flag and how to prevent them with mutexes (locks), sync.WaitGroup (a counter that waits for goroutines to finish), sync.Once (runs setup exactly once) and atomic counters (single numbers updated in one indivisible step). It ends with the worker pool, the standard pattern for running a fixed number of goroutines over many jobs.",
   "prerequisites": [
     "15-goroutines-channels"

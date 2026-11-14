@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "01-getting-started",
   "order": 1,
   "title": "Getting Started",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Install Go 1.27.4, check it from a terminal, and write your first program. You will run it, build it into a stand-alone executable file, group it into a module, and learn the two built-in tools that tidy and proofread your code.",
   "prerequisites": [],
   "subtopics": [
@@ -27,8 +27,14 @@ window.TOPICS.push({
         "Installing an old Go from an operating-system package list instead of from go.dev/dl, and so getting an older version than this course uses. Check the number printed by `go version`."
       ],
       "sources": [
-        { "title": "Download and install Go", "url": "https://go.dev/doc/install" },
-        { "title": "Go downloads", "url": "https://go.dev/dl/" }
+        {
+          "title": "Download and install Go",
+          "url": "https://go.dev/doc/install"
+        },
+        {
+          "title": "Go downloads",
+          "url": "https://go.dev/dl/"
+        }
       ]
     },
     {
@@ -59,8 +65,14 @@ window.TOPICS.push({
         "Writing `fmt.println` with a small p. In Go a name that starts with a capital letter is available to other packages, so the function is `Println` with a capital P."
       ],
       "sources": [
-        { "title": "Tutorial: Get started with Go", "url": "https://go.dev/doc/tutorial/getting-started" },
-        { "title": "Go specification: Program execution", "url": "https://go.dev/ref/spec#Program_execution" }
+        {
+          "title": "Tutorial: Get started with Go",
+          "url": "https://go.dev/doc/tutorial/getting-started"
+        },
+        {
+          "title": "Go specification: Program execution",
+          "url": "https://go.dev/ref/spec#Program_execution"
+        }
       ]
     },
     {
@@ -83,8 +95,14 @@ window.TOPICS.push({
         "Committing built binaries to version control (a system such as Git that records the history of your files). Binaries are large and can be rebuilt at any time from the source, so keep only the source code."
       ],
       "sources": [
-        { "title": "go command: compile and run Go program", "url": "https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program" },
-        { "title": "go command: compile packages and dependencies", "url": "https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies" }
+        {
+          "title": "go command: compile and run Go program",
+          "url": "https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program"
+        },
+        {
+          "title": "go command: compile packages and dependencies",
+          "url": "https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies"
+        }
       ]
     },
     {
@@ -121,8 +139,14 @@ window.TOPICS.push({
         "Choosing a module path with spaces or capital letters. Stick to lowercase letters, digits, dots, dashes and slashes."
       ],
       "sources": [
-        { "title": "Go Modules Reference: go mod init", "url": "https://go.dev/ref/mod#go-mod-init" },
-        { "title": "Tutorial: Create a Go module", "url": "https://go.dev/doc/tutorial/create-module" }
+        {
+          "title": "Go Modules Reference: go mod init",
+          "url": "https://go.dev/ref/mod#go-mod-init"
+        },
+        {
+          "title": "Tutorial: Create a Go module",
+          "url": "https://go.dev/doc/tutorial/create-module"
+        }
       ]
     },
     {
@@ -166,8 +190,14 @@ window.TOPICS.push({
         "Ignoring `go vet` warnings because the program still runs. Each warning points at code that is very likely wrong."
       ],
       "sources": [
-        { "title": "gofmt command", "url": "https://pkg.go.dev/cmd/gofmt" },
-        { "title": "vet command", "url": "https://pkg.go.dev/cmd/vet" }
+        {
+          "title": "gofmt command",
+          "url": "https://pkg.go.dev/cmd/gofmt"
+        },
+        {
+          "title": "vet command",
+          "url": "https://pkg.go.dev/cmd/vet"
+        }
       ]
     }
   ],

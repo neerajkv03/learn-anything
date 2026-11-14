@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "05-strings-formatting",
   "order": 5,
   "title": "Strings, Runes & Formatting",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Text is everywhere in real programs, and Go has precise rules for it: a string is a read-only run of bytes, and a rune is one character. You will learn the strings package, how to convert between text and numbers with strconv, and how to build formatted output with fmt verbs (the % codes that mark where a value goes).",
   "prerequisites": [
     "04-functions"

@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "21-http-server",
   "order": 21,
   "title": "HTTP Servers",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Build web servers with Go's standard net/http package: write handlers, route by method and path with ServeMux, read and write JSON safely, wrap handlers with middleware, and shut down gracefully. Everything here uses only the standard library, which is how most production Go services are built.",
   "prerequisites": [
     "20-testing"

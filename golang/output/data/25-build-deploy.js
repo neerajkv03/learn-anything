@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "25-build-deploy",
   "order": 25,
   "title": "Building & Shipping",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn how to turn your Go program into a release-ready file: build it with a version number stamped in, compile it for other operating systems and CPUs, and install or pin command-line tools. Then measure a running service with pprof (Go's built-in profiler) and package it into a small, safe Docker container image (Docker is a tool that packs a program into a standard box called an image; the last sub-topic explains it).",
   "prerequisites": [
     "24-database-sql"

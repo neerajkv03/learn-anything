@@ -29,7 +29,7 @@ The payload is strict JSON: double quotes, no trailing commas, no comments. The 
 ## Schema
 ```json
 {
-  "id": "<slug>", "order": <NN as number>, "title": "string", "version": "<VERSION>",
+  "id": "<slug>", "order": <NN as number>, "title": "string", "version": "<VERSION from the launch prompt, verbatim; never the plan's Version line>",
   "summary": "2-3 sentences",
   "prerequisites": ["slugs of earlier topics, from the plan"],
   "subtopics": [{

@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "03-control-flow",
   "order": 3,
   "title": "Operators and Control Flow",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn the symbols Go uses for maths, comparing and combining yes/no answers. Then learn how a program chooses a path with if and switch, and repeats work with for loops, using break and continue to steer them.",
   "prerequisites": [
     "02-variables-types"

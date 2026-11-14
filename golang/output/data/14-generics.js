@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "14-generics",
   "order": 14,
   "title": "Generics",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Generics let you write one function or type that works for many types (type parameters are placeholders such as T for those types; constraints are rules saying which types are allowed, such as cmp.Ordered and ~int) while the compiler still checks everything. You will learn type parameters, constraints such as cmp.Ordered and ~int, generic types like Stack[T], the Go 1.27 generic methods rule, and when plain code or an interface is the better choice.",
   "prerequisites": [
     "13-time"

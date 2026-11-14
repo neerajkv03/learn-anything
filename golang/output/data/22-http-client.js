@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "22-http-client",
   "order": 22,
   "title": "HTTP Clients",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Topic 21 showed how to receive HTTP requests. This topic shows the other side: sending requests to other servers with Go's net/http package. You will build a reusable client with a timeout, tie each request to a context, read and close response bodies safely, send and receive JSON, and treat non-2xx status codes as errors.",
   "prerequisites": [
     "21-http-server"

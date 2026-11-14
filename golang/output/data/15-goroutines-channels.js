@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "15-goroutines-channels",
   "order": 15,
   "title": "Goroutines & Channels",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Go makes it cheap to run many tasks at once. A goroutine is a task started with the go keyword, and a channel is a typed pipe that goroutines use to hand values to each other. You will also learn to close channels, loop over them, and wait on several of them with select, including timeouts.",
   "prerequisites": [
     "14-generics"

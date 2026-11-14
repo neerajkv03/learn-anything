@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "04-functions",
   "order": 4,
   "title": "Functions",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "A function is a named, reusable block of code. You will declare functions with parameters and results, return several values at once, accept any number of arguments, treat functions as values (including closures that remember variables), and use defer to schedule clean-up work.",
   "prerequisites": [
     "03-control-flow"

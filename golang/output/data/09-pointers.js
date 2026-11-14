@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "09-pointers",
   "order": 9,
   "title": "Pointers",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "A pointer is a value that holds the memory address of another value. You will learn to take an address with & and follow it with *, to avoid the nil pointer panic (a crash at run time), to understand that Go copies every argument, and to decide when a pointer is worth using instead of a plain value.",
   "prerequisites": [
     "08-structs"

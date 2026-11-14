@@ -3,9 +3,11 @@ window.TOPICS.push({
   "id": "24-database-sql",
   "order": 24,
   "title": "Databases with database/sql",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn how Go programs talk to a PostgreSQL database through the standard database/sql package and the pgx driver (the plug-in that speaks PostgreSQL's language). You will open a shared connection pool, run queries and changes with safe placeholders, group changes into all-or-nothing transactions, and tune timeouts and pool size.",
-  "prerequisites": ["23-logging-config"],
+  "prerequisites": [
+    "23-logging-config"
+  ],
   "subtopics": [
     {
       "id": "database-sql-and-drivers",
@@ -43,9 +45,18 @@ window.TOPICS.push({
         "Putting the password directly in the source code instead of reading DATABASE_URL from the environment."
       ],
       "sources": [
-        { "title": "Accessing relational databases (Go docs)", "url": "https://go.dev/doc/database/" },
-        { "title": "pgx stdlib package", "url": "https://pkg.go.dev/github.com/jackc/pgx/v5/stdlib" },
-        { "title": "PostgreSQL downloads", "url": "https://www.postgresql.org/download/" }
+        {
+          "title": "Accessing relational databases (Go docs)",
+          "url": "https://go.dev/doc/database/"
+        },
+        {
+          "title": "pgx stdlib package",
+          "url": "https://pkg.go.dev/github.com/jackc/pgx/v5/stdlib"
+        },
+        {
+          "title": "PostgreSQL downloads",
+          "url": "https://www.postgresql.org/download/"
+        }
       ]
     },
     {
@@ -70,8 +81,14 @@ window.TOPICS.push({
         "Forgetting `defer db.Close()` in main."
       ],
       "sources": [
-        { "title": "Opening a database handle", "url": "https://go.dev/doc/database/open-handle" },
-        { "title": "DB.PingContext", "url": "https://pkg.go.dev/database/sql#DB.PingContext" }
+        {
+          "title": "Opening a database handle",
+          "url": "https://go.dev/doc/database/open-handle"
+        },
+        {
+          "title": "DB.PingContext",
+          "url": "https://pkg.go.dev/database/sql#DB.PingContext"
+        }
       ]
     },
     {
@@ -97,9 +114,18 @@ window.TOPICS.push({
         "Treating sql.ErrNoRows as a crash. For QueryRow it just means no row matched, and the caller should decide what that means."
       ],
       "sources": [
-        { "title": "Querying for data", "url": "https://go.dev/doc/database/querying" },
-        { "title": "Executing SQL statements that don't return data", "url": "https://go.dev/doc/database/change-data" },
-        { "title": "Avoiding SQL injection risk", "url": "https://go.dev/doc/database/sql-injection" }
+        {
+          "title": "Querying for data",
+          "url": "https://go.dev/doc/database/querying"
+        },
+        {
+          "title": "Executing SQL statements that don't return data",
+          "url": "https://go.dev/doc/database/change-data"
+        },
+        {
+          "title": "Avoiding SQL injection risk",
+          "url": "https://go.dev/doc/database/sql-injection"
+        }
       ]
     },
     {
@@ -124,8 +150,14 @@ window.TOPICS.push({
         "Doing slow work such as an HTTP call in the middle of a transaction, keeping rows locked meanwhile."
       ],
       "sources": [
-        { "title": "Executing transactions", "url": "https://go.dev/doc/database/execute-transactions" },
-        { "title": "DB.BeginTx", "url": "https://pkg.go.dev/database/sql#DB.BeginTx" }
+        {
+          "title": "Executing transactions",
+          "url": "https://go.dev/doc/database/execute-transactions"
+        },
+        {
+          "title": "DB.BeginTx",
+          "url": "https://pkg.go.dev/database/sql#DB.BeginTx"
+        }
       ]
     },
     {
@@ -150,9 +182,18 @@ window.TOPICS.push({
         "Setting MaxOpenConns on each service copy without adding them up against PostgreSQL's max_connections."
       ],
       "sources": [
-        { "title": "Managing connections", "url": "https://go.dev/doc/database/manage-connections" },
-        { "title": "Canceling in-progress database operations", "url": "https://go.dev/doc/database/cancel-operations" },
-        { "title": "DB.SetMaxOpenConns", "url": "https://pkg.go.dev/database/sql#DB.SetMaxOpenConns" }
+        {
+          "title": "Managing connections",
+          "url": "https://go.dev/doc/database/manage-connections"
+        },
+        {
+          "title": "Canceling in-progress database operations",
+          "url": "https://go.dev/doc/database/cancel-operations"
+        },
+        {
+          "title": "DB.SetMaxOpenConns",
+          "url": "https://pkg.go.dev/database/sql#DB.SetMaxOpenConns"
+        }
       ]
     }
   ],

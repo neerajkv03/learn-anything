@@ -1,6 +1,6 @@
-# Go Learning Path (Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7)
+# Go Learning Path (Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11)
 
-Version checked: Go 1.27.4 on 2026-11-15 via https://go.dev/dl/?mode=json (release notes https://go.dev/doc/go1.27); pgx v5.11.0 on 2026-11-15 via https://github.com/jackc/pgx/releases; PostgreSQL 18.7 on 2026-11-15 via https://www.postgresql.org/support/versioning/
+Version checked: Go 1.27.4 on 2026-11-15 via https://go.dev/dl/?mode=json (release notes https://go.dev/doc/go1.27); pgx v5.11.0 on 2026-11-15 via https://github.com/jackc/pgx/releases; PostgreSQL 18.7 on 2026-11-15 via https://www.postgresql.org/support/versioning/; Gin v1.12.0 on 2026-11-15 via https://github.com/gin-gonic/gin/releases/tag/v1.12.0 (min Go 1.25.0); golang-jwt/jwt v5.3.1 on 2026-11-15 via https://github.com/golang-jwt/jwt/releases; gin-contrib/cors v1.7.11 on 2026-11-15 via https://github.com/gin-contrib/cors/releases (min Go 1.26.10); validator v10.30.1 via Gin v1.12.0 go.mod
 Approved: list ✓ | plans ✓
 App: done | App verified: done
 
@@ -31,3 +31,12 @@ App: done | App verified: done
 | 23 | Logging & Configuration | 23-logging-config | log/slog structured logging; Log levels and JSON handler; Environment variables; Command-line flags with flag; Config struct pattern | done | done | done |
 | 24 | Databases with database/sql | 24-database-sql | database/sql and drivers (PostgreSQL via pgx stdlib driver); Opening a pool and Ping; Query, QueryRow and Exec with placeholders; Transactions; Context and connection pool settings | done | done | done |
 | 25 | Building & Shipping | 25-build-deploy | go build flags and -ldflags version stamping; Cross-compiling with GOOS/GOARCH; go install and tools; Profiling with pprof; Minimal Docker image | done | done | done |
+| 26 | Gin Basics | 26-gin-basics | Why a framework over net/http; Installing Gin with go get; gin.Default vs gin.New; Routes and HTTP methods; gin.Context and responses (c.JSON, c.String, gin.H); Debug vs release mode | done | done | done |
+| 27 | Routing in Gin | 27-gin-routing | Path parameters (:id and *wildcard); Query strings (Query, DefaultQuery); Route groups and API versioning (/api/v1); NoRoute and 404/405 handling | done | done | done |
+| 28 | Binding & Validation | 28-gin-binding | ShouldBindJSON vs BindJSON; binding tags (required, min, max, email, oneof); Binding URI, query and form data; File uploads (multipart); Turning validation errors into JSON responses; Custom validators | done | done | done |
+| 29 | Gin Middleware | 29-gin-middleware | How middleware runs (c.Next, c.Abort); Built-in Logger and Recovery; Writing custom middleware (request ID, timing); Global vs group vs route middleware; Sharing values with c.Set / c.Get; CORS with gin-contrib/cors | done | done | done |
+| 30 | Errors & Responses | 30-gin-errors | Consistent JSON error shape; AbortWithStatusJSON; c.Error and an error-handling middleware; Mapping domain errors to status codes (errors.Is/As); Panics and Recovery | done | done | done |
+| 31 | Authentication | 31-gin-auth | Auth middleware on route groups; API key header check; gin.BasicAuth; JWT issue and verify with golang-jwt/jwt v5; Passing the user via c.Set | done | done | done |
+| 32 | Gin with a Database | 32-gin-database | Handler struct with dependencies (no globals); Repository interface over database/sql + pgx; c.Request.Context() into queries; Transactions in a handler; Pagination with limit/offset | done | done | done |
+| 33 | Testing Gin Apps | 33-gin-testing | gin.TestMode and httptest.NewRecorder; router.ServeHTTP for handler tests; Table-driven API tests; Testing middleware; Fake repository via interface | done | done | done |
+| 34 | Production Gin Service | 34-gin-production | http.Server with Gin, timeouts and graceful shutdown; slog request-logging middleware; SetTrustedProxies and c.ClientIP; Health and readiness endpoints; Config from env; Docker image | done | done | done |

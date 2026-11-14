@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "07-maps",
   "order": 7,
   "title": "Maps",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "A map stores values that you look up by a key, like a dictionary or a phone contact list. You will create maps, tell a missing key apart from a stored zero, add, change and delete entries, print in a stable order, and build sets. Maps are used everywhere in real Go programs for counting, caching and lookup by ID.",
   "prerequisites": [
     "06-arrays-slices"

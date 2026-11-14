@@ -3,7 +3,7 @@ window.TOPICS.push({
   "id": "18-files-io",
   "order": 18,
   "title": "Files & I/O",
-  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7",
+  "version": "Go 1.27.4 + pgx v5.11.0 + PostgreSQL 18.7 + Gin v1.12.0 + golang-jwt/jwt v5.3.1 + gin-contrib/cors v1.7.11",
   "summary": "Learn Go's two small streaming interfaces, io.Reader and io.Writer, and how io.Copy joins any source to any destination. Then read and write files, process them line by line, build portable file paths, and bake static files into your compiled program with embed.",
   "prerequisites": [
     "17-context"
