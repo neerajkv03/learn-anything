@@ -72,5 +72,8 @@ The payload is strict JSON: double quotes, no trailing commas, no comments. The 
 - [ ] Each paragraph introduces at most about 3 new methods or ideas. Split longer runs into short paragraphs or one item per line.
 - [ ] Setup steps a beginner must do by hand (create a file, open a terminal in a folder, `cd`) are spelled out the first time they are needed.
 - [ ] `output` for every example has been traced line by line.
+- [ ] `"version"` is the launch-prompt VERSION verbatim, never the plan's `Version:` line (plans may list only the tools that topic uses).
+- [ ] Every claim about tool or framework behaviour (what a linter, vet or the compiler reports or warns about, framework internals, default flags) comes from the plan, `_version-notes.md` or a source the plan cites. Otherwise leave it out.
+- [ ] Tool and CLI output (test runners, race detectors, linters, build tools) shows only lines you are certain of. Prefer examples whose output the program itself prints.
 
 If `SLUG/plans/_version-notes.md` is missing, carry on without it. If `SLUG/plans/_taught.md` is missing, use the Sub-topics column of `SLUG/TOPIC_SUBTOPIC_LIST.md` as the list of what earlier topics teach.

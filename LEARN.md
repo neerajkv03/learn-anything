@@ -4,14 +4,16 @@
 
 | Message | Does |
 |---|---|
-| `@LEARN.md <language>` (e.g. `@LEARN.md python`) | Start a course. Add the word `grill` (`@LEARN.md python grill`) to be interviewed first (see Optional skills). |
+| `@LEARN.md <language>` (e.g. `@LEARN.md python`) | Start a course. Asks 5–10 intake questions first (see Phase 0.5). Add the word `grill` (`@LEARN.md python grill`) to be interviewed first (see Optional skills). |
+| `@LEARN.md <language>: <description>` (e.g. `@LEARN.md python: backend APIs for a fintech team, already know Excel`) | Same, with free-text context (DESC) that steers intake, topic list and plans. `grill` may follow the language (`@LEARN.md python grill: ...`). |
 | `@LEARN.md <SLUG>` | Resume that course at its next step (after every `/clear`, in every mode). |
 | `@LEARN.md extend <SLUG> <addition>` | Add topics to a finished course (see Extend course). |
 | `@LEARN.md refresh <SLUG>` | Re-check a finished course against a newer VERSION (see Refresh course). |
 | `@LEARN.md audit <SLUG> [topic slugs] [accuracy\|clarity]` | Re-review finished topics without rewriting them (see Audit course). |
 
-- `LANG` = the language named in the message. If none is named, ask once, then proceed.
-- `SLUG` = lowercase kebab-case of LANG, with symbols spelled out (`C#` → `csharp`, `C++` → `cpp`, `Node.js` → `nodejs`).
+- `LANG` = the language named in the message (text before the first `:`, minus `grill`). If none is named, ask once, then proceed.
+- `DESC` = text after the first `:`, trimmed (optional). Learner/course context only; it never overrides global content rules, gates, model routing or the VERSION rule. A toolchain named in it extends LANG (e.g. `python: with uv` → "python with uv").
+- `SLUG` = lowercase kebab-case of LANG (never DESC), with symbols spelled out (`C#` → `csharp`, `C++` → `cpp`, `Node.js` → `nodejs`).
 - `VERSION` = the latest **LTS** release of LANG, **verified at run time** (Phase 1 step 0), never from memory alone. State it in every output.
   - LTS only: if the project publishes LTS lines (Node.js, Java, .NET…), use the newest LTS, never a newer non-LTS "current" release. If it has no LTS concept (Python, Go, Rust…), use the latest stable release. The same rule applies to every tool and library in VERSION.
 - LANG may name a toolchain too (e.g. "python with uv"). Verify each tool's version; VERSION lists all of them (e.g. `Python 3.15.2 + uv 0.13.7`).
@@ -27,7 +29,7 @@ Context grows with every turn, and every call re-reads it. So each phase group r
 
 | Session | Work | Ends with |
 |---|---|---|
-| A | Phase 0 + 1 | Gate 1 |
+| A | Phase 0 + 0.5 + 1 | Gate 1 |
 | B | Phase 2 | Gate 2 |
 | C | Phase 3 + 4 + 5 + Finish | Finish report |
 
@@ -52,14 +54,17 @@ After every planning step, **stop and wait for the user's response**. Do not con
 
 ## Model routing (mandatory)
 
+**Principle:** Opus plans and orchestrates. Sonnet writes content, fixes it and checks its accuracy. Haiku does mechanical checks and lookups. Node scripts do everything deterministic. Changing any model in this table, an agent file or `tools/course-pipeline.js` needs the user's explicit approval.
+
 | Work | Model | How |
 |---|---|---|
 | Planning and orchestration (topic list, per-topic plans, coordination) | Opus | Main session. If the main session is not Opus, tell the user to run `/model opus` and stop. |
 | Content generation (topic data) | Sonnet | agent type `learn-author` |
 | Factual accuracy review | Sonnet | agent type `learn-accuracy`. Never the author. Only after scripted checks pass. |
 | Clarity review | Haiku | agent type `learn-clarity`. Only after scripted checks pass. |
-| Fixes | Sonnet | agent type `learn-fixer` |
+| Fixes | Sonnet; Haiku when every issue is clarity (`CLR`) | agent type `learn-fixer` (the Workflow picks the model) |
 | Version lookup, DESIGN.md checklist | Haiku | general agent with `model: "haiku"` |
+| Version notes (`plans/_version-notes.md`) | Sonnet | general agent with `model: "sonnet"`. Every later phase trusts these notes over model memory, so the weakest model never writes them. |
 
 - Agent definitions live in `.claude/agents/learn-*.md` and hold all static rules (schema, content rules, self-check list, report format). Launch prompts stay tiny. Never paste those rules into a prompt; edit the agent file instead.
 - **Every subagent prompt starts with** `LEDGER: <phase> | <task>` (e.g. `LEDGER: Phase 3 content | 01-variables-types`). The token report labels agents from this line, so `agents.tsv` is not needed.
@@ -69,13 +74,13 @@ After every planning step, **stop and wait for the user's response**. Do not con
 
 ---
 
-## Optional skills (use if installed)
+## Optional skills (caveman + ponytail declared in `.claude/settings.json`; use if installed)
 
 - **caveman**: orchestrator chat and progress updates. **Never** in learner-facing text: global rule 2 wins. Gate summaries stay terse but list every topic, sub-topic and goal in full. Subagent reports are already terse by agent definition.
 - **grilling** (in `.claude/skills/`; the user's `/grill-me` runs the same skill): only when the user asks for it, by the word `grill` in the invocation or `/grill-me` at a gate. Never start it unasked.
-  - Where: Session A, before the topic list (new course) or before the new rows (extend). At Gate 1 it may challenge the list instead.
+  - Where: Session A, after the intake (Phase 0.5), before the topic list (new course) or before the new rows (extend). It digs deeper than the intake; it does not repeat its questions. At Gate 1 it may challenge the list instead.
   - What to settle: audience, goal, toolchain, OS, depth, what to leave out.
-  - Result: ≤15 terse lines of decisions in `SLUG/plans/_brief.md`. Phases 1 and 2 read it if it exists. Subagents never read it; the plans carry it.
+  - Result: ≤15 more terse lines of decisions appended to `SLUG/plans/_brief.md`. Phases 1 and 2 read it. Subagents never read it; the plans carry it.
   - Its questions stay full prose (no caveman). Its fact-finding subagents count toward the max of 4. Afterwards, continue to the gate as usual.
 - **ponytail**: code in `tools/`. Never cuts a DESIGN.md checklist item, `textContent` safety, or try/catch on storage. Content code examples stay minimal but must still fully show the concept (this rule is in `learn-author`).
 - Neither skill overrides approval gates, model routing or accuracy rules.
@@ -98,24 +103,39 @@ After every planning step, **stop and wait for the user's response**. Do not con
    - Record the session id (see Sessions).
    - Read only the header lines (`Approved:`, `App:`) and the status columns in `SLUG/TOPIC_SUBTOPIC_LIST.md`.
    - Continue from the first item that is not `done`, in the correct phase. Do not regenerate finished work.
+   - A DESC on resume: if the topic list is not approved yet, append it to `_brief.md` as `DESC (added): ...` and apply it; otherwise tell the user it only applies via `extend`/`audit` and ignore it.
 2. Otherwise create:
 
 ```
 SLUG/
 ├── TOPIC_SUBTOPIC_LIST.md
 ├── TOKEN_USAGE.md          (written at Finish)
-├── plans/                  (+ _taught.md, _version-notes.md, sessions.txt; _brief.md if grilled)
+├── plans/                  (+ _brief.md, _taught.md, _version-notes.md, sessions.txt)
 └── output/                 (Phase 4: copied from tools/app-template/)
     └── data/
 ```
 
 ---
 
+## Phase 0.5 — Intake (mandatory, new course) → `SLUG/plans/_brief.md`
+
+Skip if `plans/_brief.md` exists (resume). Otherwise ask **5–10 questions specific to LANG** before any research, using the AskUserQuestion tool (≤4 per call, so 2–3 calls). Each question offers 2–4 concrete options, the recommended one first and marked `(Recommended)`.
+
+- Cover, adapted to LANG: goal/use case (e.g. web backend, data, CLI, systems, mobile), toolchain and package/build manager (e.g. uv vs pip, Maven vs Gradle), frameworks or libraries to include or leave out, LANG-specific style choices (e.g. type hints, async, modules system, error-handling style), OS/editor, course depth and size, testing and deployment focus.
+- If DESC is given: first line of `_brief.md` = `DESC: <verbatim>`. Skip questions DESC already answers; use the freed slots for gaps it reveals (still 5–10 total, min 5). Never contradict DESC in a recommended option.
+- Ask only what changes the topic list or plans. Never ask about what fixed rules settle: the zero-knowledge learner (global rule 2), VERSION = newest LTS, JSON content, DESIGN.md.
+- Questions stay full prose (no caveman).
+- Write the answers as ≤15 terse decision lines to `plans/_brief.md` (the `DESC:` line does not count). A toolchain answer extends LANG/VERSION (e.g. "python with uv"). Phases 1 and 2 read the brief; subagents never do (the plans carry it).
+- Then continue to Phase 1 (or grilling, if asked) without stopping.
+
+---
+
 ## Phase 1 — Topic list (Opus) → `SLUG/TOPIC_SUBTOPIC_LIST.md`
 
 0. **Verify VERSION.** Use one Haiku subagent to search and fetch the official LANG release page (e.g. python.org/downloads, nodejs.org, go.dev/dl). Use the newest LTS release, or the latest stable release if the project has no LTS (no betas, RCs or non-LTS "current" lines). Record the version, date checked and source URL in the header. If the lookup fails, tell the user and ask them to confirm VERSION before continuing.
-   - **Version notes.** The same subagent also fetches the official "What's new" / release-notes page for VERSION and writes `SLUG/plans/_version-notes.md`: ≤40 terse lines per tool (new syntax and APIs, changed defaults, removals, deprecations), each with its source URL, taken only from the fetched page. Planning (Phase 2), authors and accuracy reviewers read it; it wins over model memory.
+   - **Version notes.** Once VERSION is known, one Sonnet subagent fetches the official "What's new" / release-notes page for VERSION and writes `SLUG/plans/_version-notes.md`: ≤40 terse lines per tool (new syntax and APIs, changed defaults, removals, deprecations), each with its source URL, taken only from the fetched page. Planning (Phase 2), authors and accuracy reviewers read it; it wins over model memory, so the user checks it at Gate 1.
 
+- Read `plans/_brief.md` first; the topic list follows its decisions and its `DESC:` line (e.g. domain-flavoured topics, emphasis, what to skip). Plans (Phase 2) carry DESC into analogies and example values where it fits.
 - 15–25 topics, 3–8 sub-topics each (an Extend run may go past 25).
 - Ordered by dependency: each topic needs only earlier topics.
 - Slug format: `NN-kebab-title` (e.g. `01-variables-types`).
@@ -134,7 +154,7 @@ App: todo | App verified: todo
 | 01 | Variables & Types | 01-variables-types | Declaring variables; Primitive types; Type conversion | todo | todo | todo |
 ```
 
-**STOP (Gate 1).** Show the list and wait for approval or edits. Add one line: "`/grill-me` stress-tests this list." On approval, tell the user to `/clear` and re-invoke.
+**STOP (Gate 1).** Show the list and the version notes (path + one line per note), and wait for approval or edits to either. Add one line: "`/grill-me` stress-tests this list." On approval, tell the user to `/clear` and re-invoke.
 
 ---
 
@@ -176,14 +196,20 @@ Update the `Plan` column → `done` after each file.
 
 ## Phase 3 + 5 — Content and verification (one Workflow)
 
-Run Phase 4 first (it takes seconds), then call:
+Run Phase 4 first (it takes seconds), then call it once per batch:
 
 ```
 Workflow({ scriptPath: "tools/course-pipeline.js",
-           args: { slug: "<SLUG>", version: "<VERSION>", topics: [<slugs not yet Verified>], author: [<slugs whose Content is not done>] } })
+           args: { slug: "<SLUG>", version: "<VERSION>", topics: [<next batch of slugs not yet Verified>], author: [<see below>] } })
 ```
 
-- This LEARN.md instruction is the user's opt-in to this workflow (~40–70 agents per course, max 4 running at once).
+- **Batches (~15–20 agents per run):** `topics` holds at most 6 slugs when any are authored, at most 12 when `author: []` (audit, refresh, review-only resume). Take them in manifest order. The script refuses bigger batches. Quality is unchanged: the script already works in groups of 6, so every agent gets the same topics as in one big run.
+- Run the batches one after another in the same session. After each one returns, do the "After it returns" steps for that batch (columns updated per batch, so an interrupted course resumes at the next batch). Then start the next batch. Skip the `--links` check until the last batch.
+
+- **Build `author` from the files, not the `Content` column.** The columns are only updated after the Workflow returns, so an interrupted run leaves them all `todo`. Run `node tools/check-topic.mjs SLUG <slugs not yet Verified>` first. Every slug it prints as `ok <slug>.js` already has a valid file: leave it out of `author`. It is still reviewed, because it stays in `topics`.
+- A topic whose reviewer returns no verdict is reviewed again once. If there is still no verdict, it is `flagged` (`NOV`) and never passes unreviewed.
+
+- This LEARN.md instruction is the user's opt-in to this workflow (~15–20 agents per batch, ~40–70 per course, max 4 running at once).
 - Per group of 6 topics, the script runs:
   1. `learn-author` per topic. The author writes the file and runs `node tools/check-topic.mjs SLUG <slug>` itself.
   2. `learn-accuracy` (≤3 topics per agent) and `learn-clarity` (≤6 per agent).
@@ -192,7 +218,7 @@ Workflow({ scriptPath: "tools/course-pipeline.js",
   5. Steps 3–4 repeat at most 2 rounds; anything still failing is flagged.
 - It returns `{slug: {status: "done" | "flagged", issues?}}`.
 - After it returns:
-  1. Run `node tools/check-topic.mjs SLUG --links` (full schema + manifest + dead links).
+  1. Last batch only: run `node tools/check-topic.mjs SLUG --links` (full schema + manifest + dead links).
      - Dead link → swap it for the parent doc page with one targeted edit (or a `learn-fixer` agent), then re-run.
   2. Update the `Content` and `Verified` columns in one edit: `done` or `flagged`.
 - **Fallback** (Workflow tool unavailable or declined): run the same agent types with the Agent tool in the same order, max 4 at once, each prompt starting with its `LEDGER` line.
@@ -240,7 +266,8 @@ Adds topics (e.g. a framework like FastAPI) to a finished course. It uses the sa
 
 1. **Session A (Phase 1, new rows only):**
    - Record the session id.
-   - If the invocation says `grill`, run the grilling skill on the addition first (see Optional skills).
+   - Intake (Phase 0.5) for the addition: 3–5 questions, answers appended to `_brief.md` under `## <addition>`.
+   - If the invocation says `grill`, run the grilling skill on the addition next (see Optional skills).
    - Verify each new tool's version (Phase 1 step 0, version notes included: append to `_version-notes.md`) and append it to VERSION and the `Version checked:` line.
    - **Drift check:** re-verify the course's existing VERSION too. If a newer LTS/stable exists, show old → new at Gate 1 and ask: **pin** (default: new topics target the course's VERSION) or **upgrade** (stop; the user runs `refresh` first, then `extend`).
    - Append the new rows, numbered after the last topic, with status `todo | todo | todo`. Use 3–8 sub-topics each, ordered by dependency on the existing topics.
@@ -254,7 +281,7 @@ Adds topics (e.g. a framework like FastAPI) to a finished course. It uses the sa
 3. **Session C:**
    - Phase 4 step 2 only: append the new slugs to `MANIFEST`. Update `window.LANG` if the addition changes the course name. Do not re-copy the app template.
    - Run `node tools/check-topic.mjs SLUG --set-version "<VERSION>"` so existing topics show the full new VERSION string (script edit; never read the data).
-   - Then run the Workflow with `topics` and `author` set to the new slugs only.
+   - Then run the Workflow in batches (Phase 3 + 5) with `topics` and `author` set to the new slugs only.
    - Then Finish. The token report covers every session in `sessions.txt`, old ones included.
 4. **Existing topics:** only change them if the user asks (e.g. a forward pointer to the new section). Use `learn-fixer` with a targeted issue list. Never use `learn-author`.
 
@@ -265,7 +292,7 @@ Adds topics (e.g. a framework like FastAPI) to a finished course. It uses the sa
 Re-reviews finished topics. No new topics, no plans, no author agents. One session.
 
 1. Record the session id.
-2. Run the Workflow with `topics` = the named slugs (default: all), `author: []`, and `reviewers` if the user named one. The script reviews, fixes and re-verifies as in Phase 3 + 5.
+2. Run the Workflow in batches of ≤12 (Phase 3 + 5) with `topics` = the named slugs (default: all), `author: []`, and `reviewers` if the user named one. The script reviews, fixes and re-verifies as in Phase 3 + 5.
 3. Then the link check, the `Verified` column update and Finish, as in Phase 3 + 5.
 
 Never launch the reviewers by hand from the main session, and never read topic data into it.
@@ -286,7 +313,7 @@ Re-checks a finished course against a newer VERSION. No new topics, no plans, no
      2. Run `node tools/check-topic.mjs SLUG --set-version "<VERSION>"`.
      3. Set every `Verified` cell → `todo`.
      4. Tell the user to `/clear` and send `@LEARN.md <SLUG>`.
-2. **Session C** (RESUME sees Content `done`, Verified `todo`): run the Workflow with `topics` = all slugs, `author: []`, `reviewers: ["accuracy"]`. Then the link check and Finish, as in Phase 3 + 5.
+2. **Session C** (RESUME sees Content `done`, Verified `todo`): run the Workflow in batches of ≤12 with `topics` = all slugs, `author: []`, `reviewers: ["accuracy"]`. Then the link check and Finish, as in Phase 3 + 5.
 
 ---
 
@@ -300,24 +327,4 @@ The orchestrator may edit this file, `.claude/agents/learn-*.md` and `tools/*` w
   - Keep rules general. LANG-specific facts go in that language's `SLUG/plans/` notes.
 - **Never:** loosen approval gates, model routing, accuracy rules or `textContent` safety without explicit user approval. Do not regenerate finished work just because a rule changed.
 - **DESIGN.md:** the user's portable design spec, also used outside this project. Propose changes to it; apply them only after approval.
-- **Log:** add one line per change to the Changelog below, then mention it in the Finish report.
-
-## Changelog
-
-- 2026-11-11 — VERSION verified online at run time; accuracy review moved to Sonnet (Haiku keeps clarity/checklist); `App:` / `App verified:` header status; deterministic single-file code rule + `RUN_RECIPE.md` + 10 s timeout + normalized compare; quiz answer-index spread check; `Approved:` line added to template; offline Prism limit documented; Self-improvement section added.
-- 2026-11-11 — Optional skills section: caveman (orchestrator/subagent reports only, never learner content) and ponytail (app + script code), used only if installed; subagents get the rule as one prompt line.
-- 2026-11-11 — (user request) Code no longer executed: author writes expected output by hand, accuracy reviewer traces it; RUN_RECIPE + local toolchain checks removed, learner installs VERSION manually. Per-sub-topic `sources` (official docs) added to plan template, schema, app mapping (`ul.meta` link chips) and scripted link check. Multi-tool LANG (e.g. "python with uv") → VERSION lists each tool. Phase 4 font reference fixed (DESIGN.md now uses Rubik, not Open Sans).
-- 2026-11-11 — Content authors must parse-check the `push(...)` wrapper (closing `);` dropped in 2 topics). Phase 5 reviews may batch topics per subagent (accuracy ≤3, clarity ≤6) to save tokens; reviewer still never the author.
-- 2026-11-11 — (user request) Token usage step: agent ledger `SLUG/plans/agents.tsv` + `tools/token-usage.mjs` → `SLUG/TOKEN_USAGE.md`, summarised in Finish report. Max-4 limit counts all running agents.
-- 2026-11-11 — Phase 3: gloss later-topic terms (error names, import, list) and jargon in productionNote/commonMistakes at first use; prose commands use the course toolchain (clarity review flagged this in 10+ topics).
-- 2026-11-11 — Codeblock lang label = display name of `code.language`, not LANG (bash/TOML blocks were labelled with the course language).
-- 2026-11-12 — (user request, token optimisation; python-uv run: 43M tokens, 62% orchestrator) One session per phase group + `plans/sessions.txt`. Phases 3+5 run as `tools/course-pipeline.js` Workflow (orchestrator no longer woken per agent). Project agents `.claude/agents/learn-{author,accuracy,clarity,fixer}.md` hold static rules (shared cached prefix, tiny prompts). `LEDGER:` prompt line replaces `agents.tsv`. Shared validator `tools/check-topic.mjs` (authors self-check, ≤4 calls). Phase 4 = copy verified `tools/app-template/` (spec moved to `SPEC.md`). Re-verify checks only reported issues; fixer uses targeted edits. Phase 2 adds `_taught.md` + terse plans. Author self-check list built from python-uv review findings. Token report adds weighted column. Project `.claude/settings.json` disables unused plugins (postman, superpowers).
-- 2026-11-12 — (user request) Superpowers kept only as 5 project skills in `.claude/skills/` (verification-before-completion, systematic-debugging, dispatching-parallel-agents, writing-skills, diagnosing-superpowers). Plugin stays off: plugin skills can't be toggled one by one, and brainstorming/plans/TDD/worktree/review skills clash with LEARN.md's flow.
-- 2026-11-12 — (user request) Extend course section + `extend <SLUG>` invocation: append topics to a finished course (new rows only, gates re-opened, `_taught.md` rebuilt if missing, manifest append, Workflow on new slugs); >25 topics allowed when extending.
-- 2026-11-12 — Extend Session B: libraries first needed by a plan (python-uv: pydantic-settings, pwdlib, PyJWT) are version-verified and appended to VERSION before Gate 2.
-- 2026-11-14 — (user request, token review of python-uv) Web fetching measured at 1.7% of weighted tokens: no MCP/skill added for docs. New `audit <SLUG>` invocation + Model routing rule: reviews of >2 topics run through the Workflow (`author: []`), never hand-launched from the main session (a hand-run audit took 136 main-session calls, context to 388K, 35M cache reads; the Workflow run took 14 calls, ≤90K). `learn-fixer`: all Greps in one message, all Edits in one message.
-- 2026-11-12 — `tools/token-usage.mjs`: LEDGER searched across leading user messages, not only the first (Workflow harness prepends a relay message; all 31 python-uv extend agents showed as Unlabelled).
-- 2026-11-14 — (user request, kit review) `tools/course-pipeline.js`: review fails closed (topic passes only if its reviewer returns its exact slug with pass=true; missing verdict or dead agent → issue); optional `reviewers` arg. `tools/*.mjs`: `fileURLToPath` (kit path with a space broke both tools).
-- 2026-11-14 — (user request) VERSION = newest LTS (latest stable only when the project has no LTS). Phase 1 step 0 writes `plans/_version-notes.md` from the official release notes; planner, authors and accuracy reviewers read it. Extend: drift check (pin or upgrade) + `check-topic.mjs --set-version`; whole-course check flags mixed versions. New `refresh <SLUG>` mode (accuracy-only re-verify). Resume is always `@LEARN.md <SLUG>`.
-- 2026-11-14 — (user request) Optional grilling skill: opt-in by `grill` in the invocation or `/grill-me` at Gate 1; result in `plans/_brief.md`. `programming_language/` removed (empty placeholder; Phase 0 tree is the reference). `.claude/settings.json`: allow rules for the two `node tools/...` commands.
-- 2026-11-14 — (user request) Project `.claude/settings.json` also disables the claude.ai-synced plugins (`figma`, `codesign`, `design`, `design-skills`, `cowork-plugin-management`, `ux-agent-skills` as `<name>@synced`); CLAUDE.md limits skill use to `.claude/skills/` + caveman + ponytail.
+- **Log:** add one line per change to `CHANGELOG.md` (not loaded each session; read it only when editing the process), then mention it in the Finish report.
