@@ -1,0 +1,3 @@
+karpathy-guidelines skill copied from https://github.com/multica-ai/andrej-karpathy-skills
+(commit 2c606141936f1eeef17fa3043a72095b4765b9c2). Upstream declares MIT
+(README "License" section and SKILL.md frontmatter); upstream ships no LICENSE file.

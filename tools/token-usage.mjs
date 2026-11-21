@@ -9,6 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+if (+process.versions.node.split(".")[0] < 20) { console.error(`Node 20+ required (found ${process.version}); recursive readdir finds Workflow agents`); process.exit(1); }
 const [slug, ...sessionArgs] = process.argv.slice(2);
 if (!slug) { console.error("usage: node tools/token-usage.mjs <SLUG> [sessionId ...]"); process.exit(1); }
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");

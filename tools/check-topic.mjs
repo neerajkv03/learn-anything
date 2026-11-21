@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+if (+process.versions.node.split(".")[0] < 20) { console.error(`Node 20+ required (found ${process.version}); --links needs fetch`); process.exit(1); }
 const args = process.argv.slice(2);
 const links = args.includes("--links");
 const sv = args.indexOf("--set-version");
@@ -63,7 +64,8 @@ for (const id of targets) {
   else if (orders[t.order].length > 1) bad(f, `order ${t.order} shared with ${orders[t.order].join(", ")}`);
   need(f, t, ["title", "version", "summary"], "topic");
   if (!Array.isArray(t.prerequisites)) bad(f, "prerequisites not an array");
-  else t.prerequisites.forEach((p) => { if (!topics[p] || !(topics[p].order < t.order)) bad(f, `prerequisite "${p}" not an earlier topic`); });
+  // manifest order, not loaded files: parallel authors may not have written the prerequisite yet
+  else t.prerequisites.forEach((p) => { const pi = manifest.indexOf(p); if (pi < 0 || pi >= manifest.indexOf(id)) bad(f, `prerequisite "${p}" not an earlier topic in manifest.js`); });
   if (!Array.isArray(t.subtopics) || !t.subtopics.length) bad(f, "no subtopics");
   const subIds = new Set();
   (t.subtopics || []).forEach((s, n) => {
