@@ -31,7 +31,12 @@
   const h = (t, c, x, ...k) => {
     const e = document.createElement(t);
     if (c) e.className = c;
-    if (x != null) e.textContent = x;
+    if (x != null) {
+      // prose only: `text` -> <code>; code blocks (code/pre) stay literal
+      const parts = t === "code" || t === "pre" || !String(x).includes("`") ? null : String(x).split(/`([^`\n]+)`/);
+      if (parts) e.append(...parts.map((p, i) => (i % 2 ? h("code", "inline", p) : p)));
+      else e.textContent = x;
+    }
     e.append(...k);
     return e;
   };
