@@ -196,17 +196,20 @@ Update the `Plan` column → `done` after each file.
 
 ## Phase 3 + 5 — Content and verification (one Workflow)
 
-Run Phase 4 first (it takes seconds), then call:
+Run Phase 4 first (it takes seconds), then call it once per batch:
 
 ```
 Workflow({ scriptPath: "tools/course-pipeline.js",
-           args: { slug: "<SLUG>", version: "<VERSION>", topics: [<slugs not yet Verified>], author: [<see below>] } })
+           args: { slug: "<SLUG>", version: "<VERSION>", topics: [<next batch of slugs not yet Verified>], author: [<see below>] } })
 ```
+
+- **Batches (~15–20 agents per run):** `topics` holds at most 6 slugs when any are authored, at most 12 when `author: []` (audit, refresh, review-only resume). Take them in manifest order. The script refuses bigger batches. Quality is unchanged: the script already works in groups of 6, so every agent gets the same topics as in one big run.
+- Run the batches one after another in the same session. After each one returns, do the "After it returns" steps for that batch (columns updated per batch, so an interrupted course resumes at the next batch). Then start the next batch. Skip the `--links` check until the last batch.
 
 - **Build `author` from the files, not the `Content` column.** The columns are only updated after the Workflow returns, so an interrupted run leaves them all `todo`. Run `node tools/check-topic.mjs SLUG <slugs not yet Verified>` first. Every slug it prints as `ok <slug>.js` already has a valid file: leave it out of `author`. It is still reviewed, because it stays in `topics`.
 - A topic whose reviewer returns no verdict is reviewed again once. If there is still no verdict, it is `flagged` (`NOV`) and never passes unreviewed.
 
-- This LEARN.md instruction is the user's opt-in to this workflow (~40–70 agents per course, max 4 running at once).
+- This LEARN.md instruction is the user's opt-in to this workflow (~15–20 agents per batch, ~40–70 per course, max 4 running at once).
 - Per group of 6 topics, the script runs:
   1. `learn-author` per topic. The author writes the file and runs `node tools/check-topic.mjs SLUG <slug>` itself.
   2. `learn-accuracy` (≤3 topics per agent) and `learn-clarity` (≤6 per agent).
@@ -215,7 +218,7 @@ Workflow({ scriptPath: "tools/course-pipeline.js",
   5. Steps 3–4 repeat at most 2 rounds; anything still failing is flagged.
 - It returns `{slug: {status: "done" | "flagged", issues?}}`.
 - After it returns:
-  1. Run `node tools/check-topic.mjs SLUG --links` (full schema + manifest + dead links).
+  1. Last batch only: run `node tools/check-topic.mjs SLUG --links` (full schema + manifest + dead links).
      - Dead link → swap it for the parent doc page with one targeted edit (or a `learn-fixer` agent), then re-run.
   2. Update the `Content` and `Verified` columns in one edit: `done` or `flagged`.
 - **Fallback** (Workflow tool unavailable or declined): run the same agent types with the Agent tool in the same order, max 4 at once, each prompt starting with its `LEDGER` line.
@@ -278,7 +281,7 @@ Adds topics (e.g. a framework like FastAPI) to a finished course. It uses the sa
 3. **Session C:**
    - Phase 4 step 2 only: append the new slugs to `MANIFEST`. Update `window.LANG` if the addition changes the course name. Do not re-copy the app template.
    - Run `node tools/check-topic.mjs SLUG --set-version "<VERSION>"` so existing topics show the full new VERSION string (script edit; never read the data).
-   - Then run the Workflow with `topics` and `author` set to the new slugs only.
+   - Then run the Workflow in batches (Phase 3 + 5) with `topics` and `author` set to the new slugs only.
    - Then Finish. The token report covers every session in `sessions.txt`, old ones included.
 4. **Existing topics:** only change them if the user asks (e.g. a forward pointer to the new section). Use `learn-fixer` with a targeted issue list. Never use `learn-author`.
 
@@ -289,7 +292,7 @@ Adds topics (e.g. a framework like FastAPI) to a finished course. It uses the sa
 Re-reviews finished topics. No new topics, no plans, no author agents. One session.
 
 1. Record the session id.
-2. Run the Workflow with `topics` = the named slugs (default: all), `author: []`, and `reviewers` if the user named one. The script reviews, fixes and re-verifies as in Phase 3 + 5.
+2. Run the Workflow in batches of ≤12 (Phase 3 + 5) with `topics` = the named slugs (default: all), `author: []`, and `reviewers` if the user named one. The script reviews, fixes and re-verifies as in Phase 3 + 5.
 3. Then the link check, the `Verified` column update and Finish, as in Phase 3 + 5.
 
 Never launch the reviewers by hand from the main session, and never read topic data into it.
@@ -310,7 +313,7 @@ Re-checks a finished course against a newer VERSION. No new topics, no plans, no
      2. Run `node tools/check-topic.mjs SLUG --set-version "<VERSION>"`.
      3. Set every `Verified` cell → `todo`.
      4. Tell the user to `/clear` and send `@LEARN.md <SLUG>`.
-2. **Session C** (RESUME sees Content `done`, Verified `todo`): run the Workflow with `topics` = all slugs, `author: []`, `reviewers: ["accuracy"]`. Then the link check and Finish, as in Phase 3 + 5.
+2. **Session C** (RESUME sees Content `done`, Verified `todo`): run the Workflow in batches of ≤12 with `topics` = all slugs, `author: []`, `reviewers: ["accuracy"]`. Then the link check and Finish, as in Phase 3 + 5.
 
 ---
 

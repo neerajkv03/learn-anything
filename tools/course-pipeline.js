@@ -1,7 +1,7 @@
 export const meta = {
   name: 'learn-course-pipeline',
   description: 'LEARN.md Phases 3+5: write each topic, review accuracy + clarity, fix, re-verify (max 2 rounds)',
-  whenToUse: 'LEARN.md Phase 3-5 after Gate 2. args: {slug, version, topics: [topic slugs to verify], author?: [subset to write first; default = topics], reviewers?: [accuracy | clarity] (default = both)}',
+  whenToUse: 'LEARN.md Phase 3-5 after Gate 2, once per batch (≤6 topics if authoring, ≤12 review-only). args: {slug, version, topics: [topic slugs to verify], author?: [subset to write first; default = topics], reviewers?: [accuracy | clarity] (default = both)}',
   phases: [
     { title: 'Author', detail: 'learn-author (sonnet), one per topic' },
     { title: 'Review', detail: 'learn-accuracy (sonnet, ≤3 topics) + learn-clarity (haiku, ≤6 topics)' },
@@ -15,6 +15,9 @@ const { slug, version } = args
 const topics = args.topics
 const author = new Set(args.author || topics)
 if (!slug || !version || !Array.isArray(topics) || !topics.length) throw new Error('args: {slug, version, topics: [...]} required')
+// LEARN.md batches: ~15–20 agents per run. Review-only runs use ~half the agents per topic.
+const max = author.size ? 6 : 12
+if (topics.length > max) throw new Error(`batch too big: ${topics.length} topics (max ${max}${author.size ? ' when authoring' : ' review-only'}); split into batches`)
 
 // LEARN.md: max 4 agents running at once.
 let active = 0
