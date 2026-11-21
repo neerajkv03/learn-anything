@@ -1,0 +1,15 @@
+DESC: I want to learn deployment setup and management of my fullstack project serving at least 100K-250K requests per second. For now my backend developed using raw BunJs + PostgreSQL and my frontend developed using Tanstack Start. For the cloud I want AWS to be used with CI/CD implementation. Please suggest libraries and tech stack if any needed.
+- Course = AWS deployment/ops for Bun (raw Bun.serve) API + PostgreSQL + TanStack Start SSR frontend; target 100K–250K RPS.
+- Compute: ECS on Fargate, ALB in front; Docker images in ECR.
+- IaC: AWS CDK v2 in TypeScript (CloudFormation underneath).
+- CI/CD: GitHub Actions, AWS auth via OIDC role (no long-lived keys).
+- DB: Aurora PostgreSQL + RDS Proxy, read replicas; migrations in pipeline.
+- Frontend: TanStack Start SSR on Fargate behind CloudFront; static assets in S3 via CloudFront.
+- Cache: ElastiCache for Valkey (caching, rate limiting, sessions).
+- Observability: CloudWatch logs/metrics/alarms/dashboards + OpenTelemetry traces → X-Ray.
+- Load testing: k6 (distributed) to prove target RPS.
+- Accounts: AWS Organizations + IAM Identity Center; dev/staging/prod accounts.
+- Depth: full production path, ~22 topics (basics → scaling, security, DR, cost, runbooks).
+- Learner app code already exists; course teaches deploying/operating it, not writing app features.
+- Gate 1 defaults: Aurora PG 17.7 LTS (auto minor upgrade off); migrations = plain SQL + dbmate as one-off ECS task; TanStack Start SSR runs on Bun (official bun hosting target).
+- Libs: Bun.sql (Postgres), Bun built-in Redis client (Valkey), aws-cdk-lib + aws-ecs-patterns, aws-actions/configure-aws-credentials + amazon-ecr-login, OTel + ADOT sidecar (Bun compat to verify in Phase 2 API facts).

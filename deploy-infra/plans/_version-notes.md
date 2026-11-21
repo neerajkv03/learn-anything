@@ -1,0 +1,551 @@
+# deploy-infra version notes (checked 2026-11-22)
+
+## Bun 1.4.5
+- 1.4.5 (2026-11-19) = security release: lsquic 4.9.4->4.11.2, c-ares 1.34.9, SQLite 3.54.1, llhttp 9.4.4, BoringSSL Nov 2026; fixes cover HTTP/3, TLS, DNS. https://bun.com/blog/bun-v1.4.5
+- 1.4.5: custom root certs validated more strictly (some legacy rejected); bundled roots unaffected. https://bun.com/blog/bun-v1.4.5
+- 1.4.5: SQLite 3.54 ALTER TABLE cannot add/rename/drop columns named rowid/oid/_rowid_. https://bun.com/blog/bun-v1.4.5
+- Release timeline: 1.4.0 Aug 20, 1.4.1 Sep 4, 1.4.2 Sep 5, 1.4.3 Oct 10, 1.4.4 Oct 22, 1.4.5 Nov 19. https://github.com/oven-sh/bun/releases
+- GitHub release pages are header-only; real notes live on bun.com/blog. https://github.com/oven-sh/bun/releases
+- 1.4.0: Bun rewritten in Rust; Node 26.3.0 compat; ~97% of node:http/node:fs Node tests pass. https://bun.com/blog/bun-v1.4
+- 1.4.0: Linux startup ~2x faster, peak mem <half of 1.3 (hello world); up to 48% lower peak mem for HTTP servers vs 1.3. https://bun.com/blog/bun-v1.4
+- 1.4.0: Bun.serve no longer serves sourcemaps for HTML routes in production; override via `sourcemap` under `[serve.static]` in bunfig.toml. https://bun.com/blog/bun-v1.4
+- 1.4.0: Bun.serve `routes` supports `{ dir: "./public" }` static dirs with Range/ETag/304/206/412. https://bun.com/blog/bun-v1.4
+- 1.4.0: Bun.serve `http3: true` experimental (UDP); not for production yet. https://bun.com/blog/bun-v1.4
+- 1.4.0: trustedDependencies default trust only for npm-registry pkgs; file:/link:/git:/github: need explicit listing. https://bun.com/blog/bun-v1.4
+- 1.4.0: `bun update` now updates transitive deps; lockfiles gain SHA-512 for git/tarball deps on next install. https://bun.com/blog/bun-v1.4
+- 1.4.0: `bun prune --production` removes devDependencies (Docker builds); `bun install --frozen-lockfile` fails on drift. https://bun.com/blog/bun-v1.4
+- 1.4.0: `--no-env-file` (or `env = false` in bunfig.toml) skips .env loading. https://bun.com/blog/bun-v1.4
+- 1.4.0: `process.on("memoryPressure")` uses PSI / cgroup memory.pressure on Linux; `node:cluster` shares listening sockets. https://bun.com/blog/bun-v1.4
+- 1.4.0: blog page truncated at 100k of 220k chars; musl/Docker detail not read. https://bun.com/blog/bun-v1.4
+- 1.4.1: Bun.serve serves HTTP/2 on same port as HTTP/1.1 (ALPN over TLS); `http1: false` rejects HTTP/1.x; no WebSockets/trailers over H2. https://bun.com/blog/bun-v1.4.1
+- 1.4.1: fetch() now verifies TLS cert against URL hostname, not custom Host header; use `tls.servername`. https://bun.com/blog/bun-v1.4.1
+- 1.4.1: `--env-file` can read pipes/FIFO//dev/stdin; `--no-ffi-cc`/`--no-addons` block runtime C compile. https://bun.com/blog/bun-v1.4.1
+- 1.4.1: `bun install --offline` / `--prefer-offline` (bunfig `[install] offline=true`, `prefer="offline"`). https://bun.com/blog/bun-v1.4.1
+- 1.4.2: fixes regressions (Elysia, AsyncLocalStorage), GC crash on musl, rare JIT crash. https://bun.com/blog
+- 1.4.3: `bun check` type checker, `--check`; Bun.serve If-Range support; idle CPU down 67-89%. https://bun.com/blog
+- 1.4.4: `ws` rewritten to match npm ws on Node; Bun.SQL CPU -48%/query; `bun fmt`, `bun pm fetch`; Yarn Berry lockfile migration; install retries w/ backoff. https://bun.com/blog
+- Docker guide: base `oven/bun:1` (tracks 1.x); WORKDIR /usr/src/app; multistage install/prerelease/release. https://bun.com/docs/guides/ecosystem/docker
+- Docker guide: `bun install --frozen-lockfile` run twice (dev deps, then `--production`); copy prod node_modules into release stage. https://bun.com/docs/guides/ecosystem/docker
+- Docker guide: sets NODE_ENV=production in prerelease; release runs as `bun` user, EXPOSE 3000, `bun run index.ts`. https://bun.com/docs/guides/ecosystem/docker
+- Docker guide: .dockerignore excludes node_modules, .git, .env, Dockerfiles, coverage; build with `docker build --pull`. https://bun.com/docs/guides/ecosystem/docker
+- Bun.serve port: `port` option, else env BUN_PORT, PORT, NODE_PORT, else 3000; hostname default 0.0.0.0. https://bun.com/docs/api/http
+- Bun.serve `idleTimeout` default 10s, max 255, 0 disables; per-request `server.timeout(req, s)`. https://bun.com/docs/api/http
+- Bun.serve `server.stop()` graceful (finishes in-flight, closes idle keep-alive); `stop(true)` force; `closeIdleConnections()`. https://bun.com/docs/api/http
+- Bun.serve `server.reload()` swaps routes/fetch/error/websocket without restart; `fetch` fallback required before 1.2.3. https://bun.com/docs/api/http
+- Bun.serve `reusePort` not covered on docs page. https://bun.com/docs/api/http
+
+## Node.js 26.13.1 LTS
+- 26.13.1 = "Latest LTS", security release published 2026-11-11. https://nodejs.org/en/blog/release/v26.13.1
+- Fixes 7 high CVEs (HTTP/2 stream/header memory, TLS crash/SNI/resumption, nested parser), 6 medium, 2 low. https://nodejs.org/en/blog/release/v26.13.1
+- Fix: proxy credentials no longer leaked in invalid-proxy-URL errors (relevant if CDK CLI runs behind HTTP proxy). https://nodejs.org/en/blog/release/v26.13.1
+- Deps: brotli 1.2.1, llhttp 9.4.4, sqlite 3.54.1, undici 8.12.4. https://nodejs.org/en/blog/release/v26.13.1
+- Node 26 codename Lithium, first released 2026-05-05, listed LTS; page gives no active/maintenance/EOL dates. https://nodejs.org/en/about/previous-releases
+- Page does not state CDK CLI support; see CDK section for engines fields. https://nodejs.org/en/blog/release/v26.13.1
+
+## AWS CDK aws-cdk-lib 2.278.0 + CLI 2.1149.0
+- aws-cdk-lib package.json (main) engines: node >= 20.0.0 (main branch, not pinned to 2.278.0). https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/package.json
+- aws-cdk CLI package.json (main) engines: node >= 18.0.0 (main branch; lib is stricter, use >=20). https://github.com/aws/aws-cdk-cli/blob/main/packages/aws-cdk/package.json
+- CLI 2.1149.0 (2026-11-19): no breaking changes listed. https://github.com/aws/aws-cdk-cli/releases
+- CLI 2.1149.0 fix: `cdk flags --set` crashed when cdk.json had no context section. https://github.com/aws/aws-cdk-cli/releases
+- CLI 2.1149.0 fix: a single unconfigured flag now uses its recommended value. https://github.com/aws/aws-cdk-cli/releases
+- CLI 2.1149.0 fix: `cdk migrate --from-scan` failed when stdout not a terminal; deploy errors now reported in watch mode. https://github.com/aws/aws-cdk-cli/releases
+- CLI 2.1149.0: bootstrap supports Lambda Web Functions; stopped bundling lodash.truncate 4.4.2 (CVE-2020-28500). https://github.com/aws/aws-cdk-cli/releases
+- CLI releases page showed only 2.1149.0; earlier CLI releases not read. https://github.com/aws/aws-cdk-cli/releases
+- ECS 2.269.0: `ephemeralStorageGiB` allowed on Windows Fargate platform 1.0.0; fix removing last target group not deployed. https://github.com/aws/aws-cdk/releases
+- ECS 2.271.0: `TagParameterContainerImage` accepts `imageDigest`. https://github.com/aws/aws-cdk/releases
+- ECS 2.270.0: docs fix for `enableManagedDraining` defaults. https://github.com/aws/aws-cdk/releases
+- ecs-patterns, ElastiCache: no entries in 2.269.0-2.278.0. https://github.com/aws/aws-cdk/releases
+- RDS 2.278.0: CloudWatch metric helpers added to `DatabaseInstance`. https://github.com/aws/aws-cdk/releases
+- CloudFront 2.273.0: default Distribution behaviors redirect HTTP to HTTPS; fix missing OAC perms for Function URL origins. https://github.com/aws/aws-cdk/releases
+- CloudFront 2.274.0/2.275.0: OAC sigv4a signing and always-amz-auth. https://github.com/aws/aws-cdk/releases
+- Feature flags: no dedicated new flags; 2.270.0 fixes "annotations cannot be acked without feature flag". https://github.com/aws/aws-cdk/releases
+- L1 type changes in 2.275.0/2.277.0/2.278.0 (Lambda, MediaLive, FSx, etc.), not ECS/RDS. https://github.com/aws/aws-cdk/releases
+
+## TanStack Start @tanstack/react-start 1.169.7
+- 1.169.0: Start stable; requires Vite 8 (Vite 7 unsupported). https://github.com/TanStack/router/blob/main/packages/react-start/CHANGELOG.md
+- 1.169.0 removed `.inputValidator()` (use `.validator()`) and built-in `useSession` (use a session lib). https://github.com/TanStack/router/blob/main/packages/react-start/CHANGELOG.md
+- 1.169.0: raw `createStartHandler` handlers rethrow original error; `transferResponseBodyOwnership` removed. https://github.com/TanStack/router/blob/main/packages/react-start/CHANGELOG.md
+- 1.169.5: Rsbuild plugin keeps app `server.compress` (off by default); `@rsbuild/core` peer ^2.0.5. https://github.com/TanStack/router/blob/main/packages/react-start/CHANGELOG.md
+- 1.169.7 (2026-11-19) and 1.169.1-3,6: dependency updates only. https://github.com/TanStack/router/blob/main/packages/react-start/CHANGELOG.md
+- Server fn ids with whitespace/control/non-ASCII/#?/ now fail build (start-plugin-core 1.172.0); `% : @` ids warn. https://github.com/TanStack/router/releases
+- Build output Vite+Nitro: `node .output/server/index.mjs`. https://tanstack.com/start/latest/docs/framework/react/guide/hosting
+- Build output Rsbuild: client `dist/client`, server `dist/server/index.js` (or server.js) exporting `fetch(request)`. https://tanstack.com/start/latest/docs/framework/react/guide/hosting
+- Node (Rsbuild): serve dist/client static + forward to server fetch, e.g. `srvx --prod -s ../client dist/server/index.js`. https://tanstack.com/start/latest/docs/framework/react/guide/hosting
+- Node (Vite): use Nitro, run `start` script. https://tanstack.com/start/latest/docs/framework/react/guide/hosting
+- Bun: requires React 19+; Nitro `bun` preset, or reference `server.ts` via `bun run server.ts` after build. https://tanstack.com/start/latest/docs/framework/react/guide/hosting
+- Bun reference server env: PORT (3000), ASSET_PRELOAD_MAX_SIZE (5MB), ASSET_PRELOAD_ENABLE_ETAG (true), ASSET_PRELOAD_ENABLE_GZIP (true), ASSET_PRELOAD_GZIP_MIN_SIZE (1024), plus INCLUDE/EXCLUDE_PATTERNS, VERBOSE_LOGGING. https://tanstack.com/start/latest/docs/framework/react/guide/hosting
+- Targets listed: cloudflare-workers, netlify, railway, nitro, vercel, node-server, bun, appwrite-sites. https://tanstack.com/start/latest/docs/framework/react/guide/hosting
+- Env: server code reads any var via process.env at runtime; client only `VITE_` (Vite) / `PUBLIC_` (Rsbuild); client import.meta.env baked at build time. https://tanstack.com/start/latest/docs/framework/react/guide/environment-variables
+- Env: read process.env inside handlers, not module scope; `NODE_ENV` replaced at build time (`staticNodeEnv: true`), else set NODE_ENV=production at runtime. https://tanstack.com/start/latest/docs/framework/react/guide/environment-variables
+- Env file priority: .env.local, .env.production/.env.development, .env. https://tanstack.com/start/latest/docs/framework/react/guide/environment-variables
+
+## Aurora PostgreSQL 17.7 (LTS)
+- 17.7 base released 2025-12-18; community 17.7 released 2025-11-13. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/aurorapostgresql-release-calendar.html
+- 17.7 marked LTS; Aurora end of standard support 2030-02-28. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/aurorapostgresql-release-calendar.html
+- PG17 Aurora major: community EOL Nov 2029; Extended Support yr1 pricing starts 2030-03-01, yr3 2032-03-01, ends 2033-02-28. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/aurorapostgresql-release-calendar.html
+- Only 17.7 listed as Extended-Support-eligible minor for PG17; others TBD. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/aurorapostgresql-release-calendar.html
+- Non-LTS 17.x end dates: 17.9 2027-09-30; 17.10 2027-12-31; 17.11 2028-02-28; 17.6 2027-04-30. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/aurorapostgresql-release-calendar.html
+- Newer minors exist: 17.11 (2026-09-29); PG18 on Aurora since 18.3 (2026-06-11), no PG18 LTS yet. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/aurorapostgresql-release-calendar.html
+- 17.7 patches so far through 17.7.6 (2026-10-30); 17.7.5 2026-07-20, 17.7.4 2026-06-09. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- Aurora minor cadence: roughly quarterly, within 3 months of community; LTS per major within 12 months of Aurora major. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/aurorapostgresql-release-calendar.html
+- LTS = bug/security patches only, no new features after introduction. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.LTS.html
+- LTS clusters patched to latest patch about once a year, sooner for critical fixes. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.LTS.html
+- To stay on LTS minor, disable auto minor version upgrade on every instance (clear checkbox). https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.LTS.html
+- AWS itself recommends latest release over LTS for most clusters; LTS for no-downtime / long-test-cycle workloads. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.LTS.html
+- 17.7 base notes: static writer availability improved when storage-node maintenance delays writes. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- 17.7: Blue/Green switchover briefly blocks commits on Blue to reduce drift. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- 17.7: faster recovery (clog loading) on cold start/unplanned restart; faster cold-start cache init. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- 17.7: lower memory for idle connections on Serverless v2; Serverless v2 scaling/scale-down fixes. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- 17.7: CVE-2025-12818 and CVE-2025-12817 back-ported; fixes for major-version-upgrade failures. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- 17.7: pg_columnmask configuration added; h3_pg 4.2.3. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- Release notes page is huge (~1.1M chars); only first 100K read, no 17.7.x patch-level detail verified. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- PG17 (community, 2024-09-26): migration needs dump/restore, pg_upgrade or logical replication. https://www.postgresql.org/docs/17/release-17.html
+- PG17 vacuum: new memory mgmt, no longer 1 GB cap; vacuum_buffer_usage_limit default now 2MB. https://www.postgresql.org/docs/17/release-17.html
+- PG17 perf: streaming I/O sequential reads, better write throughput under concurrency, faster IN-list btree search. https://www.postgresql.org/docs/17/release-17.html
+- PG17 SQL/JSON: JSON_TABLE, JSON_EXISTS/QUERY/VALUE, constructors; MERGE gains RETURNING, WHEN NOT MATCHED BY SOURCE. https://www.postgresql.org/docs/17/release-17.html
+- PG17 COPY ON_ERROR ignore; sslnegotiation=direct (needs ALPN, PG17+ server). https://www.postgresql.org/docs/17/release-17.html
+- PG17 maintenance ops (ANALYZE, CLUSTER, CREATE INDEX, REINDEX, VACUUM) use safe search_path; expression-index/matview functions in non-default schemas must set search_path. https://www.postgresql.org/docs/17/release-17.html
+- PG17 removed: old_snapshot_threshold, db_user_namespace, adminpack, trace_recovery_messages. https://www.postgresql.org/docs/17/release-17.html
+- PG17 pg_stat_bgwriter buffers_backend/_fsync removed (see pg_stat_checkpointer, pg_stat_io). https://www.postgresql.org/docs/17/release-17.html
+- PG17 pg_stat_statements blk_read_time/blk_write_time renamed shared_blk_read_time/shared_blk_write_time. https://www.postgresql.org/docs/17/release-17.html
+- PG17 pg_stat_progress_vacuum columns renamed (max_dead_tuple_bytes, num_dead_item_ids). https://www.postgresql.org/docs/17/release-17.html
+- PG17 enable_group_by_reordering on by default (GROUP BY reordered to match ORDER BY). https://www.postgresql.org/docs/17/release-17.html
+- Community highlights not necessarily all exposed on Aurora; not verified per-feature on Aurora. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+- RDS Proxy / Aurora-specific 17.7 limits: not covered by fetched pages (check author/reviewer). https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html
+
+## ElastiCache for Valkey 9.1
+- ElastiCache engine 9.1 is available (vs 9.0). https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.1: strings under 128 bytes use ~20% less memory; sorted sets up to ~10% less. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.1: bulk SREM/ZREM/HDEL pause auto-shrink during the op for speed. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.1 new commands: HGETDEL, MSETEX (multi-key set with shared expiry), CLUSTERSCAN (cluster-wide scan). https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.1: database-level ACLs via `ACL SETUSER ... db=0,1`. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.1: HSETEX NX/XX flags, CLUSTER SHARDS AZ field, hardware clock on by default, JSON log format, thread usage metrics in INFO ALL. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.1: reduced rehashing latency spikes (incremental page release); new cluster-bus traffic bytes metric. https://github.com/valkey-io/valkey/releases/tag/9.1.0
+- Valkey 9.1.0 fixes CVE-2026-23479, CVE-2026-25243, CVE-2026-23631; upgrade urgency LOW. https://github.com/valkey-io/valkey/releases/tag/9.1.0
+- 9.1.0 page lists no config-default changes/deprecations/breaking changes (earlier rc notes not fetched). https://github.com/valkey-io/valkey/releases/tag/9.1.0
+- 9.0 (carried into 9.1): hash field expiration (per-field TTL). https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.0: multi-database (SELECT 0-15) in cluster mode enabled. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.0: up to 40% higher throughput with pipelining. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.0: durability via Multi-AZ transactional log (sync = zero loss; async = up to 10 s at risk). https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- 9.0: DELIFEQ, per-node/per-slot metrics; 8.1 adds SET IFEQ, COMMANDLOG (slow/large requests+replies), Bloom filters. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- Valkey 7.2+ is feature-compatible with Redis OSS 7.2. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- Sharded Pub/Sub available in cluster mode enabled. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- No Valkey EOL/extended-support dates on page; only Redis OSS v4/v5/v6 schedule shown. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/supported-engine-versions.html
+- Not fetched: rate-limit-specific guidance, node-type throughput limits, valkey.io 9.x blog notes. https://valkey.io/
+
+## Grafana k6 2.4.0
+- v2.0.0 breaking: Go module path now go.k6.io/k6/v2 (extensions must update imports). https://github.com/grafana/k6/releases
+- v2.0.0 removed: `k6 login/pause/resume/scale/status`, `--upload-only`, `--no-summary`, `--summary-mode=legacy`. https://github.com/grafana/k6/releases
+- v2.0.0 removed: externally-controlled executor (scripts using it will not run). https://github.com/grafana/k6/releases
+- v2.0.0 removed: options.ext.loadimpact (use options.cloud); k6/experimental/redis (use k6/x/redis). https://github.com/grafana/k6/releases
+- v2.0.0: `k6 cloud script.js` form removed (use `k6 cloud run`); stack required for all k6 cloud commands; cloud non-threshold abort exits 97. https://github.com/grafana/k6/releases
+- v2.0.0: HTTP API server no longer starts by default; pass `--address` to enable. https://github.com/grafana/k6/releases
+- v2.0.0: removed OTel ExporterType and SingleCounterForRate options, K6_BINARY_PROVISIONING and K6_ENABLE_COMMUNITY_EXTENSIONS env vars. https://github.com/grafana/k6/releases
+- v2.0.0: web-vitals v5.1.0 (FID removed). https://github.com/grafana/k6/releases
+- v2.1.0: feature flags (`--features`, K6_FEATURES, `k6 features`); first flag experimental native-histograms. https://github.com/grafana/k6/releases
+- v2.1.0: `--vus` works standalone when scenarios are defined; OTel HTTP exporter basic auth. https://github.com/grafana/k6/releases
+- v2.2.0: handleSummaryTimeout option; TextEncoder/TextDecoder globals; experimental flags merge-run-tags, freeze-env. https://github.com/grafana/k6/releases
+- v2.3.0: `--scenario` runs selected scenarios; `--once` runs script once. https://github.com/grafana/k6/releases
+- v2.3.0: tlsAIAFetch option; Prometheus static labels; `/v1/status` includes execution_result. https://github.com/grafana/k6/releases
+- v2.3.0: experimental async-metric-context keeps group() metrics correct across await. https://github.com/grafana/k6/releases
+- v2.4.0: experimental native-tracing (spans for run/scenario/VU/iteration; needs a traces output). https://github.com/grafana/k6/releases
+- v2.4.0: `--http-debug-redact` masks credential headers; http.query() for QUERY method; WebCrypto Ed25519/X25519; gRPC structured error details. https://github.com/grafana/k6/releases
+- v2.4.0 DEPRECATED: built-in InfluxDB and Prometheus remote-write outputs (removal planned v3); migrate to `opentelemetry` output. https://github.com/grafana/k6/releases
+- v2.4.0: browser_data_received now uses Chrome encoded transfer size; recheck browser thresholds. https://github.com/grafana/k6/releases
+- Release index lists 2.4.0, 2.3.0, 2.2.0, 2.1.0, 2.0.0 and 2.0.0-rc1. https://grafana.com/docs/k6/latest/release-notes/
+- Docs landing page fetched has no version/distributed-run/outputs detail; not verified (k6-operator, large-scale tuning). https://grafana.com/docs/k6/latest/
+
+## ADOT Collector 0.51.0 + @opentelemetry/sdk-node 0.301.2
+- ADOT v0.51.0 (29 Oct): only dependency bumps listed (x/net 0.62.0, grpc 1.83.2, Go 1.26.10); no features/breaking/deprecations listed. https://github.com/aws-observability/aws-otel-collector/releases
+- ADOT upstream OTel collector base: v0.50.0 on v0.158.0; v0.49.0 on v0.156.0; 0.51.0 base version not stated on page. https://github.com/aws-observability/aws-otel-collector/releases
+- ADOT v0.49.0 dropped EKS resourcedetection detector for Fargate Container Insights. https://github.com/aws-observability/aws-otel-collector/releases
+- ADOT v0.47.0 added awsproxy extension to App Runner config (remote sampling). https://github.com/aws-observability/aws-otel-collector/releases
+- ECS image: public.ecr.aws/aws-observability/aws-otel-collector:latest (pin a tag in prod). https://aws-otel.github.io/docs/setup/ecs
+- ECS config via AOT_CONFIG_CONTENT env/secret (e.g. SSM param; needs ssm:GetParameters on execution role). https://aws-otel.github.io/docs/setup/ecs
+- ECS guide config: OTLP receiver only; traces to X-Ray OTLP endpoint, metrics to CloudWatch OTLP endpoint. https://aws-otel.github.io/docs/setup/ecs
+- ECS default config (`--config=/etc/ecs/ecs-default-config.yaml`): EMF metrics to ECS/AWSOTel/Application, traces via awsxray; also StatsD 8125/UDP, X-Ray segments 2000/UDP. https://aws-otel.github.io/docs/setup/ecs
+- Ports: 4317 OTLP/gRPC, 4318 OTLP/HTTP; Fargate awsvpc app uses OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318. https://aws-otel.github.io/docs/setup/ecs
+- Set OTEL_LOGS_EXPORTER=none (collector does not accept logs in this setup). https://aws-otel.github.io/docs/setup/ecs
+- Task role: cloudwatch:PutMetricData, xray:PutTraceSegments, PutTelemetryRecords, GetSamplingRules/Targets/StatisticSummaries (or CloudWatchAgentServerPolicy). https://aws-otel.github.io/docs/setup/ecs
+- ECS prerequisite: CloudWatch Transaction Search enabled; path to CloudWatch OTLP endpoints and ECR Public. https://aws-otel.github.io/docs/setup/ecs
+- Collector healthCheck command `/healthcheck`. https://aws-otel.github.io/docs/setup/ecs
+- X-Ray now has native OTLP traces endpoint: https://xray.{region}.amazonaws.com/v1/traces (HTTP only, no gRPC; SigV4 or bearer token; gzip/none). https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-OTLPEndpoint.html
+- OTLP traces limits: 5 MB uncompressed/request, 10,000 spans/request, 200 KB/span, 16 KB per resource+scope, timestamps within +2h/-14d. https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-OTLPEndpoint.html
+- OTLP endpoint needs sigv4authextension (or bearertokenauth) in the collector. https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-OTLPEndpoint.html
+- Metrics OTLP endpoint https://monitoring.{region}.amazonaws.com/v1/metrics: 500 TPS/account, 1000 datapoints/request, 150 labels, 1M new series/10min. https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-OTLPEndpoint.html
+- Logs OTLP endpoint https://logs.{region}.amazonaws.com/v1/logs needs x-aws-log-group and x-aws-log-stream headers; 5000 TPS. https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-OTLPEndpoint.html
+- X-Ray SDKs/Daemon entered maintenance mode 2026-02-25 (security fixes only); AWS recommends OpenTelemetry. https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-migration.html
+- Three AWS paths: ADOT (awsxray exporter segments), CloudWatch Application Signals, CloudWatch OTel endpoint (native OTLP to X-Ray). https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-migration.html
+- Server spans become X-Ray segments, others subsegments; attributes become metadata unless key listed in aws.xray.annotations. https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-migration.html
+- CloudWatch agent >= 1.300025.0 can receive OTLP traces and replace the X-Ray daemon. https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-migration.html
+- W3C Trace Context is OTel default; X-Ray propagator needed to propagate to X-Ray-aware AWS services. https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-migration.html
+- opentelemetry-js experimental/v0.301.2 (12 Nov): lazy-loads @grpc/grpc-js in otlp-grpc-exporter-base; fetch/XHR instrumentation redacts credentials in url.full. https://github.com/open-telemetry/opentelemetry-js/releases
+- v0.301.0 BREAKING: startNodeSdk() env-based config now covers most options (near-replacement for new NodeSDK()); startNodeSDK() deprecated. https://github.com/open-telemetry/opentelemetry-js/releases
+- v0.301.0: new NodeSDK() adds default resource detectors `os` and `serviceinstance` unless OTEL_NODE_RESOURCE_DETECTORS set. https://github.com/open-telemetry/opentelemetry-js/releases
+- v0.301.0: OTEL_SPAN_ATTRIBUTE_PER_EVENT/LINK_COUNT_LIMIT deprecated for OTEL_EVENT/LINK_ATTRIBUTE_COUNT_LIMIT (fallback ~6 months). https://github.com/open-telemetry/opentelemetry-js/releases
+- v0.301.0: @opentelemetry/api peer dependency raised to 1.10.0. https://github.com/open-telemetry/opentelemetry-js/releases
+- Pairing: experimental 0.301.x pairs with stable 3.x (3.1.0, 3.1.1), NOT 2.x; 2.x line is 2.12.1 with 0.223.x. https://github.com/open-telemetry/opentelemetry-js/releases
+- No 0.300 release on page; Bun compatibility of sdk-node not covered by fetched pages. https://github.com/open-telemetry/opentelemetry-js/releases
+
+## Bun 1.4.5 runtime API facts
+Docs fetched are the live "latest" Bun docs; version 1.4.5 not verified on the pages.
+- Bun.serve `port` defaults to $BUN_PORT, $PORT, $NODE_PORT, else 3000; 0 = random port. https://bun.com/docs/api/http
+- `hostname` defaults to "0.0.0.0". https://bun.com/docs/api/http
+- `idleTimeout` default 10 s, max 255, 0 disables. https://bun.com/docs/api/http
+- `routes` maps paths to handlers, Response objects, Bun.file(), or per-method handler objects; `fetch` is the fallback for unmatched routes. https://bun.com/docs/api/http
+- `reusePort` (default false): sets SO_REUSEPORT so multiple processes can bind the same port, for load balancing. https://github.com/oven-sh/bun/blob/main/packages/bun-types/serve.d.ts
+- `maxRequestBodySize` default 128 MB (1024*1024*128 bytes). https://github.com/oven-sh/bun/blob/main/packages/bun-types/serve.d.ts
+- `development` is a readonly boolean on the server; Bun.serve runs in dev mode by default; off when NODE_ENV=production or `development: false`. https://bun.com/docs/runtime/http/error-handling
+- `--production` flag does not disable dev mode for `bun run`. https://bun.com/docs/runtime/http/error-handling
+- `error(error)` returns a Response; in dev mode it replaces Bun's built-in error page; in production uncaught errors return plain 500. https://bun.com/docs/runtime/http/error-handling
+- `server.stop()` default is graceful: in-flight requests/WebSockets complete, idle keep-alive connections close immediately. https://bun.com/docs/api/http
+- `server.stop(true)` terminates all connections now; WebSockets close with code 1001; promise resolves once all connections closed. https://bun.com/docs/api/http
+- `server.pendingRequests` = number of in-flight HTTP requests. https://bun.com/docs/api/http
+- `server.reload()` can update only fetch, error, routes, websocket. https://bun.com/docs/api/http
+- node:cluster is Partial: node:http workers each bind own socket, so HTTP load balancing across processes works only on Linux via SO_REUSEPORT; "implemented but not battle-tested". https://bun.com/docs/runtime/nodejs-compat
+- Bun.spawn: parent bun process does not exit until all children exit; `proc.unref()` detaches. https://bun.com/docs/runtime/child-process
+- node:async_hooks: AsyncLocalStorage and AsyncResource implemented; createHook/executionAsyncId/triggerAsyncId are stubs (ids always 0). https://bun.com/docs/runtime/nodejs-compat
+- node:diagnostics_channel missing `http.server.*` channels; `http` client channels implemented. https://bun.com/docs/runtime/nodejs-compat
+- sql: `import { sql, SQL } from "bun"`; constructor options url, adapter (postgres|mysql|mariadb|sqlite), hostname, port, username, password (string or function), database. https://bun.com/docs/runtime/sql
+- sql defaults: hostname localhost, port 5432, username postgres, database = user name, `max` 10 pool connections. https://bun.com/docs/runtime/sql
+- sql `idleTimeout` 0 (off, seconds), `maxLifetime` 0 (off, seconds), `connectionTimeout` 30 s. https://bun.com/docs/runtime/sql
+- sql `tls` default false; accepts true, ssl mode, TLS object, or BunFile CA; modes disable, prefer(allow), require, verify-ca, verify-full; default sslmode disable. https://bun.com/docs/runtime/sql
+- sql URL env order: DATABASE_URL/TLS_DATABASE_URL, POSTGRES_URL, PGURL, PG_URL, TLS_POSTGRES_DATABASE_URL, then MYSQL_URL etc. https://bun.com/docs/runtime/sql
+- sql field env vars: PGHOST, PGPORT, PGPASSWORD, PGSSLMODE, PGCONNECT_TIMEOUT; PGDATABASE overrides URL database. Precedence: options > URL in code > env URL > field env > default. https://bun.com/docs/runtime/sql
+- sql tagged template: `${}` values become parameters; sql(object)/sql(array) for insert/update/IN; sql.unsafe for raw; queries lazy until await/.then/.execute(). https://bun.com/docs/runtime/sql
+- `sql.begin(async tx => ...)` commits on return, rolls back on throw; tx.savepoint() nested; beginDistributed/commitDistributed/rollbackDistributed for 2PC. https://bun.com/docs/runtime/sql
+- `sql.close()` waits for already-started queries; `{timeout: n}` caps wait in s, `{timeout: 0}` closes now; later queries reject CONNECTION_CLOSED. https://bun.com/docs/runtime/sql
+- Postgres `prepare` default true (named prepared statements); `prepare: false` uses unnamed statements, disables pipelining, one command per query. https://bun.com/docs/runtime/sql
+- Prepared-statement cache per connection: 1,024 (Postgres), 256 (MySQL/MariaDB). https://bun.com/docs/runtime/sql
+- Redis: `new RedisClient(url, options?)`; default `redis` import reads env; connects lazily on first command; connect()/close() exist. https://bun.com/docs/runtime/redis
+- Redis env: REDIS_URL first, then VALKEY_URL, else redis://localhost:6379. https://bun.com/docs/runtime/redis
+- Redis TLS: `rediss://` or `redis+tls://` enable TLS; `tls: true` or object (rejectUnauthorized, ca, cert, key, serverName). https://bun.com/docs/runtime/redis
+- Redis methods: set, get, getBuffer, del, exists, expire (s), ttl, incr, decr, hash/set ops, publish/subscribe, `send(command, argsArray)` for raw. https://bun.com/docs/runtime/redis
+- Redis autoReconnect default true, exp. backoff 50ms doubling to 2000ms cap, maxRetries 20, enableOfflineQueue true, connectionTimeout 10000 ms, idleTimeout 0. https://bun.com/docs/runtime/redis
+- Redis enableAutoPipelining default true; AUTH/INFO/MULTI/EXEC/WATCH/SELECT/SUBSCRIBE/CLUSTER not auto-pipelined. https://bun.com/docs/runtime/redis
+- Redis Cluster and Sentinel listed under "Unsupported features". https://bun.com/docs/runtime/redis
+- Env: .env order of increasing precedence: .env, .env.{production|development|test}, .env.local (not in test), .env.{mode}.local. https://bun.com/docs/runtime/environment-variables
+- `Bun.env` and `import.meta.env` are aliases of `process.env`. https://bun.com/docs/runtime/environment-variables
+- `--no-env-file` or bunfig `env = false` disables auto .env loading (suggested for prod/CI); `--env-file` still honored. https://bun.com/docs/runtime/environment-variables
+NOT STATED: server SIGTERM/signal handling in Bun.serve or process.on("SIGTERM") (https://bun.com/docs/api/http, nodejs-compat silent); Bun.serve health-check pattern (only an illustrative /api/status route); redis `set` EX/NX options (docs show only key,value); sql read-replica routing or multi-host failover; sql `ssl` vs `tls` option name equivalence; shell-env vs .env precedence; Bun version 1.4.5 specifics.
+
+## OpenTelemetry on Bun API facts
+- OTel JS docs "supports all active or maintenance LTS versions of Node.js"; Bun is not mentioned. https://opentelemetry.io/docs/languages/js/
+- No Bun page on OpenTelemetry found (bun.com/docs/guides/ecosystem/opentelemetry returned 404); Bun nodejs-compat page does not mention OpenTelemetry. https://bun.com/docs/runtime/nodejs-compat
+- Node getting-started installs @opentelemetry/sdk-node, @opentelemetry/api, @opentelemetry/auto-instrumentations-node, @opentelemetry/sdk-metrics, @opentelemetry/sdk-trace. https://opentelemetry.io/docs/languages/js/getting-started/nodejs/
+- NodeSDK({traceExporter, metricReader, instrumentations: [getNodeAutoInstrumentations()]}); sdk.start(); file loaded via `--import ./instrumentation.ts`. https://opentelemetry.io/docs/languages/js/getting-started/nodejs/
+- Auto-instrumentations package is @opentelemetry/auto-instrumentations-node (includes Express). https://opentelemetry.io/docs/languages/js/getting-started/nodejs/
+- OTLP HTTP trace exporter packages: @opentelemetry/exporter-trace-otlp-proto (http/protobuf), @opentelemetry/exporter-trace-otlp-http (http/json). https://opentelemetry.io/docs/languages/js/exporters/
+- `new OTLPTraceExporter({url, headers})`; default url http://localhost:4318/v1/traces. https://opentelemetry.io/docs/languages/js/exporters/
+- OTEL_EXPORTER_OTLP_ENDPOINT: base for all signals; HTTP default http://localhost:4318; SDK appends /v1/traces, /v1/metrics, /v1/logs. https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/
+- OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: traces only, used as given (typically ends /v1/traces). https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/
+- OTEL_EXPORTER_OTLP_PROTOCOL values grpc, http/protobuf, http/json; default SDK-dependent. https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/
+- OTEL_EXPORTER_OTLP_HEADERS: comma-separated key=value, e.g. api-key=key,other=value; signal-specific variants exist. https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/
+- OTEL_SERVICE_NAME sets service.name, default unknown_service, overrides OTEL_RESOURCE_ATTRIBUTES service.name. https://opentelemetry.io/docs/languages/sdk-configuration/general/
+- OTEL_TRACES_EXPORTER default `otlp`; values otlp, jaeger, zipkin, console, none. https://opentelemetry.io/docs/languages/sdk-configuration/general/
+- OTEL_PROPAGATORS default `tracecontext,baggage` (W3C). https://opentelemetry.io/docs/languages/sdk-configuration/general/
+- OTEL_TRACES_SAMPLER default parentbased_always_on; also traceidratio, parentbased_traceidratio etc. https://opentelemetry.io/docs/languages/sdk-configuration/general/
+- Manual: `trace.getTracer('scope-name','version')`; call where needed, do not export the tracer. https://opentelemetry.io/docs/languages/js/instrumentation/
+- `tracer.startActiveSpan('name', (span) => {...})` sets span active; must call span.end(). https://opentelemetry.io/docs/languages/js/instrumentation/
+- `span.setAttribute(k, v)`; `span.recordException(err)`; `span.setStatus({code: SpanStatusCode.ERROR, message})` (SpanStatusCode from @opentelemetry/api). https://opentelemetry.io/docs/languages/js/instrumentation/
+- Manual propagation: `propagation.inject(context.active(), carrier)` and `propagation.extract(context.active(), carrier)`; carrier keys traceparent/tracestate. https://opentelemetry.io/docs/languages/js/propagation/
+- Bun side: AsyncLocalStorage implemented, async_hooks createHook stubbed, and diagnostics_channel lacks http.server.* channels, which bears on context propagation and http server instrumentation. https://bun.com/docs/runtime/nodejs-compat
+NOT STATED: whether Bun.serve is auto-instrumented by @opentelemetry/instrumentation-http (no doc says so; Bun docs show no http.server.* diagnostics channels and OTel docs never mention Bun, so treat as NOT auto-instrumented, inference only); official Bun support for @opentelemetry/sdk-node or auto-instrumentations-node; that Node default propagator is W3C (propagation page does not name it; only the sdk-configuration OTEL_PROPAGATORS default says tracecontext,baggage); OTLP default protocol for the JS SDK.
+
+## CDK core + VPC API facts
+- StackProps.env is `{account, region}`; default: Stage env if present, else env-agnostic stack. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StackProps.html
+- Docs: set env to `process.env.CDK_DEFAULT_ACCOUNT/REGION` for dev stacks (CLI creds), concrete values for prod. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StackProps.html
+- Env-agnostic stacks cannot use lookups such as `ec2.Vpc.fromLookup`; `.account/.region` resolve to AWS::AccountId/Region refs. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StackProps.html
+- StackProps also: stackName (default from construct path), description, tags, terminationProtection=false, crossRegionReferences=false. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StackProps.html
+- Context sources (6): current AWS account, `--context`, cdk.context.json, `context` key of cdk.json, `context` key of ~/.cdk.json, `construct.node.setContext()`. https://docs.aws.amazon.com/cdk/v2/guide/context.html
+- Read context with `construct.node.tryGetContext(key)`; undefined if not found on construct or parents. https://docs.aws.amazon.com/cdk/v2/guide/context.html
+- `--context`/`-c key=value` values are always strings; repeat the flag for several. https://docs.aws.amazon.com/cdk/v2/guide/context.html
+- Non-cached custom context belongs under `context` in cdk.json; cdk.context.json holds cached lookups (do not hand-edit); commit both. https://docs.aws.amazon.com/cdk/v2/guide/context.html
+- `cdk bootstrap aws://<account-id>/<region>` deploys stack `CDKToolkit`, creating an S3 bucket and ECR repo for assets. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-bootstrap.html
+- Bootstrap default execution policy is AdministratorAccess; override with `--cloudformation-execution-policies`; `--trust` needs it; default qualifier `hnb659fds`. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-bootstrap.html
+- Unbootstrapped env: only stacks without assets and templates under 51,200 bytes deploy. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-deploy.html
+- `cdk synth`: writes cloud assembly to cdk.out; single stack prints YAML to stdout; `--quiet/-q` suppresses; `--exclusively/-e`. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-synth.html
+- `cdk diff`: default `--method` auto (change set, falls back to template diff); `--fail` exits 1 when differences found; `--quiet`, `--security-only`. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-diff.html
+- `cdk deploy --require-approval` values any-change | broadening | never; default broadening. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-deploy.html
+- `cdk deploy --all` (default false) deploys every stack; with stage hierarchy `--all`/`*` match top level only, `**` matches nested. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-deploy.html
+- `cdk deploy --method` change-set (default) | direct | prepare-change-set | execute-change-set; `--no-rollback` leaves failed state, fails on replacements. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-deploy.html
+- `--hotswap` deliberately causes drift (dev only; ECS minHealthyPercent set to 0); `--outputs-file/-O`, `--concurrency` default 1. https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-deploy.html
+- `Template.fromStack(stack)` static; also fromJSON, fromString. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.assertions.Template.html
+- `hasResourceProperties(type, props)`: partial match on Properties via `Match.objectLike()` by default. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.assertions.Template.html
+- `resourceCountIs(type, count)`; also hasResource, findResources, hasOutput, resourcePropertiesCountIs, allResourcesProperties. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.assertions.Template.html
+- Match statics: absent, anyValue, arrayEquals, arrayWith, exact, not, objectEquals, objectLike, serializedJson, stringLikeRegexp. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.assertions.Match.html
+- Vpc `ipAddresses` default `ec2.IpAddresses.cidr`; example `ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16')`; legacy `cidr` prop is "use ipAddresses instead". https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.VpcProps.html
+- Vpc `maxAzs` default 3; env-agnostic stacks only get 2 AZs. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.VpcProps.html
+- Vpc `natGateways` default one per AZ; lowering saves cost but may add cross-AZ data charges. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.VpcProps.html
+- Vpc default subnets: 1 public + 1 private per AZ; DEFAULT_SUBNETS_NO_NAT (natGateways 0) = public + isolated. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.Vpc.html
+- SubnetType: PUBLIC, PRIVATE_WITH_EGRESS ("routes to the internet, but not vice versa"), PRIVATE_ISOLATED (no NAT needed), PRIVATE_WITH_NAT deprecated. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.SubnetType.html
+- SubnetConfiguration: `name` and `subnetType` required; `cidrMask` valid 16-28, default = IP space split evenly; hosts = 2^(32-cidrMask)-2. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.SubnetConfiguration.html
+- Docs example: public cidrMask 24, PRIVATE_WITH_EGRESS cidrMask 24, PRIVATE_ISOLATED cidrMask 28 in subnetConfiguration. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.VpcProps.html
+- SecurityGroup: required `vpc`; `allowAllOutbound` default true; `addIngressRule(peer, port, description?)`; docs recommend `.connections` over raw rules. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.SecurityGroup.html
+- Connections: `allowFrom(other, port, desc?)`, `allowTo`, `allowFromAnyIpv4(port)`, `allowDefaultPortFrom`; peering two SG constructs adds rules in both. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.Connections.html
+- `vpc.addGatewayEndpoint(id,{service})`; `GatewayVpcEndpointAwsService.S3` / DYNAMODB / S3_EXPRESS; also `gatewayEndpoints: {S3:{service}}` in VpcProps. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.GatewayVpcEndpointAwsService.html
+- `vpc.addInterfaceEndpoint(id,{service: InterfaceVpcEndpointAwsService.ECR_DOCKER})`; static members ECR, ECR_DOCKER, CLOUDWATCH_LOGS, SECRETS_MANAGER, ECS, SSM exist. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ec2.InterfaceVpcEndpointAwsService.html
+- Fargate in private subnet pulling from ECR needs a NAT gateway, or an ECR interface endpoint (task private IP used for pull). https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-tasks-services.html
+NOT STATED: (1) `Port.tcp`, `App`, `Construct` class pages not fetched, so no doc-stated signatures here; (2) CLI 2.1149.0 / aws-cdk-lib 2.278.0 release notes, and exact endpoint-service name strings (com.amazonaws.REGION.ecr.api etc.) were not stated; (3) which endpoints a private Fargate+ECR+Logs+Secrets setup minimally needs (S3 gateway for image layers) not stated on fetched pages; (4) `cdk.json` "app" key format; `cdk deploy -c` precedence order between sources.
+
+## CDK ECS/Fargate + ALB API facts
+- Cluster prop `containerInsightsV2` (ContainerInsights enum: ENABLED, DISABLED, ENHANCED); default DISABLED, may be overridden by account-level ECS setting. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.ClusterProps.html
+- Cluster `enableFargateCapacityProviders` default false; needed for FARGATE/FARGATE_SPOT strategies. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.ClusterProps.html
+- FargateTaskDefinition cpu default 256, memoryLimitMiB default 512; both must be a valid pair. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateTaskDefinition.html
+- Valid pairs: 256 -> 512/1024/2048 MiB; 512 -> 1024-4096; 1024 -> 2048-8192 (1 GB steps); 2048 -> 4096-16384 (1 GB steps). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateTaskDefinition.html
+- 4096 -> 8192-30720 (1 GB steps); 8192 -> 16384-61440 (4 GB steps); 16384 -> 32768-122880 (8 GB steps). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateTaskDefinition.html
+- `runtimePlatform: {cpuArchitecture: ecs.CpuArchitecture.ARM64, operatingSystemFamily: ecs.OperatingSystemFamily.LINUX}`; default undefined (pattern doc: LINUX + X86_64). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.RuntimePlatform.html
+- taskRole: auto-created if not given (containers' AWS API access); executionRole: auto-created if ECR images used (ECR pull + create log groups). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateTaskDefinition.html
+- ContainerDefinitionOptions: `image` required; `portMappings`, `environment` map, `secrets` map of ecs.Secret, `logging` LogDriver, `healthCheck`, `essential` default true. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.ContainerDefinitionOptions.html
+- `ecs.Secret.fromSecretsManager(secret, field?)`, `fromSecretsManagerVersion`, `fromSsmParameter(parameter)`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.Secret.html
+- `ecs.LogDrivers.awsLogs({streamPrefix})`: streamPrefix required; log group auto-created; logRetention default never expires; mode default BLOCKING. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.AwsLogDriverProps.html
+- Container healthCheck: `command` required (starts CMD or CMD-SHELL); interval default 30s (5-300), retries default 3, timeout default 5s, startPeriod 0-300s. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.HealthCheck.html
+- `ContainerImage.fromEcrRepository(repo, tag?)` tag default `latest`; `fromAsset(directory, props?)` builds a Dockerfile dir; `fromRegistry(name)`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.ContainerImage.html
+- ecr.Repository: `imageScanOnPush` default false; `imageTagMutability` default MUTABLE; `removalPolicy` default Retain; `emptyOnDelete` default false. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecr.RepositoryProps.html
+- ECR `lifecycleRules` array of LifecycleRule: exactly one of maxImageCount or maxImageAge (days); one rule with tagStatus Any must have highest priority. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecr.LifecycleRule.html
+- FargateService: `desiredCount` default 1 on create; `minHealthyPercent` default 50, `maxHealthyPercent` default 200 (non-daemon). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateServiceProps.html
+- `circuitBreaker: {enable, rollback}`: defining the prop implicitly enables; enable default true, rollback default false. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.DeploymentCircuitBreaker.html
+- `healthCheckGracePeriod` default 60s when an LB is in use; `enableExecuteCommand` default undefined; `assignPublicIp` default false. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateServiceProps.html
+- `deploymentStrategy` default ROLLING; enum DeploymentStrategy: ROLLING, BLUE_GREEN, LINEAR, CANARY (native ECS). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.DeploymentStrategy.html
+- FargateServiceProps has `bakeTime` (Duration), `canaryConfiguration`, `linearConfiguration` (TrafficShiftConfig: stepPercent, stepBakeTime), `lifecycleHooks`; blue/green wiring uses `service.loadBalancerTarget({alternateTarget: new ecs.AlternateTarget(..)})`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateServiceProps.html
+- Separate legacy `deploymentController {type: CODE_DEPLOY}` + codedeploy.EcsDeploymentGroup still documented; default controller type ECS. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.DeploymentController.html
+- ECS blue/green: runs blue and green revisions, bake time = both running after traffic shift; may double resource use; NLB adds 10 min to traffic-shift stages. https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-blue-green.html
+- `capacityProviderStrategies: [{capacityProvider:'FARGATE_SPOT', weight:2},{capacityProvider:'FARGATE', weight:1}]` with cluster `enableFargateCapacityProviders: true`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.FargateTaskDefinition.html
+- ApplicationLoadBalancedFargateService props: `taskImageOptions` (image required, containerPort default 80, enableLogging true, environment, secrets, taskRole, executionRole). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.ApplicationLoadBalancedTaskImageOptions.html
+- Pattern: `certificate` sets protocol HTTPS; `domainName`+`domainZone` (creates DNS-validated cert), `redirectHTTP` default false (only valid w/ HTTPS), `publicLoadBalancer` default true, `listenerPort` default 80/443 by protocol. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.ApplicationLoadBalancedFargateService.html
+- Pattern: `cpu` 256, `memoryLimitMiB` 512 defaults, `idleTimeout` default 60s (1-4000), exposes `.service`, `.targetGroup`, `.loadBalancer`, `.listener`, `.taskDefinition`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.ApplicationLoadBalancedFargateService.html
+- `service.targetGroup.configureHealthCheck({path:'/custom-health-path'})`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticloadbalancingv2.HealthCheck.html
+- ALB props: `internetFacing` default false, `idleTimeout` default 60 (seconds), `deletionProtection` false, `http2Enabled` true, `vpc` required. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationLoadBalancerProps.html
+- `lb.addListener(id,{port, certificates, defaultAction|defaultTargetGroups, open})`; `open` default true; HTTPS listener requires exactly one certificate; `ListenerCertificate.fromArn / fromCertificateManager`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationListener.html
+- `listener.addAction(id,{priority, conditions, action})`: at least one action must lack conditions (default). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationListener.html
+- `ListenerCondition.pathPatterns([..])`, `hostHeaders([..])`, httpHeader, queryStrings, sourceIps; used with `priority` in addTargets. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticloadbalancingv2.ListenerCondition.html
+- ApplicationTargetGroup `deregistrationDelay` default 300s (0-3600); `slowStart` default 0 (30-900); `targetType` auto; `vpc` for IP targets. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationTargetGroupProps.html
+- TG healthCheck: `path` default `/`; `interval` default 30s (5-300); `timeout` default 6s (2-120); `healthyThresholdCount` default 5; `unhealthyThresholdCount` 2; `healthyHttpCodes` default 200. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticloadbalancingv2.HealthCheck.html
+NOT STATED: (1) Exact default of ECS-native BLUE_GREEN `bakeTime` and the required IAM/listener-rule setup in CDK 2.278 (bakeTime doc line is just "bake time minutes for service"; `AlternateTarget` page not fetched); (2) `ecs.Cluster` `containerInsights` deprecation tag text and ECS service-linked/roles for exec; ECR scan-on-push behaviour details; (3) ARM64 Fargate-specific limits, ALB request-count metric `RequestCountPerTarget` naming not on fetched pages.
+
+## ECS service auto scaling API facts
+- `service.autoScaleTaskCount({minCapacity, maxCapacity})` returns ScalableTaskCount (BaseService.autoScaleTaskCount). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.ScalableTaskCount.html
+- ScalableTaskCount `minCapacity` default 1; `maxCapacity` required (ScalableTaskCountProps). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.ScalableTaskCount.html
+- Docs example uses `autoScaleTaskCount({ maxCapacity: 10 })` alone (min omitted). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.CpuUtilizationScalingProps.html
+- Methods: scaleOnCpuUtilization, scaleOnMemoryUtilization, scaleOnRequestCount, scaleOnMetric, scaleOnSchedule, scaleToTrackCustomMetric. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.ScalableTaskCount.html
+- `scaleOnCpuUtilization(id,{targetUtilizationPercent})`; targetUtilizationPercent required; example 50. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.CpuUtilizationScalingProps.html
+- Target-tracking props: `scaleInCooldown`/`scaleOutCooldown` default 300s for ECS services; `disableScaleIn` default false; `policyName`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.CpuUtilizationScalingProps.html
+- `scaleOnRequestCount(id,{requestsPerTarget, targetGroup})`; both required; example requestsPerTarget 10000; same cooldown props. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.RequestCountScalingProps.html
+- `scaleOnMetric(id,{metric, scalingSteps, adjustmentType, ...})`: scalingSteps must be 2-40 steps; `metric` and `scalingSteps` required. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_applicationautoscaling.BasicStepScalingPolicyProps.html
+- Step props: `adjustmentType` default ChangeInCapacity; `evaluationPeriods` default 1; `cooldown` default none; `datapointsToAlarm` default = evaluationPeriods. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_applicationautoscaling.BasicStepScalingPolicyProps.html
+- Step example: `[{upper:10,change:-1},{lower:50,change:+1},{lower:70,change:+3}]`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_applicationautoscaling.BasicStepScalingPolicyProps.html
+- Pattern example: `loadBalancedFargateService.service.autoScaleTaskCount({minCapacity:1,maxCapacity:20})` then CPU 50 and memory 50 policies. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.ApplicationLoadBalancedFargateService.html
+- Fargate task size max in ECS guide: 16 vCPU 32-120 GB (8 GB steps); 32 vCPU 60/120/244 GB; 8/16/32 vCPU need Linux platform 1.4.0+. https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-tasks-services.html
+- Fargate On-Demand vCPU resource count default 6 per Region (adjustable); Fargate Spot vCPU default 6 (adjustable). https://docs.aws.amazon.com/general/latest/gr/ecs-service.html
+- Fargate On-Demand burst launch rate default 100 (25 in Regions added after 2025-05-20); sustained 20 tasks/s (5 in newer Regions). https://docs.aws.amazon.com/general/latest/gr/ecs-service.html
+- Tasks per service 5,000 (desired count); services per cluster 5,000; clusters per account 10,000 per Region; target groups per service 5; containers per task definition 10. https://docs.aws.amazon.com/general/latest/gr/ecs-service.html
+- Rate of tasks launched by a service on Fargate: 500/min (125 in Regions after 2025-05-20); tasks per RunTask 10; ECS Exec sessions 1,000. https://docs.aws.amazon.com/general/latest/gr/ecs-service.html
+- Service discovery services are limited to 1,000 tasks per service. https://docs.aws.amazon.com/general/latest/gr/ecs-service.html
+NOT STATED: (1) `EnableScalingProps` page returned 404 so min/max defaults on `autoScaleTaskCount` args are only inferred from ScalableTaskCountProps; (2) per-task Fargate memory/vCPU maximums as a single "limit" statement and whether the default 6 vCPU quota applies to new accounts only ("new accounts might have lower initial quotas") not precisely stated; (3) recommended target values (CPU %, requestsPerTarget) and scale-in cooldown guidance not stated.
+
+## CDK Aurora + RDS Proxy API facts
+- AuroraPostgresEngineVersion.VER_17_7 exists (doc: Version "17.7"); also VER_17_9, VER_18_3/18_4/18_6 listed. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.AuroraPostgresEngineVersion.html
+- Engine: rds.DatabaseClusterEngine.auroraPostgres({ version }) (pattern shown with VER_15_2). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.AuroraPostgresEngineVersion.html
+- DatabaseCluster props: writer (IClusterInstance), readers (IClusterInstance[]), engine (required), vpc, vpcSubnets, credentials. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- readers default: none; cluster has single writer/reader. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- instances / instanceProps are marked "use writer and readers instead". https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- ClusterInstance.provisioned(id, props?) takes instanceType e.g. ec2.InstanceType.of(R6G, XLARGE4); ClusterInstance.serverlessV2(id, props?) takes scaleWithWriter. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.ClusterInstance.html
+- Credentials.fromGeneratedSecret('clusteradmin'); default user 'admin' ('postgres' for PostgreSQL) with generated password. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- backup: BackupProps { retention (required Duration), preferredWindow e.g. '01:00-02:00', >=30 min }; default retention 1 day. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.BackupProps.html
+- parameterGroup (IParameterGroup) or parameters map, not both; versioned engine needed to auto-generate. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- storageEncrypted default: true if storageEncryptionKey given, else false. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- deletionProtection default: true if removalPolicy is RETAIN, else undefined. removalPolicy default: SNAPSHOT. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- autoMinorVersionUpgrade default true; iamAuthentication default false. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- cluster.addRotationSingleUser(options?) exists; also addRotationMultiUser, addProxy(id, options), grantConnect(grantee, dbUser). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- clusterEndpoint = read/write; clusterReadEndpoint = load-balanced read-only. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html
+- DatabaseProxyOptions defaults: maxConnectionsPercent 100 (1-100), maxIdleConnectionsPercent 50, borrowTimeout 120s (1s-1h, 0=unlimited), requireTLS true, iamAuth false, idleClientTimeout 30min. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseProxyOptions.html
+- DatabaseProxyOptions: vpc required; secrets required when defaultAuthScheme is NONE (default); initQuery "not currently supported for PostgreSQL". https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseProxyOptions.html
+- sessionPinningFilters: listed items exempt that SQL class from pinning; default none. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseProxyOptions.html
+- DatabaseProxy: endpoint (string), grantConnect(grantee, dbUser?), addEndpoint(id, options?). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseProxy.html
+- Reader endpoint in CDK: proxy.addEndpoint(id, { vpc, targetRole: rds.ProxyEndpointTargetRole.READ_ONLY }); default READ_WRITE. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseProxyEndpointOptions.html
+- Proxy default endpoint routes to the writer; read-only endpoint needs Aurora cluster with >=1 reader, else requests error; extra endpoints cost PrivateLink charges; max 20 user-defined. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy-endpoints.html#rds-proxy-endpoints-reader
+- PostgreSQL pinning causes: SET commands (SET LOCAL inside BEGIN..COMMIT exempt; set_config(...,true) pins), PREPARE/DISCARD/DEALLOCATE/EXECUTE. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy-pinning.html#rds-proxy-pinning.postgres
+- More PG pinning: temp sequences/tables/views, cursors, LISTEN, loading library modules, nextval/setval, session-level advisory locks (xact-level exempt), DISCARD ALL reset query. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy-pinning.html#rds-proxy-pinning.postgres
+- All engines: any statement text >16 KB pins; "for PostgreSQL setting a variable leads to session pinning"; session pinning filter text is scoped to MySQL family. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy-pinning.html#rds-proxy-pinning.minimizing
+- Pinning metric: CloudWatch DatabaseConnectionsCurrentlySessionPinned. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy-pinning.html#rds-proxy-pinning.minimizing
+- Aurora PG max_connections default = LEAST({DBInstanceClassMemory/9531392},5000); change via custom cluster parameter group + reboot writer. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Managing.html#AuroraPostgreSQL.Managing.MaxConnections
+- IAM auth token lifetime 15 minutes; used only at connect, does not affect established session. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html
+- IAM auth: needs 300-1000 MiB extra DB memory; cannot use custom Route 53 name to generate the token. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html#UsingWithRDS.IAMDBAuth.Limitations
+- Aurora Auto Scaling = Application Auto Scaling; replicas min/max each 0-15, >=1 reader must exist, default cooldown 300s, new replica same class, promotion tier 15. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Integrating.AutoScaling.html#Aurora.Integrating.AutoScaling.Concepts.Capacity
+- Auto scaling metric = average over all readers (writer excluded); one policy per target metric per cluster; no support for global DB secondary clusters. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Integrating.AutoScaling.html#Aurora.Integrating.AutoScaling.Concepts.TargetMetric
+- CDK: appscaling.PredefinedMetric.RDS_READER_AVERAGE_CPU_UTILIZATION and RDS_READER_AVERAGE_DATABASE_CONNECTIONS exist. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_applicationautoscaling.PredefinedMetric.html
+- CDK: new appscaling.ScalableTarget({ serviceNamespace, scalableDimension, resourceId, minCapacity, maxCapacity }) then .scaleToTrackMetric(id, { targetValue, predefinedMetric }). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_applicationautoscaling.ScalableTarget.html
+- PITR creates a NEW cluster; restore within retention period; CLI/API restore needs explicit create-db-instance for writer. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-pitr.html
+- Global Database in CDK: only L1 CfnGlobalCluster (props engine, engineVersion, sourceDbClusterIdentifier, deletionProtection, storageEncrypted). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.CfnGlobalCluster.html
+- Failover doc: updating DNS for an endpoint "typically takes less than 30 seconds"; test via FailoverDBCluster. https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.BestPractices.FastFailover.html
+NOT STATED: (1) Aurora failover duration in seconds; (2) "DatabaseCluster has no global-database L2" (only CfnGlobalCluster seen); (3) exact PITR latest-restorable lag; (4) RDS Proxy default max_connections sizing for PG; (5) CDK DatabaseCluster rejecting VER_17_7 + Credentials combos.
+
+## ElastiCache Valkey API facts
+- CDK aws-elasticache has NO L2; only L1 (CfnReplicationGroup, CfnServerlessCache, CfnSubnetGroup, CfnParameterGroup, CfnUser, CfnUserGroup, CfnGlobalReplicationGroup). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticache-readme.html
+- Valkey engine versions documented: 9.1, 9.0, 8.2, 8.1, 8.0, 7.2.6 ("ElastiCache version 9.1 for Valkey"). https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/engine-versions.html
+- Engine property: "must be set to valkey or redis". https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-engine
+- CFN doc example uses Engine valkey, EngineVersion '9.0', CacheParameterGroupName default.valkey9.cluster.on (cluster-mode). https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#aws-resource-elasticache-replicationgroup--examples
+- ReplicationGroupDescription is the only required property. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-replicationgroupdescription
+- TransitEncryptionEnabled "is required when creating a new valkey replication group"; requires CacheSubnetGroupName; default false. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-transitencryptionenabled
+- TransitEncryptionMode: preferred | required; omitted with TLS on => required. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-transitencryptionmode
+- AtRestEncryptionEnabled default false (Replace on update). https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-atrestencryptionenabled
+- AutomaticFailoverEnabled default false; "must be enabled" for cluster-mode-enabled groups; NumCacheClusters must be >=2 if true (max 6). https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-automaticfailoverenabled
+- MultiAZEnabled boolean flag (fault tolerance). https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-multiazenabled
+- NumNodeGroups default 1 (omit/1 for cluster mode disabled); ReplicasPerNodeGroup 0-5; shards 1-90 (up to 500 nodes on Valkey 7.2+). https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-numnodegroups
+- NumCacheClusters ignored when >1 node group; use ReplicasPerNodeGroup. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-numcacheclusters
+- Changing NumNodeGroups/NodeGroupConfiguration replaces the group unless UpdatePolicy UseOnlineResharding true. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-numnodegroups
+- CacheNodeType lists cache.m7g/m8g/r7g/r8g/t4g etc. (e.g. cache.r7g.large, cache.t4g.micro). https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-cachenodetype
+- GetAtt: ConfigurationEndPoint.Address only for clustered groups (fails otherwise); PrimaryEndPoint.Address, ReaderEndPoint.Address, ReadEndPoint.Addresses. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#aws-resource-elasticache-replicationgroup-return-values
+- Endpoints: CME => Configuration Endpoint for all ops (cluster-aware client required); CMD => Primary (writes) + Reader endpoints. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Endpoints.html
+- Reader endpoint "is not a load balancer", a DNS record round-robin to replicas. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Endpoints.html#Endpoints.Find.Redis
+- Subnet group = CfnSubnetGroup (L1); passed to CacheSubnetGroupName. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-cachesubnetgroupname
+- CfnServerlessCache: Engine (required; valkey|redis|memcached) and ServerlessCacheName (required, <=40 chars). https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-serverlesscache.html
+- Serverless MajorEngineVersion: "Specify an integer (for example, 7, 8, or 9), not a decimal value". https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-serverlesscache.html#cfn-elasticache-serverlesscache-majorengineversion
+- Serverless props: CacheUsageLimits, SubnetIds, SecurityGroupIds, SnapshotRetentionLimit (max 35), UserGroupId; GetAtt Endpoint.Address, ReaderEndpoint.Address. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-serverlesscache.html
+- AuthToken: only with TransitEncryptionEnabled true; 16-128 printable ASCII chars. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-elasticache-replicationgroup.html#cfn-elasticache-replicationgroup-authtoken
+- IAM auth: Valkey 7.2+; needs TLS; ElastiCache user with authentication mode iam; user name must equal user id; IAM action elasticache:Connect. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/auth-iam.html#auth-iam-limits
+- IAM token valid 15 min; connection auto-disconnects after 12 hours unless re-auth (AUTH/HELLO) with new token. https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/auth-iam.html#auth-iam-limits
+- Attach users via CfnUser/CfnUserGroup, group id to UserGroupIds on replication group. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_elasticache-readme.html
+NOT STATED: (1) Valkey 9.1 as the engineVersion string accepted by CFN (examples use '9.0'; 9.1 only in User Guide; "9.1" vs "9.1.x" unverified); (2) Valkey failover time; (3) default CacheParameterGroupName string for valkey9.1 cluster-on; (4) whether AtRestEncryption defaults on for valkey (doc says default false).
+
+## CDK CloudFront + S3 + Route 53 + ACM + WAF API facts
+- DistributionProps: defaultBehavior (required), additionalBehaviors keyed by pathPattern, domainNames, certificate, webAclId, priceClass default PRICE_CLASS_ALL, httpVersion default HTTP2, enableIpv6 default true. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.DistributionProps.html
+- certificate: "must be located in N. Virginia (us-east-1)". https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.DistributionProps.html
+- webAclId takes WAFv2 ACL ARN (arn:aws:wafv2:us-east-1:...:global/webacl/...); WAF Classic uses ID. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.DistributionProps.html
+- minimumProtocolVersion default TLS_V1_2_2021 if feature flag set, else TLS_V1_2_2019; sslSupportMethod default SNI. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.DistributionProps.html
+- LoadBalancerV2Origin(lb, props?): protocolPolicy default HTTPS_ONLY (enum OriginProtocolPolicy, MATCH_VIEWER shown); readTimeout default 30s; keepaliveTimeout 5s; connectionAttempts 3; connectionTimeout 10s. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront_origins.LoadBalancerV2OriginProps.html
+- Origin ALB: "internetFacing must be true for CloudFront to access the load balancer". https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront_origins.LoadBalancerV2Origin.html
+- readTimeout default quota allows up to 120s; higher needs quota increase else deploy error. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront_origins.LoadBalancerV2OriginProps.html
+- LoadBalancerV2OriginProps.customHeaders ({} default) adds headers to origin requests. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront_origins.LoadBalancerV2OriginProps.html
+- S3BucketOrigin.withOriginAccessControl(bucket, props?) (OAC; auto-grants KMS key access); withOriginAccessIdentity is legacy, "strongly" use OAC. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront_origins.S3BucketOrigin.html
+- CachePolicy.CACHING_OPTIMIZED: no query strings/cookies in key, only normalized Accept-Encoding; CACHING_DISABLED: "Disables caching". https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.CachePolicy.html
+- Custom CachePolicy props: minTtl default 0s; defaultTtl default greater of 1 day and minTtl; maxTtl default greater of 1 year and defaultTtl; header/queryString/cookieBehavior default none(); enableAcceptEncodingGzip/Brotli default false. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.CachePolicy.html
+- OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER exists (all query strings and cookies except the Host header); also ALL_VIEWER, HOST_HEADER_ONLY. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.OriginRequestPolicy.html
+- ViewerProtocolPolicy members: HTTPS_ONLY, REDIRECT_TO_HTTPS, ALLOW_ALL. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.ViewerProtocolPolicy.html
+- BucketDeployment: distribution default "No invalidation occurs"; distributionPaths default all files under key prefix; waitForDistributionInvalidation default true; memoryLimit 1024; prune default true. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_s3_deployment.BucketDeploymentProps.html
+- Invalidation pricing: first 1,000 paths/month free (all distributions in account); wildcard path counts as one path. https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PayingForInvalidation.html
+- AWS recommends versioned file names over invalidation (cheaper, no cache lag). https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html#Invalidation_Expiration
+- acm.Certificate props: domainName (required), subjectAlternativeNames, validation default CertificateValidation.fromEmail(), keyAlgorithm default RSA_2048. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_certificatemanager.Certificate.html
+- CertificateValidation.fromDnsMultiZone({domain: zone}) shown with route53.HostedZone. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_route53.HostedZone.html
+- HostedZone.fromLookup(scope,id,query): "Requires environment, you must specify env for the stack". https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_route53.HostedZone.html
+- ARecord target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)) / new targets.LoadBalancerTarget(lb, { evaluateTargetHealth }). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_route53_targets-readme.html
+- ALB alias DNSName is always rendered with "dualstack." prefix by CDK. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_route53_targets-readme.html
+- wafv2.CfnWebACL: DefaultAction and VisibilityConfig required; Scope CLOUDFRONT|REGIONAL; CLOUDFRONT resources must be in us-east-1; web ACL WCU limit 1,500. https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-wafv2-webacl.html#cfn-wafv2-webacl-scope
+- RateBasedStatement: Limit min 10 max 2,000,000,000; AggregateKeyType IP|FORWARDED_IP|CUSTOM_KEYS|CONSTANT. https://docs.aws.amazon.com/waf/latest/APIReference/API_RateBasedStatement.html
+- EvaluationWindowSec valid 60,120,300,600; default 300; WAF checks rate about every 10 seconds. https://docs.aws.amazon.com/waf/latest/APIReference/API_RateBasedStatement.html
+- ManagedRuleGroupStatement: VendorName AWS, Name AWSManagedRulesCommonRuleSet, WCU 700. https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-baseline.html#aws-managed-rule-groups-baseline-crs
+- CfnWebACLAssociation { resourceArn, webAclArn } for ALB/API GW/AppSync/Cognito etc.; for CloudFront do NOT use it, set distribution webAclId. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_wafv2.CfnWebACLAssociation.html
+NOT STATED: (1) CertificateValidation.fromDns(zone) signature/doc (only fromDnsMultiZone seen; DnsValidatedCertificate deprecation unchecked); (2) CloudFront price per invalidation path beyond the 1,000 free; (3) per-account limit on concurrent wildcard invalidations; (4) CloudFrontTarget hosted zone ID value.
+
+## GitHub Actions + AWS OIDC API facts
+- on: single/multiple events (`on: push`, `on: [push, fork]`); one event triggers run. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#on
+- push/pull_request filters: branches, branches-ignore, paths, paths-ignore; push also tags, tags-ignore. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onpushbranchestagsbranches-ignoretags-ignore
+- workflow_dispatch inputs types: boolean, choice, number, environment, string; max 25 inputs; runs only if workflow file on default branch. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatchinputs
+- workflow_call: inputs need `type` (boolean|number|string); secrets via on.workflow_call.secrets.<id>.required; outputs.<id>.value must ref a job output; undeclared input/secret = error. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_call
+- jobs.<id>.needs: string or array; failed/skipped needed job skips dependents unless `if: ${{ always() }}`. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds
+- steps[*].uses forms: {owner}/{repo}@{ref}, ./path (needs checkout), docker://image:tag; pin SHA/tag recommended. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idstepsuses
+- steps[*].run: each run = new shell process; lines inside one multi-line run share a shell. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idstepsrun
+- permissions: values `id-token: write|none`, `contents: read|write|none`; if any specified, unspecified become none; `id-token: write` required to fetch OIDC token. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions
+- jobs.<id>.environment: name or {name,url}; all deployment protection rules must pass before job goes to runner; `deployment: false` uses env secrets/vars w/o deployment. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idenvironment
+- concurrency: `group` (only github/inputs/vars contexts), `cancel-in-progress` bool, `queue: single|max`; queue max + cancel-in-progress true = validation error. https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#concurrency
+- Environment required reviewers: up to 6 people/teams, 1 approval suffices, optional prevent self-review; env secrets only available after rules pass; vars via `vars` ctx. https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments#required-reviewers
+- Environments on private repos need GitHub Team (orgs) / Pro (users); Free = public repos only. https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments
+- Reusable workflow: file in .github/workflows (no subdirs), `on: workflow_call`; call with job-level `uses` (not steps); `./.github/workflows/{file}` same repo; `{owner}/{repo}/.github/workflows/{file}@{ref}` cross-repo; no contexts in `uses`. https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#calling-a-reusable-workflow
+- Pass inputs with `with:`, secrets with `secrets:` or `secrets: inherit` (same org/enterprise); missing env secret = empty string, no error; max 10 nesting levels; secrets not auto-forwarded to nested. https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#passing-inputs-and-secrets-to-a-reusable-workflow
+- Branch protection required checks: must be successful, skipped, or neutral; job names must be unique across all workflows; strict = branch up to date before merge. https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches#require-status-checks-before-merging
+- actions/checkout README uses `@v7`; default fetch-depth 1, 0 = full history; v5+ runs node24 (runner >= v2.327.1). https://github.com/actions/checkout
+- actions/cache README uses `@v6`; inputs path, key, restore-keys; 10GB per repo, LRU evict, unused 1 week evicted. https://github.com/actions/cache
+- OIDC provider URL `https://token.actions.githubusercontent.com`; audience `sts.amazonaws.com`. https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+- Trust cond keys: `token.actions.githubusercontent.com:aud` StringEquals; `:sub` e.g. `repo:octo-org/octo-repo:ref:refs/heads/octo-branch`, `repo:octo-org/octo-repo:environment:prod`, wildcard `repo:octo-org/octo-repo:*` with StringLike. https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+- Immutable-ID sub form `repo:ORG@id/REPO@id:...` for repos created after 2026-07-15 or opted in. https://docs.github.com/en/actions/reference/security/oidc#immutable-subject-claims
+- `id-token: write` only allows requesting OIDC token, no resource write access; `contents: read` needed for checkout. https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+- configure-aws-credentials latest major `@v6` (README pins v6.3.0): inputs role-to-assume, aws-region (required), role-session-name (default "GitHubActions"), audience default sts.amazonaws.com. https://github.com/aws-actions/configure-aws-credentials
+- Thumbprint: README says "The thumbprint, if specified, will be ignored." https://github.com/aws-actions/configure-aws-credentials
+- amazon-ecr-login latest `@v2`; output `registry` (`steps.<id>.outputs.registry`); inputs registries, registry-type (public), mask-password default true. https://github.com/aws-actions/amazon-ecr-login
+- oven-sh/setup-bun `@v2`; inputs bun-version (default: from package.json else latest; accepts 1.0.x, canary), bun-version-file. https://github.com/oven-sh/setup-bun
+- docker/setup-buildx-action README uses `@v4`; creates+boots docker-container driver builder (multi-platform, cache export). https://github.com/docker/setup-buildx-action
+- docker/build-push-action README uses `@v7`; inputs push (default false), tags (CSV/list), platforms, cache-from, cache-to, context. https://github.com/docker/build-push-action
+- CDK OpenIdConnectProvider (custom-resource, backward-compat only; props url, clientIds, thumbprints); omitted thumbprints = fetched from server. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_iam.OpenIdConnectProvider.html
+- CDK OidcProviderNative (CFN AWS::IAM::OIDCProvider): url required, clientIds, thumbprints optional (IAM retrieves top intermediate CA thumbprint), url no port. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_iam.OidcProviderNative.html
+- CDK `new iam.WebIdentityPrincipal(identityProvider: string, conditions?)`; extends FederatedPrincipal; `.withConditions()` available. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_iam.WebIdentityPrincipal.html
+NOT STATED: workflow-syntax page jobs.<id>.uses/secrets syntax (offset 200000+ unread); docker `type=gha` cache-from/cache-to example (build-push README shows only type=local); CDK GithubActionsIdentityProvider construct (docs URL 404); checkout/cache exact release numbers; "required reviewers" Free/Pro plan limits beyond private-repo statement; 7-day "check must have run recently" rule (not on branch protection page).
+
+## dbmate API facts
+- Migrations dir default `./db/migrations`; files `[version]_[description].sql`. https://github.com/amacneil/dbmate
+- Each file has `-- migrate:up` and `-- migrate:down` sections; both directives required even if down unimplemented. https://github.com/amacneil/dbmate
+- Only version is recorded as applied; renaming file does not change applied state. https://github.com/amacneil/dbmate
+- Connection: env `DATABASE_URL` default; override `--url/-u` or `--env/-e` (e.g. TEST_DATABASE_URL). https://github.com/amacneil/dbmate
+- URL format `protocol://username:password@host:port/database_name?options`. https://github.com/amacneil/dbmate
+- Postgres: dbmate by default requires TLS; add `sslmode=disable` if needed. https://github.com/amacneil/dbmate
+- Commands: new, up, create, drop, migrate, rollback (alias down), status, dump, load, wait. https://github.com/amacneil/dbmate
+- `--wait` (env DBMATE_WAIT): wait for DB before running command. https://github.com/amacneil/dbmate
+- `--no-dump-schema`: skip automatic schema.sql update on migrate/rollback. https://github.com/amacneil/dbmate
+- `--migrations-dir/-d` (DBMATE_MIGRATIONS_DIR) default ./db/migrations. https://github.com/amacneil/dbmate
+- Tracking table `schema_migrations` with single column `version VARCHAR(255) PRIMARY KEY`; rename via `--migrations-table`/DBMATE_MIGRATIONS_TABLE. https://github.com/amacneil/dbmate
+- Per-migration opt-out: `-- migrate:up transaction:false`; transaction defaults true where DB supports. https://github.com/amacneil/dbmate
+- Docker image `ghcr.io/amacneil/dbmate`. https://github.com/amacneil/dbmate
+NOT STATED: latest dbmate release number (Releases section empty on README); exact CLI line for `new` naming/timestamp format; whether `migrate` is a no-op alias of `up` semantics; `--no-dump-schema` env var name; migrate:down transaction syntax example; behaviour on multi-statement failure without transaction.
+
+## k6 2.4.0 API facts
+- Latest GitHub release is v2.4.0 (published 12 Nov, marked Latest); v1.8.3 patch on v1 line. https://github.com/grafana/k6/releases
+- v2.0.0 removed: `k6 pause/resume/scale/status`, externally-controlled executor, `k6 login` (use `k6 cloud login`), `k6 cloud script.js` (use `k6 cloud run`), `--no-summary`, `--summary-mode=legacy`, `options.ext.loadimpact` (use options.cloud). https://github.com/grafana/k6/releases
+- v2.4.0 upgrade note: `browser_data_received` now uses Chrome encoded transfer size; recheck thresholds. https://github.com/grafana/k6/releases
+- Lifecycle: init (imports/options, no HTTP) -> `setup()` once (60s default timeout) -> `export default function` per VU/iteration -> `teardown()` once; setup return value passed to default/teardown (JSON-serializable). https://grafana.com/docs/k6/latest/using-k6/test-lifecycle/
+- `import { sleep } from 'k6'`; `sleep(t)` t in seconds. https://grafana.com/docs/k6/latest/javascript-api/k6/sleep/
+- `check` imported from `k6`; takes response + object of named boolean fns; failed checks do not fail the run. https://grafana.com/docs/k6/latest/using-k6/checks/
+- constant-arrival-rate options: duration (req), rate (req), preAllocatedVUs (req), timeUnit (default "1s"), maxVUs (default = preAllocatedVUs). https://grafana.com/docs/k6/latest/using-k6/scenarios/executors/constant-arrival-rate/
+- constant-arrival-rate is open model; do not add sleep() at iteration end; too-low preAllocatedVUs can reduce sustained rate. https://grafana.com/docs/k6/latest/using-k6/scenarios/executors/constant-arrival-rate/
+- ramping-arrival-rate options: startRate (default 0), timeUnit (default "1s", fixed for whole scenario), stages [{target,duration}] (req), preAllocatedVUs (req), maxVUs (default = preAllocatedVUs). https://grafana.com/docs/k6/latest/using-k6/scenarios/executors/ramping-arrival-rate/
+- Thresholds: `options.thresholds` key per metric; expr `<aggregation> <operator> <value>`; Trend aggs avg,min,max,med,p(N); Rate: rate; Counter: count,rate; Gauge: value. https://grafana.com/docs/k6/latest/using-k6/thresholds/
+- Examples: `http_req_duration: ['p(95)<200']`, `http_req_failed: ['rate<0.01']`; long form object {threshold, abortOnFail, delayAbortEval}. https://grafana.com/docs/k6/latest/using-k6/thresholds/
+- Repeating a metric key silently drops earlier entries; put multiple thresholds in one array; tagged form `'http_req_duration{type:API}'`. https://grafana.com/docs/k6/latest/using-k6/thresholds/
+- Checks do not affect exit status; threshold on `checks` metric (`checks: ['rate>0.9']`) to fail. https://grafana.com/docs/k6/latest/using-k6/thresholds/
+- Built-in metrics: http_reqs (Counter), http_req_duration (Trend), http_req_failed (Rate), iterations (Counter), vus, vus_max (Gauge), dropped_iterations (Counter), checks (Rate), data_sent, data_received (Counter), iteration_duration (Trend). https://grafana.com/docs/k6/latest/using-k6/metrics/reference/
+- dropped_iterations = iterations not started due to lack of VUs or expired time. https://grafana.com/docs/k6/latest/using-k6/metrics/reference/
+- Single instance: ~30,000-40,000 simultaneous VUs; in some cases up to 300,000 HTTP req/s; single instance likely enough unless 100,000-300,000 RPS needed. https://grafana.com/docs/k6/latest/testing-guides/running-large-tests/
+- Sizing: keep CPU <=80%; AWS EC2 1 Gbit/s NIC can bottleneck; ~1-5 MB RAM per simple VU (1,000 VUs = 1-5 GB); keep mem <90%, disable swap. https://grafana.com/docs/k6/latest/testing-guides/running-large-tests/
+- Execution segments: 2 machines `--execution-segment 0:1/2` and `1/2:1`, all with `--execution-segment-sequence 0,1/2,1`. https://grafana.com/docs/k6/latest/testing-guides/running-large-tests/
+- Distributed limits: no built-in primary; thresholds evaluated per instance (`--no-thresholds` to skip); metrics per instance; k6-operator distributes load on Kubernetes. https://grafana.com/docs/k6/latest/testing-guides/running-large-tests/
+- OTel output: `k6 run -o opentelemetry script.js`; protocol env K6_OTEL_EXPORTER_PROTOCOL grpc (default) | http/protobuf; gRPC endpoint default localhost:4317; HTTP default localhost:4318 path /v1/metrics. https://grafana.com/docs/k6/latest/results-output/real-time/opentelemetry/
+- OTel envs: K6_OTEL_METRIC_PREFIX, K6_OTEL_SERVICE_NAME (default k6), K6_OTEL_EXPORT_INTERVAL (10s), K6_OTEL_FLUSH_INTERVAL (1s), K6_OTEL_GRPC_EXPORTER_INSECURE, K6_OTEL_HEADERS. https://grafana.com/docs/k6/latest/results-output/real-time/opentelemetry/
+- OTel metric map: Counter->Float64Counter, Gauge->Float64ObservableGauge, Rate->Int64Counter w/ `condition` attr (zero|nonzero), Trend->Float64Histogram. https://grafana.com/docs/k6/latest/results-output/real-time/opentelemetry/
+- handleSummary(data) returns map of stdout/stderr/file path -> string|ArrayBuffer; exporting it suppresses default summary. https://grafana.com/docs/k6/latest/results-output/end-of-test/custom-summary/
+- New machine-readable summary: `--new-machine-readable-summary` / K6_NEW_MACHINE_READABLE_SUMMARY (since v1.5.0); "will become the default in k6 v2". https://grafana.com/docs/k6/latest/results-output/end-of-test/custom-summary/
+NOT STATED: `--summary-export` flag status (page silent); `import http from 'k6/http'` syntax (not fetched; http_reqs only); k6-operator install/CRD details; exact 2.4.0 release date year; whether `-o opentelemetry` is stable/GA; RPS numbers for a specific instance size (only 30-40k VUs / 300k RPS generic).
+
+## CloudWatch + FIS + Organizations API facts
+- Logs Insights: commands chained with `|`, comments with `#`; commands include fields, filter, parse, sort, stats, limit, dedup, display; `where` is alias of `filter`. https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax.html
+- stats example: `stats count(*) by queryType, bin(1h)`; `bin(5m)` time-series example `stats avg(myfield1) by bin(5m)`. https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax-Stats.html
+- bin units: ms/msec, s/sec, m/min, h/hr, d, w, mo, q, y (pluralize with s). https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax-Stats.html
+- stats funcs: avg, count, countDistinct, max, min, pct(field,95), stddev, sum, values, variance, topk. https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax-Stats.html
+- Max 10 stats commands/query; sort/limit must come after the last stats. https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax-Stats.html
+- parse glob: `parse @message "user=*, method:*" as user, method` (wildcards count = alias count); regex `parse @message /(?<ip>...)/`; also logfmt, csv modes. https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax-Parse.html
+- ECS Container Insights: account setting `containerInsights` default disabled; `aws ecs put-account-setting --name containerInsights --value enhanced|enabled`; per cluster `aws ecs update-cluster-settings --cluster NAME --settings name=containerInsights,value=enhanced`. https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-account-settings.html#container-insights-setting-enhanced
+- AWS recommends enhanced observability over standard Container Insights; metrics only for clusters/services with RUNNING tasks. https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cloudwatch-container-insights.html
+- CDK ecs.Cluster props `containerInsights` (boolean, see V2) and `containerInsightsV2` (ContainerInsights enum, default DISABLED, may be overridden by account setting). https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.Cluster.html
+- CDK cloudwatch.Alarm props: metric (req), threshold (req), evaluationPeriods (req), datapointsToAlarm (default = evaluationPeriods; M-of-N), treatMissingData (default MISSING), comparisonOperator (default GREATER_THAN_OR_EQUAL_TO_THRESHOLD), actionsEnabled. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.Alarm.html
+- TreatMissingData members: BREACHING, NOT_BREACHING, IGNORE (keep state), MISSING. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.TreatMissingData.html
+- `import * as cw_actions from 'aws-cdk-lib/aws-cloudwatch-actions'; alarm.addAlarmAction(new cw_actions.SnsAction(topic))`; ctor `SnsAction(topic: ITopic)`. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch_actions.SnsAction.html
+- Dashboard: `new cw.Dashboard(scope,id,{dashboardName, defaultInterval, widgets})`; `dashboard.addWidgets(...)` same call = side by side, separate calls = stacked. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.Dashboard.html
+- GraphWidget: `new cloudwatch.GraphWidget({left:[...]})` with `addLeftMetric`/`addRightMetric`, width/height grid units. https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.GraphWidget.html
+- ALB namespace `AWS/ApplicationELB`; dims LoadBalancer (`app/name/id`), TargetGroup (`targetgroup/name/id`), AvailabilityZone. https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html#load-balancer-metric-dimensions-alb
+- TargetResponseTime: seconds, from LB to target response headers; useful stats Average and pNN.NN. https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html#target-metric-table
+- HTTPCode_Target_5XX_Count: target-generated only (excl. LB); Sum; HTTPCode_ELB_5XX_Count = LB-generated. https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html#target-metric-table
+- UnHealthyHostCount: AWS recommends alarm on Minimum stat >0 for more than one datapoint. https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html#metric-statistics
+- Metric math: ids start lowercase; `SUM(METRICS("errors"))/SUM(METRICS("requests"))*100`; divide-by-zero point dropped; FILL, IF(cond,a,b), RATE; max 500 metrics+expressions per graph. https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/using-metric-math.html
+- Application Signals SLOs: SLI vs threshold + attainment goal over interval (hours..1 year); period-based and request-based SLOs with error budgets; any CloudWatch metric/expression usable as SLI. https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-ServiceLevelObjectives.html
+- FIS `aws:ecs:stop-task`: runs ECS StopTask on target; resource type aws:ecs:task; no params; perms ecs:DescribeTasks, ListTasks, StopTask. https://docs.aws.amazon.com/fis/latest/userguide/fis-actions-reference.html#stop-task
+- FIS `aws:ecs:task-cpu-stress`: params duration (ISO 8601), percent (default 100), workers (default 0), installDependencies (default True); uses SSM doc AWSFIS-Run-CPU-Stress; tasks must be SSM-managed. https://docs.aws.amazon.com/fis/latest/userguide/fis-actions-reference.html#task-cpu-stress
+- FIS `aws:rds:failover-db-cluster`: RDS FailoverDBCluster on Aurora/DocumentDB cluster; resource type aws:rds:cluster; no params; perms rds:FailoverDBCluster, DescribeDBClusters, tag:GetResources. https://docs.aws.amazon.com/fis/latest/userguide/fis-actions-reference.html#failover-db-cluster
+- FIS stop condition = CloudWatch alarm; template JSON `{"source":"aws:cloudwatch:alarm","value":"<alarm ARN>"}` or `{"source":"none"}`; triggered alarm stops experiment, cannot resume; quota on count. https://docs.aws.amazon.com/fis/latest/userguide/stop-conditions.html
+- Organizations: root top container; OUs nest, hierarchy up to five levels; one management account + member accounts. https://docs.aws.amazon.com/organizations/latest/userguide/orgs_getting-started_concepts.html
+- SCPs at root apply to all OUs and member accounts but NOT the management account (declarative policies do). https://docs.aws.amazon.com/organizations/latest/userguide/orgs_getting-started_concepts.html#root
+- SCP evaluation: need explicit Allow at every level root->account; any Deny at any level wins; FullAWSAccess attached by default; SCPs never grant permissions. https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_evaluation.html
+- Mgmt account guidance: use only for tasks requiring it; keep workloads out; SCPs do not restrict it; delegate admin to member accounts; limit access. https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html
+- Recommended root SCP denying `organizations:LeaveOrganization` and `account:CloseAccount`; auto-attached for console-created orgs after 2026-07-10. https://docs.aws.amazon.com/organizations/latest/userguide/orgs_best-practices_mgmt-acct.html#bp_mgmt-acct_default-controls
+- OrganizationAccountAccessRole: auto-created default name in accounts created via Organizations; NOT created for invited accounts; needs `sts:AssumeRole`. https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html
+- `aws configure sso` prompts: SSO session name, start URL (or issuer URL, CLI >=2.22.0), SSO region, registration scopes (`sso:account:access`), then account, role, region, output, profile name. https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html#cli-configure-sso-configure
+- Writes `[profile X] sso_session, sso_account_id, sso_role_name` + `[sso-session Y] sso_region, sso_start_url, sso_registration_scopes` to ~/.aws/config. https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html#cli-configure-sso-generated
+- `aws sso login --profile P` (or `--sso-session S`); PKCE default >=2.22.0, `--use-device-code` for device flow; `aws sso logout` clears cache; token cached under ~/.aws/sso/cache. https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html#cli-configure-sso-login
+- CLI v2 precedence: 1 command-line options, 2 env vars, 3 assume role, 4 assume role w/ web identity, 5 IAM Identity Center, 6 credentials file, 7 custom process, 8 config file, 9 container creds, 10 EC2 instance profile. https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html#configure-precedence
+NOT STATED: SCP JSON denying regions (aws:RequestedRegion) - Organizations SCP examples page only links to aws-samples GitHub repo; Application Signals SLO CDK construct/API; CDK metric helper names for ALB (ApplicationLoadBalancer.metrics.*); Logs Insights `sort`/`limit`/`filter` per-command pages (only table summary read); FIS CDK/CFN experiment template JSON schema and ECS-task-action prerequisites beyond SSM; ComparisonOperator default semantic for percentile alarms; OrganizationAccountAccessRole trust policy JSON.

@@ -1,0 +1,3 @@
+window.LANG = "deploy-infra";
+window.SLUG = "deploy-infra";
+window.MANIFEST = ["01-deployment-foundations", "02-linux-networking-basics", "03-aws-fundamentals", "04-aws-multi-account", "05-docker-containers", "06-app-production-readiness", "07-aws-cdk-basics", "08-vpc-networking", "09-ecs-fargate", "10-alb-dns", "11-aurora-postgresql", "12-rds-proxy", "13-database-migrations", "14-elasticache-valkey", "15-cloudfront-frontend", "16-github-actions-ci", "17-cicd-deploy", "18-observability", "19-autoscaling-performance", "20-load-testing-k6", "21-security-hardening", "22-reliability-dr", "23-cost-operations"];
