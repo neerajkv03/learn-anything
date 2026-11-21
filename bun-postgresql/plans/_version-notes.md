@@ -1,0 +1,145 @@
+# Version notes (fetched 2026-11-22)
+
+## Bun 1.4.5
+- Latest stable v1.4.5, released 19 Nov 2026; 1.4.0 on 20 Aug; 1.3.14 on 13 May. https://github.com/oven-sh/bun/releases
+- 1.4.5 notes only: SQLite bumped to 3.54.1 (Linux/Windows); stricter custom root cert validation; no Bun.sql/serve/test items. https://bun.com/blog/bun-v1.4.5
+- SQLite 3.54: ALTER TABLE cannot add/rename/drop a column named rowid, oid, _rowid_. https://bun.com/blog/bun-v1.4.5
+- Bun.sql (1.3): unified client for PostgreSQL, MySQL/MariaDB, SQLite; adapter chosen by URL scheme postgres://, mysql://, sqlite://. https://bun.com/blog/bun-v1.3
+- Bun.sql: tagged-template queries with interpolated values (parameterized). https://bun.com/blog/bun-v1.3
+- Bun.sql: sql.array(values, "TYPE") for Postgres arrays; sql(obj, "col", ...) inserts/updates only chosen columns; sql([1,2,3]) for WHERE IN. https://bun.com/blog/bun-v1.3
+- Bun.sql: .simple() runs multi-statement SQL (migrations); prepare: false for PgBouncer transaction mode; unix socket via path option. https://bun.com/blog/bun-v1.3
+- Bun.sql: runtime settings (e.g. search_path) via URL or connection option; --sql-preconnect opens Postgres at startup using DATABASE_URL. https://bun.com/blog/bun-v1.3
+- Bun.sql 1.4: PGSSLMODE is honored (PGSSLMODE=require fails against non-TLS server); ?sslmode= in URL still wins. https://bun.com/blog/bun-v1.4
+- Bun.sql 1.4: connectionTimeout now bounds the whole handshake, not each packet. https://bun.com/blog/bun-v1.4
+- Bun.sql 1.4: Postgres date/timestamp/timestamptz infinity and -infinity decode as Infinity/-Infinity, not invalid Date. https://bun.com/blog/bun-v1.4
+- Bun.sql 1.4: MySQL DATETIME/TIMESTAMP decode as UTC; MariaDB 10.5+ JSON columns come back parsed. https://bun.com/blog/bun-v1.4
+- Bun.serve routes (1.3): routes maps paths to handlers, HTML imports or static Response; dynamic /api/users/:id via req.params; /* catch-all. https://bun.com/blog/bun-v1.3
+- Bun.serve routes: per-method handlers (GET, POST) on one path; request.cookies API with set()/delete() adding Set-Cookie automatically. https://bun.com/blog/bun-v1.3
+- Bun.serve 1.4: per-method route objects answer HEAD with the GET handler when no HEAD key set. https://bun.com/blog/bun-v1.4
+- Bun.serve 1.4: port out of range or non-integer throws RangeError (no clamping). https://bun.com/blog/bun-v1.4
+- Bun.serve 1.4: Bun.serve({ inspector }) removed, silently ignored; use --inspect. https://bun.com/blog/bun-v1.4
+- Bun.serve 1.4: server.stop() closes idle connections and waits for in-flight requests; server.upgrade() returns false unless valid WebSocket upgrade. https://bun.com/blog/bun-v1.4
+- Bun.serve 1.4: static routes support Range (206), conditional 304/412; route object { dir: "./public" } serves a directory; experimental http3: true. https://bun.com/blog/bun-v1.4
+- Bun.serve 1.4: Transfer-Encoding other than a single final chunked gets 400; HTML routes with development:false emit no sourcemaps. https://bun.com/blog/bun-v1.4
+- Bun.password 1.4: Argon2 memoryCost must be >= 8 for hash(); older lower-cost hashes still verify. https://bun.com/blog/bun-v1.4
+- Bun.password 1.4: invalid cost/timeCost/memoryCost now throw instead of being wrapped or truncated. https://bun.com/blog/bun-v1.4
+- bun:test (1.3): test.concurrent/describe.concurrent (default limit 20, --max-concurrency); test.serial; concurrentTestGlob in bunfig.toml. https://bun.com/blog/bun-v1.3
+- bun:test (1.3): --randomize and --seed; test.failing; expectTypeOf(); toHaveReturnedWith/LastReturnedWith/NthReturnedWith. https://bun.com/blog/bun-v1.3
+- bun:test (1.3): CI mode fails on test.only() and on new snapshots without --update-snapshots; coveragePathIgnorePatterns. https://bun.com/blog/bun-v1.3
+- bun:test 1.4: --parallel[=N], --isolate, --shard=M/N, --timings, --changed, --retry, { repeats: n }. https://bun.com/blog/bun-v1.4
+- bun:test 1.4: resetAllMocks() now drops mock implementations (use clearAllMocks() for history only). https://bun.com/blog/bun-v1.4
+- bun:test 1.4: toContain() compares with === not Object.is ([NaN] no longer contains NaN); toBe unchanged. https://bun.com/blog/bun-v1.4
+- TypeScript (1.3): default tsconfig uses "module": "Preserve"; @types/bun picks Node or DOM types; DOM types can conflict with Bun APIs. https://bun.com/blog/bun-v1.3
+- TypeScript 1.4: ready for TypeScript 7; bun init writes typescript ^7 and a TS7-compatible tsconfig.json. https://bun.com/blog/bun-v1.4
+- TypeScript 1.4: useDefineForClassFields:false honored; jsx "react-jsx" imports jsx/jsxs not jsxDEV (use "react-jsxdev" for old). https://bun.com/blog/bun-v1.4
+- TypeScript 1.4: standard TC39 decorators work when experimentalDecorators is off. https://bun.com/blog/bun-v1.4
+- Env 1.4: --no-env-file or env = false in bunfig.toml disables automatic .env loading; explicit --env-file still works. https://bun.com/blog/bun-v1.4
+- Env 1.4: Bun run as node (bun --bun, bunx --bun, node symlink) no longer loads .env; pass --env-file. https://bun.com/blog/bun-v1.4
+- 1.4 other: Bun.YAML follows YAML 1.2 (yes/no/on/off are strings); Bun.TOML and bunfig.toml stricter (SyntaxError). https://bun.com/blog/bun-v1.4
+- 1.4 other: bun build --compile no longer auto-loads tsconfig.json/package.json at runtime; new monorepos default to isolated linker. https://bun.com/blog/bun-v1.4
+
+## PostgreSQL 19.0
+- Newest major PostgreSQL 19, latest minor 19.0, released 2026-11-19, supported until 2031-11-19. https://www.postgresql.org/support/versioning/
+- Release list shows 19.0 newest; 18.7 newest of 18. https://www.postgresql.org/docs/release/
+- INSERT ... ON CONFLICT DO SELECT ... RETURNING returns conflicting rows, optionally locked FOR UPDATE/SHARE. https://www.postgresql.org/docs/19/release-19.html
+- IGNORE NULLS / RESPECT NULLS for lead(), lag(), first_value(), last_value(), nth_value(). https://www.postgresql.org/docs/19/release-19.html
+- REPACK replaces VACUUM FULL and CLUSTER (old commands kept); REPACK (CONCURRENTLY) avoids access-exclusive locks. https://www.postgresql.org/docs/19/release-19.html
+- COPY FROM: ON_ERROR SET_NULL, multiple header lines skipped; COPY TO: JSON output with FORCE_ARRAY, works on partitioned tables. https://www.postgresql.org/docs/19/release-19.html
+- GRANT/REVOKE ... GRANTED BY; forward references in FOREIGN KEY inside CREATE SCHEMA. https://www.postgresql.org/docs/19/release-19.html
+- UUID: casts between bytea and uuid now allowed. https://www.postgresql.org/docs/19/release-19.html
+- JSON: new jsonpath string methods ltrim, rtrim, btrim, lower, upper, initcap, replace, split_part. https://www.postgresql.org/docs/19/release-19.html
+- JSON: IS JSON works on domains over TEXT/JSON/JSONB/BYTEA. https://www.postgresql.org/docs/19/release-19.html
+- Behavior change: json_array() with no rows yields [] instead of NULL. https://www.postgresql.org/docs/19/release-19.html
+- Constraints: ALTER TABLE ... ALTER CONSTRAINT ... [NOT] ENFORCED now works for CHECK, not only foreign keys. https://www.postgresql.org/docs/19/release-19.html
+- Constraints: SET EXPRESSION works on virtual columns with CHECK constraints; foreign key checks faster. https://www.postgresql.org/docs/19/release-19.html
+- Indexes: default opclasses for inet/cidr moved from btree_gist to GiST; old btree_gist inet/cidr indexes can omit rows, pg_upgrade rejects them. https://www.postgresql.org/docs/19/release-19.html
+- Indexes: parallel TID range scans; btree_gin supports all btree cross-type comparisons. https://www.postgresql.org/docs/19/release-19.html
+- Reindex after upgrade for full-text, pg_trgm, dmetaphone/soundex/metaphone/difference indexes. https://www.postgresql.org/docs/19/release-19.html
+- EXPLAIN: ANALYZE option IO reports async I/O; (ANALYZE, WAL) reports full-page-write bytes; Memoize estimates shown. https://www.postgresql.org/docs/19/release-19.html
+- Auth: new password_expiration_warning_threshold (default 7 days). https://www.postgresql.org/docs/19/release-19.html
+- Auth: warning after successful MD5 login (disable via md5_password_warnings); MD5 deprecated since 18. https://www.postgresql.org/docs/19/release-19.html
+- Auth: RADIUS authentication removed; libpq oauth_ca_file (PGOAUTHCAFILE); OAuth validators can register pg_hba.conf options. https://www.postgresql.org/docs/19/release-19.html
+- Defaults: JIT disabled by default; default_toast_compression pglz -> lz4; log_lock_waits on. https://www.postgresql.org/docs/19/release-19.html
+- Defaults: max_locks_per_transaction 64 -> 128; standard_conforming_strings always on (escape_string_warning removed). https://www.postgresql.org/docs/19/release-19.html
+- Defaults: wal_compression = on uses best available method; wraparound warnings start at 100M transactions remaining (was 40M). https://www.postgresql.org/docs/19/release-19.html
+- Removals: MULE_INTERNAL encoding; io_workers replaced by io_min_workers/io_max_workers/io_worker_idle_timeout/io_worker_launch_interval. https://www.postgresql.org/docs/19/release-19.html
+- Removals: system columns disallowed in COPY FROM ... WHERE; CR/LF disallowed in database/role/tablespace names. https://www.postgresql.org/docs/19/release-19.html
+- Deprecation: pg_verifybackup --wal-directory in favor of --wal-path. https://www.postgresql.org/docs/19/release-19.html
+
+## Bun runtime API facts (docs, checked 2026-11-22)
+- serve routes: static `new Response("OK")`, per-method handlers (GET/POST keys), `/users/:id` read via `req.params.id`, wildcard for unmatched `/api/*`. https://bun.com/docs/api/http
+- Route precedence: exact, then `:param`, then `/users/*`, then global `/*`. https://bun.com/docs/runtime/http/routing
+- `req.params` typed from string-literal path; `BunRequest<"/path/:param">` gives `params: Record<T,string>`. https://bun.com/docs/runtime/http/routing
+- `fetch` is fallback for requests no route matched; required if Bun < 1.2.3. https://bun.com/docs/runtime/http/routing
+- `error(error)` returns a Response on server-side error; in dev mode replaces Bun's default error page. https://bun.com/docs/runtime/http/error-handling
+- `development` defaults ON; off via `NODE_ENV=production` or `development: false`; off => uncaught errors give plain 500. `--production` does not disable it for `bun run`. https://bun.com/docs/runtime/http/error-handling
+- `port` defaults to $BUN_PORT, $PORT, $NODE_PORT, else 3000; `port: 0` picks random port; `hostname` defaults "0.0.0.0". https://bun.com/docs/api/http
+- `server.url` = URL incl. protocol/host/port (href ends with `/`); `server.port` = listening port. https://bun.com/docs/api/http
+- `server.stop(closeActiveConnections?: boolean): Promise<void>`; default lets in-flight requests finish; `true` terminates all connections now (WebSockets close 1001). https://bun.com/docs/api/http
+- `server.requestIP(req)` returns address+port; null for closed requests or unix sockets. https://bun.com/docs/api/http
+- `idleTimeout` default 10 s, max 255, 0 disables; `server.timeout(request, seconds)` overrides per request, 0 disables. https://bun.com/docs/api/http
+- `req.cookies` (CookieMap, with `routes`): `get(name)`, `set(name, value, options?)`, `delete(name, options?)`. https://bun.com/docs/runtime/http/cookies
+- Documented cookie options: maxAge (seconds), httpOnly, secure, path. Set-Cookie applied to response automatically; delete sends past Expires + empty value. https://bun.com/docs/runtime/http/cookies
+- Env load order (rising precedence): .env; .env.{production,development,test} per NODE_ENV; .env.local (NOT when NODE_ENV=test); .env.{mode}.local. https://bun.com/docs/runtime/env
+- `Bun.env` and `import.meta.env` are aliases of `process.env`. https://bun.com/docs/runtime/env
+- `--env-file` overrides which .env files load (bun <file>, package.json scripts, bun install); `--no-env-file` or bunfig `env = false` disables auto-load. https://bun.com/docs/runtime/env
+- Bun.password.hash default is argon2 (example shows argon2id); options: `algorithm` ("argon2id"|"argon2i"|"argon2d"|"bcrypt"), `memoryCost` (KiB, min 8), `timeCost`, bcrypt `cost` (4-31). https://bun.com/docs/api/hashing
+- `Bun.password.verify` auto-detects algorithm from hash (PHC or MCF); example returns true; `hashSync`/`verifySync` exist (blocking). https://bun.com/docs/api/hashing
+- HMAC: `new Bun.CryptoHasher("sha256", "secret-key")`; HMAC instance does not reset after `.digest()`, reuse throws. https://bun.com/docs/api/hashing
+- `import { expect, test, mock } from "bun:test"`; hooks beforeAll/afterAll/beforeEach/afterEach (also aroundEach, aroundAll, onTestFinished). https://bun.com/docs/test/lifecycle
+- Test files: `*.test.*`, `*_test.*`, `*.spec.*`, `*_spec.*` (js,jsx,ts,tsx,mjs,cjs,mts,cts). https://bun.com/docs/test
+- Default test timeout 5000 ms (`--timeout`); per-test timeout = third arg to `test`, e.g. `test("x", fn, 500)`. https://bun.com/docs/test/writing-tests
+- bunfig `[test] preload = ["./setup.ts"]` equals `--preload`. https://bun.com/docs/test/configuration
+- `.env.test` is loaded by `bun test` automatically; docs example sets NODE_ENV=test inside it. https://bun.com/docs/test/configuration
+- `await expect(p).rejects.toThrow("msg")` works; also accepts a function returning promise. https://bun.com/docs/test/writing-tests
+- `toEqual`, `toStrictEqual`, `toMatchObject` listed as supported (semantic difference not explained). https://bun.com/docs/test/writing-tests
+- `mock()` returns decorated fn (`.mock.calls`, `mockReset()`, `mockRestore()`); `spyOn()` tracks without replacing. https://bun.com/docs/test/mocks
+- `mock.module(path, factory)` always needs factory, overrides even if already imported; removed at test-file end; `mock.restore()` does not remove module mocks. https://bun.com/docs/test/mocks
+- `bun run index.ts`, `bun run <script>` for package.json scripts, `bun --watch run index.tsx`. https://bun.com/docs/runtime
+- `import.meta.main` true when file is the entrypoint run directly; `import.meta.dir` = abs dir; `import.meta.path` = abs file. https://bun.com/docs/runtime/module-resolution
+- `Bun.randomUUIDv7(encoding?, timestamp?)` returns monotonic sortable string (Buffer if "buffer"); uses same RNG as `crypto.randomUUID()`. https://bun.com/docs/runtime/utils
+- `bun init` tsconfig: strict true, module "Preserve", moduleResolution "bundler", noEmit true, allowImportingTsExtensions true, verbatimModuleSyntax true, target/lib ESNext. https://bun.com/docs/runtime/typescript
+
+## Bun.sql API facts (docs, checked 2026-11-22)
+- Import: `import { sql, SQL } from "bun";` sql = default client, SQL = constructor. https://bun.com/docs/api/sql
+- Protocol picks adapter: postgres://, postgresql://, or none = PostgreSQL. https://bun.com/docs/api/sql
+- Forms: `new SQL("postgres://user:pass@localhost:5432/mydb")`, `new SQL(url, options)`, `new SQL({ adapter, hostname, port, database, username, password })`. https://bun.com/docs/api/sql
+- Env URL vars: DATABASE_URL, TLS_DATABASE_URL (adapter from protocol); POSTGRES_URL, PGURL, PG_URL, TLS_POSTGRES_DATABASE_URL (PG). https://bun.com/docs/api/sql
+- Precedence: option > URL passed > env URL > single-field env (PGHOST...) > default; PGDATABASE beats URL's database. https://bun.com/docs/api/sql
+- PG env defaults: PGHOST localhost, PGPORT 5432, PGUSER/PGUSERNAME/USER postgres, PGDATABASE = username, PGSSLMODE disable, PGCONNECT_TIMEOUT 30s. https://bun.com/docs/api/sql
+- `bun --sql-preconnect index.js` connects at startup. https://bun.com/docs/api/sql
+- Pool opts: max 10; idleTimeout 0 (off, seconds); maxLifetime 0 (off, seconds); connectionTimeout 30 (seconds). https://bun.com/docs/api/sql
+- prepare default true (PG only); bigint default false; tls default false (true | ssl mode | TLS object | BunFile CA). https://bun.com/docs/api/sql
+- onconnect(err) per opened connection; onclose(err) per closed connection, always gets an Error. https://bun.com/docs/api/sql
+- Lazy: no connection until a query runs; pool opens connections on demand up to max. https://bun.com/docs/api/sql
+- Close: `sql.close()` waits for running queries; `sql.close({ timeout: 5 })`; `{ timeout: 0 }` immediate; later queries reject ERR_POSTGRES_CONNECTION_CLOSED. https://bun.com/docs/api/sql
+- Result: array of row objects; `.values()` rows as arrays; `.raw()` rows as Buffer arrays (call before await). https://bun.com/docs/api/sql
+- Result props: count, command (e.g. "INSERT"), affectedRows, lastInsertRowid, columns, statement. https://bun.com/docs/api/sql
+- Insert: sql`INSERT INTO users ${sql(userData)} RETURNING *`; pick: `sql(user, "name", "email")`; bulk: sql`INSERT INTO users ${sql(users)}` (cols from first row). https://bun.com/docs/api/sql
+- Update: sql`UPDATE users SET ${sql(user, "name", "email")} WHERE id = ${user.id}`; undefined values skipped. https://bun.com/docs/api/sql
+- IN: sql`SELECT * FROM users WHERE id IN ${sql([1, 2, 3])}`; empty list matches no row on PG. https://bun.com/docs/api/sql
+- Identifier: sql`SELECT * FROM ${sql("users")}` quotes; "public.users" splits schema.table; still allow-list user input. https://bun.com/docs/api/sql
+- `sql.unsafe(text, params)` PG placeholders $1; `sql.file(path, params)`; sql`...`.simple() = multi-statement, no params. https://bun.com/docs/api/sql
+- Fragments: nest sql`` results in queries; conditional `${cond ? frag : sql``}`; array of fragments joined by spaces. https://bun.com/docs/api/sql
+- `sql.array([1,2,3], "INT")` sent as $1::INT[]; use "JSON"/"JSONB" for json[]; PG only. https://bun.com/docs/api/sql
+- Tx: `sql.begin(async tx => {...})` commits on success; on error ROLLBACK and sql.begin rejects with the error. https://bun.com/docs/api/sql
+- Return array of queries from begin callback to pipeline. `tx.savepoint(async sp => {...})`, `tx.savepoint("label", fn)`; throw rolls back to savepoint. https://bun.com/docs/api/sql
+- Reserve: `const r = await sql.reserve(); await r.release();` or `using r = await sql.reserve();`. https://bun.com/docs/api/sql
+- Query on tx after end rejects ERR_POSTGRES_INVALID_TRANSACTION_STATE. https://bun.com/docs/api/sql
+- Types: int8 -> string by default, BigInt with `bigint: true`. https://bun.com/docs/api/sql
+- Types: numeric/money -> string; boolean -> boolean; json/jsonb -> parsed; uuid -> string. https://bun.com/docs/api/sql
+- Types: text[]/bigint[] -> plain Array (null for NULL); timestamp read as UTC, date as UTC midnight; null/undefined bind as NULL. https://bun.com/docs/api/sql
+- Errors: SQL.PostgresError, SQL.MySQLError, SQL.SQLiteError, base SQL.SQLError. https://bun.com/docs/api/sql
+- PG error props: code (ERR_POSTGRES_SERVER_ERROR), errno (SQLSTATE e.g. "23505"), detail, hint. Example: `if (error instanceof SQL.PostgresError) console.log(error.code, error.errno, error.detail, error.hint)`. https://bun.com/docs/api/sql
+- 1.3: unified Postgres/MySQL/SQLite; sql.array added; error classes exported; .simple() added; prepare:false for PGBouncer. https://bun.com/blog/bun-v1.3
+- 1.4: PGSSLMODE env now honored; connectionTimeout bounds whole handshake; PG infinite dates decode to +/-Infinity. https://bun.com/blog/bun-v1.4
+- 1.4: PG timestamps via .simple() decode as UTC; timestamptz unaffected. https://bun.com/blog/bun-v1.4
+
+## Bun.sql extra facts (docs, checked 2026-11-22)
+- `sql.unsafe(text)` without parameters may contain several statements; PostgreSQL runs such a string as one implicit transaction. https://bun.com/docs/api/sql
+- `sql.file(path)` runs a query read from a file; without params the file may hold multiple commands. https://bun.com/docs/api/sql
+- Simple (multi-statement) queries cannot take `${value}` parameters. https://bun.com/docs/api/sql
+- `date`/`timestamp`/`timestamptz` → JS `Date`, read as UTC. https://bun.com/docs/api/sql
+- No documented generic result typing (`sql<T>`); course types results by annotation: `const rows: OrderRow[] = await sql\`...\``. https://bun.com/docs/api/sql
+- `sql.begin` option strings / isolation examples: not documented → course sets isolation with `SET TRANSACTION ISOLATION LEVEL ...` as first statement inside the tx. https://www.postgresql.org/docs/19/sql-set-transaction.html
+- PostgresError documented props: only `code`, `errno` (SQLSTATE), `detail`, `hint`; no `sql.end()` documented (use `sql.close()`). https://bun.com/docs/api/sql

@@ -1,0 +1,13 @@
+DESC: I want to learn raw bunjs with postgresql with production grade folder and file structure. Don't include any installations.
+- Goal: REST JSON API via Bun.serve, no framework (raw Bun).
+- DB client: Bun.sql built-in (tagged-template SQL); no postgres.js, no ORM.
+- Language: TypeScript (Bun runs .ts directly).
+- Migrations: hand-written numbered .sql files + tiny Bun runner script.
+- SQL depth: solid production — tables, constraints, joins, indexes, transactions, upserts, JSONB basics, EXPLAIN.
+- Production: auth (Bun.password hashing, sessions/JWT, protected routes); manual input validation + consistent JSON errors/status codes; env config, structured logging, graceful shutdown.
+- No deployment/Docker topic.
+- Testing: bun:test, unit + DB integration against test database.
+- Size: ~20 topics.
+- No installation steps anywhere (Bun, PostgreSQL install skipped; state VERSION only).
+- Production-grade folder/file structure is a through-line: introduce early, grow it each topic.
+- Domain for examples: small orders/users API.
