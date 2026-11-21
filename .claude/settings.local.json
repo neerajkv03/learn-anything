@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "C:\\Users\\Neeraj\\AppData\\Local\\Temp\\claude"
+    ],
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit(/**)",
+      "Edit(//C:/Users/Neeraj/AppData/Local/Temp/claude/**)"
+    ]
+  }
+}
