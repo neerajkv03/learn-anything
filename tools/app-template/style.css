@@ -153,7 +153,8 @@ h3 { font-size: 1.25rem; font-weight: 700; color: var(--fg); margin: 40px 0 12px
 .anchor { margin-left: 8px; color: var(--fg-3); text-decoration: none; opacity: 0; transition: opacity 0.15s; font-weight: 400; }
 :is(h2, h3):hover .anchor, .anchor:focus { opacity: 1; }
 code { font-family: var(--mono); font-size: 0.875em; }
-:not(pre) > code { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 1px 6px; }
+:not(pre) > code { background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: var(--r-sm); padding: 1px 6px; font-weight: 500; white-space: nowrap; }
+:not(pre) > code.inline { white-space: normal; overflow-wrap: anywhere; }
 .content ul:not([class]), .content ol:not([class]) { padding-left: 1.5em; margin: 0; }
 .content li::marker { color: var(--fg-3); }
 .content li + li { margin-top: 6px; }

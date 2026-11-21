@@ -199,7 +199,7 @@ Copy into the stylesheet verbatim:
 | Lead         | `p.lead`                                          | Description under h1.                                                                                                                           |
 | Meta chips   | `ul.meta > li` (value in `<strong>`)              | Pill chips, `--bg-soft` + hairline.                                                                                                             |
 | Key points   | `ul.points > li`                                  | 18px rounded `--fg` box with `--bg` check (CSS borders on `::after`, not an image).                                                             |
-| Inline code  | `code` not in `pre`                               | `--surface`, hairline, `--r-sm`.                                                                                                                |
+| Inline code  | `code.inline` not in `pre`                        | `--surface-2`, `--fg` text, weight 500, hairline + 2px bottom border, `--r-sm`. Wraps (`overflow-wrap: anywhere`). Script turns prose `` `x` `` into this element. Never inside code blocks. |
 | Keyboard key | `kbd`                                             | Mono 600, `--bg`, hairline with 2px bottom border, `--r-sm`.                                                                                    |
 | Plain lists  | `ul`/`ol` without class in `.content`             | 1.5em indent, 6px between items, `--fg-3` markers.                                                                                              |
 | Table        | `.table-wrap > table`                             | Wrapper rounded `--r-lg` with hairline, scrolls horizontally. Row hairlines only; `th` `--bg-soft`, uppercase 0.8125rem. Row hover `--bg-soft`. |
@@ -479,6 +479,19 @@ const updateActive = () => {
 addEventListener("scroll", updateActive, { passive: true });
 updateActive();
 
+// Inline code: prose `x` -> <code class="inline">. Skip code/pre so real code keeps its backticks.
+const h = (t, c, x, ...k) => {
+  const e = document.createElement(t);
+  if (c) e.className = c;
+  if (x != null) {
+    const parts = t === "code" || t === "pre" || !String(x).includes("`") ? null : String(x).split(/`([^`\n]+)`/);
+    if (parts) e.append(...parts.map((p, i) => (i % 2 ? h("code", "inline", p) : p)));
+    else e.textContent = x;
+  }
+  e.append(...k);
+  return e;
+};
+
 // Mobile drawer
 const menuBtn = document.querySelector(".menu-btn");
 const isNavOpen = () => document.body.classList.contains("nav-open");
@@ -527,3 +540,4 @@ document.addEventListener("keydown", (e) => {
 - [ ] Skip link appears on first Tab and jumps to `#main`.
 - [ ] All icons are inline SVG; no text glyphs.
 - [ ] Keyboard focus visible on all links and buttons.
+- [ ] Prose backticks render as `code.inline` chips (no literal backticks visible); code blocks keep theirs.
