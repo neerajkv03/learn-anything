@@ -199,7 +199,7 @@ Copy into the stylesheet verbatim:
 | Lead         | `p.lead`                                          | Description under h1.                                                                                                                           |
 | Meta chips   | `ul.meta > li` (value in `<strong>`)              | Pill chips, `--bg-soft` + hairline.                                                                                                             |
 | Key points   | `ul.points > li`                                  | 18px rounded `--fg` box with `--bg` check (CSS borders on `::after`, not an image).                                                             |
-| Inline code  | `code` not in `pre`                               | `--surface`, hairline, `--r-sm`.                                                                                                                |
+| Inline code  | `code.inline` not in `pre`                        | `--surface-2`, `--fg` text, weight 500, hairline + 2px bottom border, `--r-sm`. Wraps (`overflow-wrap: anywhere`). Script turns prose `` `x` `` into this element. Never inside code blocks. |
 | Keyboard key | `kbd`                                             | Mono 600, `--bg`, hairline with 2px bottom border, `--r-sm`.                                                                                    |
 | Plain lists  | `ul`/`ol` without class in `.content`             | 1.5em indent, 6px between items, `--fg-3` markers.                                                                                              |
 | Table        | `.table-wrap > table`                             | Wrapper rounded `--r-lg` with hairline, scrolls horizontally. Row hairlines only; `th` `--bg-soft`, uppercase 0.8125rem. Row hover `--bg-soft`. |
@@ -527,3 +527,4 @@ document.addEventListener("keydown", (e) => {
 - [ ] Skip link appears on first Tab and jumps to `#main`.
 - [ ] All icons are inline SVG; no text glyphs.
 - [ ] Keyboard focus visible on all links and buttons.
+- [ ] Prose backticks render as `code.inline` chips (no literal backticks visible); code blocks keep theirs.
